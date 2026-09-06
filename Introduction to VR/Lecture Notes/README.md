@@ -1,5 +1,10 @@
 # Introduction to VR — Interactive lecture notes
 
+## ▶ [Open these pages](https://isac-artzi.github.io/Resources-for-Game-Development-Courses/introduction-to-vr/)
+
+The files in this folder are HTML. github.com shows HTML as **source code**, so open
+them through the link above, or clone the folder and open `index.html` locally.
+
 Student-facing HTML lecture notes for *Virtual Reality and Game Development* (Unity 6.5, Meta Quest 3).
 
 | File | Topic | Weeks | Sessions |

@@ -1,5 +1,10 @@
 # Advanced Game Testing and Debugging — Interactive lecture notes
 
+## ▶ [Open these pages](https://isac-artzi.github.io/Resources-for-Game-Development-Courses/advanced-game-testing-and-debugging/)
+
+The files in this folder are HTML. github.com shows HTML as **source code**, so open
+them through the link above, or clone the folder and open `index.html` locally.
+
 Student-facing course hub and eight interactive HTML lessons, one per topic. Unity and Unreal
 panes throughout; no install, no CDN, no network, no accounts.
 
