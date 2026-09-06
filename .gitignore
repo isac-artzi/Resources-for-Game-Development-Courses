@@ -1,0 +1,42 @@
+# --- Instructor-side material: never belongs in the public repo ---
+*Syllabus*
+*Foundation document*
+*requirements.md
+Claude outputs/
+docs-src/
+*.pdf
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.vs/
+.fuse_hidden*
+
+# --- Unity generated (each activity also carries its own .gitignore) ---
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+*.csproj
+*.sln
+*.suo
+*.user
+*.apk
+*.aab
+*.unitypackage
+*.app
+sysinfo.txt
+crashlytics-build.properties
+
+# --- Archives and video walkthroughs are distributed outside the repo ---
+*.zip
+*.mp4
+*.mov
+*.m4v

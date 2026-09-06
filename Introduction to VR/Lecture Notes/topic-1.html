@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 1 · Introduction to Virtual Reality — Introduction to VR Lecture Notes</title>
+<style>
+/* Introduction to VR lecture notes — shared stylesheet (light mode, self-contained) */
+:root {
+  --bg: #fbfbfd;
+  --paper: #ffffff;
+  --ink: #1d2233;
+  --ink-2: #4a5169;
+  --ink-3: #7b819a;
+  --line: #e3e6ef;
+  --line-2: #cfd4e3;
+  --accent: #3b4fd8;
+  --accent-2: #2a3aa6;
+  --accent-soft: #eef0fd;
+  --teal: #0f8b8d;
+  --teal-soft: #e6f5f5;
+  --amber: #b26a00;
+  --amber-soft: #fff5e0;
+  --rose: #c2334d;
+  --rose-soft: #fdeaee;
+  --green: #2f8f4e;
+  --green-soft: #e8f6ec;
+  --code-bg: #f4f5f9;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(20, 25, 50, .06), 0 6px 20px rgba(20, 25, 50, .05);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --serif: Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 16.5px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.55rem; margin: 2.4rem 0 .8rem; padding-top: .4rem; }
+h3 { font-size: 1.2rem; margin: 1.8rem 0 .6rem; color: var(--ink); }
+h4 { font-size: 1.02rem; margin: 1.2rem 0 .4rem; }
+p, ul, ol { margin: 0 0 1rem; }
+ul, ol { padding-left: 1.4rem; }
+li { margin: .25rem 0; }
+strong { font-weight: 650; }
+code { font-family: var(--mono); font-size: .9em; background: var(--code-bg); padding: .1em .35em; border-radius: 5px; }
+pre { margin: 1rem 0; }
+pre code { background: none; padding: 0; font-size: .86rem; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2rem 0; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; }
+th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--accent-soft); font-weight: 650; color: var(--accent-2); }
+.table-wrap { overflow-x: auto; }
+kbd { font-family: var(--mono); font-size: .82em; background: #fff; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 5px; padding: .05em .4em; }
+
+/* ---------- Layout ---------- */
+.site-header {
+  background: var(--paper); border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 50;
+}
+.site-header .inner { max-width: 1080px; margin: 0 auto; padding: .7rem 1.25rem 0; }
+.crumbs { font-size: .8rem; color: var(--ink-3); display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.crumbs a { color: var(--ink-3); }
+.crumbs a:hover { color: var(--accent); }
+.title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: .15rem; }
+.title-row h1 { font-size: 1.35rem; }
+.title-row .topic-tag { font-size: .78rem; color: var(--accent-2); background: var(--accent-soft); padding: .15rem .6rem; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+.tabs { display: flex; gap: .25rem; overflow-x: auto; margin-top: .6rem; scrollbar-width: thin; }
+.tabs button {
+  appearance: none; border: 0; background: none; cursor: pointer; font: inherit;
+  padding: .55rem .85rem; color: var(--ink-2); border-bottom: 3px solid transparent;
+  white-space: nowrap; font-size: .9rem; display: flex; flex-direction: column; align-items: flex-start; gap: .05rem;
+  border-radius: 6px 6px 0 0;
+}
+.tabs button .t1 { font-weight: 650; }
+.tabs button .t2 { font-size: .74rem; color: var(--ink-3); font-weight: 400; }
+.tabs button:hover { background: var(--accent-soft); }
+.tabs button[aria-selected="true"] { color: var(--accent-2); border-bottom-color: var(--accent); }
+.tabs button[aria-selected="true"] .t2 { color: var(--accent-2); }
+
+main { max-width: 1080px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+.session { display: none; animation: fade .25s ease; }
+.session.active { display: block; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none; } }
+
+.session-head { margin: .5rem 0 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.session-head .kicker { color: var(--accent-2); font-weight: 650; font-size: .82rem; text-transform: uppercase; letter-spacing: .08em; }
+.session-head h2 { margin: .2rem 0 .4rem; font-size: 1.9rem; }
+.session-head .lede { color: var(--ink-2); font-size: 1.08rem; max-width: 62ch; }
+
+/* Topic overview page (first tab) */
+.topic-intro { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; align-items: start; }
+@media (max-width: 820px) { .topic-intro { grid-template-columns: 1fr; } }
+
+/* ---------- Boxes ---------- */
+.box {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1rem 1.2rem; margin: 1.2rem 0; box-shadow: var(--shadow);
+}
+.box > :last-child { margin-bottom: 0; }
+.box h4 { margin-top: 0; }
+.objectives { border-left: 4px solid var(--accent); }
+.objectives h4 { color: var(--accent-2); }
+.agenda { border-left: 4px solid var(--teal); }
+.agenda h4 { color: var(--teal); }
+.agenda table { margin: .4rem 0 0; font-size: .9rem; }
+.agenda td:first-child { white-space: nowrap; color: var(--ink-3); font-family: var(--mono); font-size: .82rem; }
+.next { border-left: 4px solid var(--ink-3); }
+.next h4 { color: var(--ink-2); }
+
+.callout { border-radius: var(--radius); padding: .9rem 1.1rem; margin: 1.2rem 0; border: 1px solid transparent; }
+.callout > :last-child { margin-bottom: 0; }
+.callout .label { display: block; font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; margin-bottom: .3rem; }
+.callout.note { background: var(--accent-soft); border-color: #d7dcf8; }
+.callout.note .label { color: var(--accent-2); }
+.callout.tip { background: var(--green-soft); border-color: #cfe8d6; }
+.callout.tip .label { color: var(--green); }
+.callout.warn { background: var(--amber-soft); border-color: #f2dfb3; }
+.callout.warn .label { color: var(--amber); }
+.callout.comfort { background: var(--rose-soft); border-color: #f4c9d1; }
+.callout.comfort .label { color: var(--rose); }
+.callout.unity { background: var(--teal-soft); border-color: #bfe3e3; }
+.callout.unity .label { color: var(--teal); }
+.callout.project { background: #f3f0fb; border-color: #dcd3f2; }
+.callout.project .label { color: #5b3fa8; }
+
+/* Concept definitions */
+.concepts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .9rem; margin: 1.2rem 0; }
+.concept {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: .9rem 1rem; box-shadow: var(--shadow);
+}
+.concept dt, .concept h4 { font-weight: 700; color: var(--accent-2); margin: 0 0 .3rem; font-size: 1rem; }
+.concept dd, .concept p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+.concept .why { margin-top: .5rem; font-size: .86rem; color: var(--ink-3); border-top: 1px dashed var(--line); padding-top: .4rem; }
+.concept .why b { color: var(--ink-2); }
+dfn { font-style: normal; font-weight: 650; color: var(--accent-2); border-bottom: 1px dotted var(--accent); cursor: help; }
+
+/* Steps (Unity procedures) */
+.steps { counter-reset: step; list-style: none; padding-left: 0; margin: 1rem 0; }
+.steps > li { position: relative; padding-left: 2.6rem; margin: .7rem 0; }
+.steps > li::before {
+  counter-increment: step; content: counter(step);
+  position: absolute; left: 0; top: .05rem; width: 1.8rem; height: 1.8rem; border-radius: 50%;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: .85rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.steps > li > :first-child { margin-top: 0; }
+.ui { font-weight: 600; color: var(--ink); background: #f0f1f6; padding: .05em .4em; border-radius: 4px; font-size: .92em; }
+
+/* Code blocks */
+.code {
+  position: relative; background: var(--code-bg); border: 1px solid var(--line); border-radius: var(--radius);
+  margin: 1rem 0; overflow: hidden;
+}
+.code .code-head { display: flex; justify-content: space-between; align-items: center; padding: .4rem .9rem; border-bottom: 1px solid var(--line); background: #eceef5; font-size: .8rem; color: var(--ink-2); font-family: var(--mono); }
+.code .code-head button { font: inherit; font-size: .75rem; border: 1px solid var(--line-2); background: #fff; border-radius: 6px; padding: .15rem .6rem; cursor: pointer; color: var(--ink-2); }
+.code .code-head button:hover { border-color: var(--accent); color: var(--accent); }
+.code pre { margin: 0; padding: .9rem 1rem; overflow-x: auto; line-height: 1.5; }
+.code pre code { background: none; }
+.tok-k { color: #8a2be2; font-weight: 600; }      /* keyword */
+.tok-t { color: #1a7f7f; }                        /* type */
+.tok-s { color: #b3541e; }                        /* string */
+.tok-c { color: #7b819a; font-style: italic; }    /* comment */
+.tok-n { color: #1f5fbf; }                        /* number */
+.tok-a { color: #5b3fa8; }                        /* attribute [ ... ] */
+
+/* Math */
+.math { font-family: var(--serif); font-style: italic; font-size: 1.05em; }
+.math .rm { font-style: normal; }
+.eq {
+  font-family: var(--serif); font-size: 1.2rem; text-align: center; margin: 1.1rem 0; padding: .8rem 1rem;
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow-x: auto;
+}
+.eq .lbl { float: right; font-family: var(--font); font-size: .78rem; color: var(--ink-3); font-style: normal; }
+.eq i, .eq var { font-style: italic; }
+.eq .rm { font-style: normal; }
+.frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 .2em; line-height: 1.15; }
+.frac .num { border-bottom: 1.5px solid currentColor; padding: 0 .25em .05em; }
+.frac .den { padding: .05em .25em 0; }
+.sqrt { display: inline-block; border-top: 1.5px solid currentColor; padding: .05em .2em 0; margin-left: .1em; }
+.sqrt::before { content: "\221A"; margin-left: -1.1em; position: relative; top: -.15em; font-style: normal; }
+.live { font-family: var(--mono); font-style: normal; color: var(--accent-2); background: var(--accent-soft); padding: 0 .3em; border-radius: 4px; }
+
+/* Widgets */
+.widget {
+  background: var(--paper); border: 1px solid var(--line-2); border-radius: 14px; margin: 1.4rem 0;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.widget-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; padding: .75rem 1.1rem; background: linear-gradient(90deg, var(--accent-soft), #fff); border-bottom: 1px solid var(--line); }
+.widget-head strong { font-size: 1rem; color: var(--accent-2); }
+.widget-head strong::before { content: "\25B6\FE0E"; font-size: .7rem; margin-right: .5rem; color: var(--accent); }
+.widget-head span { font-size: .86rem; color: var(--ink-2); }
+.widget-body { display: grid; grid-template-columns: 260px 1fr; gap: 0; }
+.widget-body.stacked { grid-template-columns: 1fr; }
+@media (max-width: 760px) { .widget-body { grid-template-columns: 1fr; } }
+.controls { padding: .9rem 1rem; border-right: 1px solid var(--line); background: #fafbfe; display: flex; flex-direction: column; gap: .7rem; }
+.widget-body.stacked .controls { border-right: 0; border-bottom: 1px solid var(--line); flex-direction: row; flex-wrap: wrap; }
+@media (max-width: 760px) { .controls { border-right: 0; border-bottom: 1px solid var(--line); } }
+.stage { padding: .8rem; min-width: 0; }
+.stage canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: #fff; }
+.readout { grid-column: 1 / -1; padding: .6rem 1.1rem .8rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--ink-2); background: #fafbfe; display: flex; gap: 1.4rem; flex-wrap: wrap; }
+.readout:empty { display: none; }
+.readout b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
+.ctl { display: flex; flex-direction: column; gap: .15rem; font-size: .84rem; color: var(--ink-2); min-width: 0; }
+.widget-body.stacked .ctl { flex: 1 1 180px; }
+.ctl .ctl-row { display: flex; justify-content: space-between; gap: .5rem; }
+.ctl .ctl-val { font-family: var(--mono); color: var(--accent-2); font-weight: 600; }
+.ctl input[type=range] { width: 100%; accent-color: var(--accent); margin: 0; }
+.ctl select, .ctl button { font: inherit; font-size: .86rem; padding: .3rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: #fff; color: var(--ink); }
+.ctl button { cursor: pointer; }
+.ctl button:hover { border-color: var(--accent); color: var(--accent); }
+.ctl button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.ctl.toggle { flex-direction: row; align-items: center; gap: .5rem; }
+.ctl.toggle input { accent-color: var(--accent); }
+.ctl.radios { gap: .3rem; }
+.ctl.radios label { display: flex; gap: .4rem; align-items: center; }
+.ctl.radios input { accent-color: var(--accent); }
+.ctl small { color: var(--ink-3); }
+.legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .8rem; color: var(--ink-2); margin-top: .5rem; }
+.legend i { display: inline-block; width: .8rem; height: .8rem; border-radius: 3px; vertical-align: -1px; margin-right: .3rem; }
+
+/* Quiz / self-check */
+.quiz { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: .9rem 1.1rem; margin: 1.2rem 0; }
+.quiz .q { font-weight: 650; margin-bottom: .5rem; }
+.quiz .q::before { content: "Check yourself"; display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); font-weight: 700; margin-bottom: .2rem; }
+.quiz label { display: flex; gap: .55rem; align-items: flex-start; padding: .35rem .5rem; border-radius: 6px; cursor: pointer; }
+.quiz label:hover { background: var(--accent-soft); }
+.quiz input { accent-color: var(--accent); margin-top: .3rem; }
+.quiz label.correct { background: var(--green-soft); }
+.quiz label.wrong { background: var(--rose-soft); }
+.quiz .why { margin-top: .5rem; font-size: .9rem; padding: .5rem .7rem; border-radius: 6px; display: none; }
+.quiz .why.show { display: block; }
+.quiz .why.ok { background: var(--green-soft); color: #205f36; }
+.quiz .why.no { background: var(--rose-soft); color: #8a2036; }
+
+details.more { border: 1px solid var(--line); border-radius: var(--radius); padding: .6rem 1rem; margin: 1rem 0; background: var(--paper); }
+details.more summary { cursor: pointer; font-weight: 650; color: var(--accent-2); }
+details.more[open] summary { margin-bottom: .5rem; }
+
+/* Two-column figure/text */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+figure { margin: 1.2rem 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: .86rem; color: var(--ink-3); margin-top: .4rem; text-align: center; }
+
+/* Timeline */
+.timeline { list-style: none; padding: 0; margin: 1rem 0; border-left: 2px solid var(--line-2); }
+.timeline li { position: relative; padding: 0 0 .9rem 1.4rem; }
+.timeline li::before { content: ""; position: absolute; left: -7px; top: .45rem; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--accent); }
+.timeline .when { font-family: var(--mono); font-size: .8rem; color: var(--accent-2); font-weight: 600; }
+
+/* Checklist */
+.checklist { list-style: none; padding: 0; }
+.checklist li { padding-left: 1.7rem; position: relative; margin: .35rem 0; }
+.checklist li::before { content: "\2610"; position: absolute; left: 0; top: -.05rem; color: var(--accent); font-size: 1.1rem; }
+
+/* Footer */
+.site-footer { border-top: 1px solid var(--line); margin-top: 2rem; padding: 1.2rem 1.25rem 2rem; color: var(--ink-3); font-size: .85rem; }
+.site-footer .inner { max-width: 1080px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+.session-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.session-nav button { font: inherit; border: 1px solid var(--line-2); background: #fff; border-radius: 8px; padding: .5rem .9rem; cursor: pointer; color: var(--accent-2); font-weight: 600; }
+.session-nav button:hover { border-color: var(--accent); }
+.session-nav button:disabled { opacity: .35; cursor: default; }
+
+/* Index page cards */
+.topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.topic-card { display: block; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 1.1rem 1.2rem; box-shadow: var(--shadow); color: inherit; transition: transform .15s ease, border-color .15s ease; }
+.topic-card:hover { text-decoration: none; transform: translateY(-2px); border-color: var(--accent); }
+.topic-card .num { font-family: var(--mono); font-size: .78rem; color: var(--accent-2); font-weight: 700; }
+.topic-card h3 { margin: .2rem 0 .4rem; font-size: 1.1rem; }
+.topic-card p { font-size: .9rem; color: var(--ink-2); margin: 0 0 .5rem; }
+.topic-card .meta { font-size: .78rem; color: var(--ink-3); }
+
+@media print {
+  .site-header { position: static; }
+  .tabs, .session-nav { display: none; }
+  .session { display: block !important; page-break-before: always; }
+  .widget { break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <div class="crumbs"><a href="index.html">Introduction to VR · Virtual Reality &amp; Game Development</a><span>›</span><span>Topic 1</span></div>
+  <div class="title-row"><h1>Introduction to Virtual Reality</h1><span class="topic-tag">Weeks 1–2 · 4 class sessions</span></div>
+  <nav class="tabs" role="tablist" aria-label="Class sessions"></nav>
+</div></header>
+
+<main>
+
+<!-- ===================================================== SESSION 1 -->
+<section class="session" data-tab="Week 1 · Tuesday" data-sub="What is VR, and where did it come from?">
+<div class="session-head">
+  <div class="kicker">Session 1 of 4 · Week 1, Tuesday</div>
+  <h2>What is virtual reality?</h2>
+  <p class="lede">Before we touch Unity, we need a shared vocabulary. Today we define VR precisely, place it on the wider reality–virtuality spectrum, walk through sixty years of history, and meet the game you will build this term.</p>
+</div>
+
+<div class="topic-intro">
+  <div class="box objectives">
+    <h4>Topic 1 learning objectives</h4>
+    <p>By the end of Week 2 you will be able to:</p>
+    <ol>
+      <li>Create mock views in Unity to visualize re-imagined scenarios in a VR environment.</li>
+      <li>Explain the rationale behind re-imagining specific scenarios in virtual reality.</li>
+      <li>Evaluate the effectiveness of re-imagining various scenarios in virtual reality.</li>
+      <li>Develop a detailed project plan for the creation of a virtual reality game.</li>
+    </ol>
+    <p><strong>Today's slice:</strong> the vocabulary and history behind objectives 2 and 3 — you cannot explain <em>why</em> something belongs in VR until you can say what VR adds.</p>
+  </div>
+  <div class="box agenda">
+    <h4>Today's 105 minutes</h4>
+    <table>
+      <tr><td>0–10</td><td>Introductions, course map, how these notes work</td></tr>
+      <tr><td>10–35</td><td>Defining VR: immersion, presence, the XR continuum</td></tr>
+      <tr><td>35–55</td><td>Types of VR systems (interactive comparison)</td></tr>
+      <tr><td>55–80</td><td>Sixty years in twenty-five minutes: VR history</td></tr>
+      <tr><td>80–100</td><td>In-class activity: first look at Unity + headset setup check</td></tr>
+      <tr><td>100–105</td><td>Wrap-up, reading for Thursday</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="callout note"><span class="label">How to use these notes</span>
+<p>Each tab is one class session. Terms in <dfn title="Hover a dotted term anywhere in the notes for its one-line definition.">dotted blue</dfn> are defined where they first appear. Boxes marked ▶ are interactive: drag the sliders, change the parameters, and watch the numbers and pictures update — the formulas in these notes are live, not decorative. Short “Check yourself” questions give instant feedback. Everything runs offline in your browser; nothing is sent anywhere.</p></div>
+
+<h2>1. A working definition</h2>
+<p><dfn title="A computer-generated, three-dimensional environment that responds to the user's movements in real time and is experienced through the senses as if it were a place.">Virtual reality (VR)</dfn> is a computer-generated environment that (1) surrounds the user, (2) responds to the user's body in real time, and (3) is experienced primarily through the senses — sight, sound, and increasingly touch — rather than through a window on a desk. Each of those three clauses matters. A 3D game on a monitor fails clause 1. A 360° video fails clause 2 once you try to lean. A text adventure fails clause 3. VR is the intersection.</p>
+
+<div class="concepts">
+  <div class="concept"><h4>Immersion</h4><p>An <em>objective</em>, measurable property of the technology: how completely the system's sensory output replaces the real world. Field of view, resolution, refresh rate, tracking quality, spatial audio, and haptics all raise immersion.</p><div class="why"><b>Why it matters:</b> immersion is what you, the developer, control. It is the budget you spend to buy presence.</div></div>
+  <div class="concept"><h4>Presence</h4><p>The <em>subjective</em> psychological state of “being there” — the user's brain accepting the virtual place as the place they are in. Presence is what immersion is <em>for</em>. It can be broken instantly by a frame drop, a hand passing through a wall, or an object that is the wrong size.</p><div class="why"><b>Why it matters:</b> every design decision in this course will be judged by whether it builds or breaks presence.</div></div>
+  <div class="concept"><h4>Interactivity</h4><p>The degree to which the environment reacts to the user's actions. In VR the minimum interaction is head tracking; rich VR adds hands, locomotion, physics, and characters that respond to you.</p><div class="why"><b>Why it matters:</b> interactivity is what separates a VR <em>game</em> from a VR <em>film</em>.</div></div>
+  <div class="concept"><h4>Embodiment</h4><p>The sense that a virtual body is your body. Seeing hands that move when yours move, at the right size and in the right place, is the strongest single presence cue after head tracking.</p><div class="why"><b>Why it matters:</b> your Quest 3 tracks two controllers <em>and</em> bare hands; both are embodiment tools.</div></div>
+  <div class="concept"><h4>Agency</h4><p>The feeling that your choices cause meaningful consequences in the world. A door that opens because <em>you</em> pulled the handle produces agency; a cutscene of a door opening does not.</p><div class="why"><b>Why it matters:</b> agency is the design principle behind the puzzles in your course project.</div></div>
+  <div class="concept"><h4>Real time</h4><p>The system must update the image at least as fast as the display refreshes (72–120 times per second on Quest 3) and respond to head motion within about 20 milliseconds. Slower than that and the world feels like it is dragging behind your head.</p><div class="why"><b>Why it matters:</b> performance is not an optimization phase at the end; it is a design constraint from day one.</div></div>
+</div>
+
+<h3>Immersion is a dial, not a switch</h3>
+<p>Because immersion is made of several independent, measurable parts, two systems can be “immersive” in very different ways. Move the dials below to profile a system; the chart shows the shape of its immersion. Try to recreate a phone-based cardboard viewer (narrow field of view, 3 degrees of freedom, no hand input) and then a Quest 3.</p>
+
+<div class="widget" id="w-immersion">
+  <div class="widget-head"><strong>Immersion profile</strong><span>Six independent contributors to immersion. Presence is what the user's brain builds from them.</span></div>
+  <div class="widget-body">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<h2>2. The reality–virtuality continuum</h2>
+<p>In 1994 Paul Milgram and Fumio Kishino proposed a single axis running from the fully real environment to the fully virtual one. Everything in between is <dfn title="Any blend of real and virtual content on the reality–virtuality continuum. Umbrella term for AR, MR, and VR.">mixed reality</dfn>. The industry now uses <dfn title="Extended reality: the umbrella marketing and engineering term covering VR, AR, and MR. Unity's toolkit is called the 'XR Interaction Toolkit' for this reason.">XR (extended reality)</dfn> as the umbrella term for the whole axis, which is why Unity's package is called the <em>XR</em> Interaction Toolkit and the standard you will build against is Open<em>XR</em>.</p>
+
+<div class="concepts">
+  <div class="concept"><h4>Augmented reality (AR)</h4><p>The real world remains the primary environment; virtual objects are overlaid on it. Phone AR (a furniture-placement app) and optical see-through glasses are AR.</p></div>
+  <div class="concept"><h4>Mixed reality (MR)</h4><p>Real and virtual content coexist and <em>interact</em>: a virtual ball bounces off your real table. Quest 3 does this with colour <dfn title="Cameras on the front of the headset show the real room on the displays, so virtual content can be composited over it.">passthrough</dfn> and a scanned room mesh.</p></div>
+  <div class="concept"><h4>Virtual reality (VR)</h4><p>The real world is fully replaced. This is the target for your course project — but note that the same Quest 3 build can flip to MR by turning passthrough on.</p></div>
+  <div class="concept"><h4>Augmented virtuality</h4><p>Milgram's term for a mostly virtual world with real elements brought in — for example, a live video of your real hands inside a virtual cockpit. Rare as a product category, useful as a concept.</p></div>
+</div>
+
+<div class="widget" id="w-continuum">
+  <div class="widget-head"><strong>Place it on the continuum</strong><span>Drag the marker. Example systems appear where they sit between real and virtual.</span></div>
+  <div class="widget-body stacked">
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<h2>3. Types of VR systems</h2>
+<p>Textbooks sort VR systems by how much of the user's sensory field they take over. The categories overlap, but they help you place any device you meet.</p>
+
+<div class="table-wrap"><table>
+  <tr><th>Type</th><th>Definition</th><th>Examples</th><th>Typical immersion</th></tr>
+  <tr><td><strong>Non-immersive (desktop VR)</strong></td><td>A 3D virtual world viewed through a conventional screen and controlled with mouse/keyboard or gamepad. The user remains fully aware of the real room.</td><td>Flight simulators on a monitor, architectural walkthroughs, most 3D games</td><td>Low — but cheap and comfortable; this is why we prototype on desktop first</td></tr>
+  <tr><td><strong>Semi-immersive</strong></td><td>Large or curved displays, projection domes, or motion platforms that fill much of the visual field without fully enclosing it.</td><td>Driving simulators, planetarium domes, multi-projector <dfn title="Cave Automatic Virtual Environment: a room whose walls (and sometimes floor) are rear-projected stereo displays, tracked to one user's head position.">CAVE</dfn> rooms</td><td>Medium — strong sense of scale, weak embodiment</td></tr>
+  <tr><td><strong>Fully immersive</strong></td><td>A <dfn title="Head-mounted display: a wearable device with a display and lenses for each eye, plus sensors that track head orientation and (for 6DoF devices) position.">head-mounted display (HMD)</dfn> replaces the entire visual field and tracks head motion; audio and hands are usually tracked too.</td><td>Meta Quest 3, PlayStation VR2, Valve Index, Apple Vision Pro (in immersive mode)</td><td>High — the only category where presence is routinely reported</td></tr>
+  <tr><td><strong>Collaborative / networked</strong></td><td>Any of the above shared by several users in the same virtual space, often with avatars.</td><td>VRChat, Horizon Worlds, multi-user training simulators</td><td>Varies — social presence adds a dimension the other rows lack</td></tr>
+</table></div>
+
+<p>Fully immersive HMDs split further along an axis that will shape your whole workflow this term:</p>
+<div class="cols">
+  <div class="box"><h4>Tethered (PC VR)</h4><p>The headset is a display and sensor package; a desktop GPU does the rendering. Highest fidelity, but a cable (or a compressed wireless stream) and a gaming PC are required. Examples: Valve Index, Quest 3 in <span class="ui">Quest Link</span> mode.</p></div>
+  <div class="box"><h4>Standalone</h4><p>The headset contains its own mobile processor (Quest 3: a Snapdragon XR2 Gen 2), battery, and storage. No cable, no PC — and a rendering budget roughly one-tenth of a gaming PC. Your <strong>assignments target standalone Quest 3</strong>, which is why performance appears in every topic of this course.</p></div>
+</div>
+
+<div class="callout project"><span class="label">Course project connection</span>
+<p>Your term-long project, <strong>Realm of Legends</strong>, is a fully immersive, standalone VR adventure quest: the player explores an enchanted forest, a mountain pass, and ancient ruins, solving puzzles and collecting artifact pieces to restore balance to the world of Elaria. Every topic adds one system to it (platform setup, environments, UI, locomotion, audio, integration). Today's vocabulary is how you will justify design decisions in your Game Design Document.</p></div>
+
+<h2>4. A short history of a long idea</h2>
+<p>VR is older than the personal computer. The ideas — stereoscopic images, head tracking, a body inside a picture — arrived decades before the hardware could deliver them at consumer prices. Scrub through the timeline; notice how each wave of enthusiasm ended when latency, weight, cost, or content fell short, and how each comeback was driven by a component that got cheap for some <em>other</em> reason (smartphone screens and sensors, most recently).</p>
+
+<div class="widget" id="w-timeline">
+  <div class="widget-head"><strong>VR timeline, 1838–2024</strong><span>Drag the slider or click a dot.</span></div>
+  <div class="widget-body stacked">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<details class="more"><summary>Timeline as a list (for review)</summary>
+<ul class="timeline">
+  <li><span class="when">1838</span> Charles Wheatstone describes the stereoscope: two slightly different drawings, one per eye, fuse into depth. Every HMD since is a stereoscope with a computer behind it.</li>
+  <li><span class="when">1962</span> Morton Heilig's <em>Sensorama</em>: an arcade-style booth with stereoscopic film, stereo sound, wind, vibration, and smell. Immersive, but not interactive.</li>
+  <li><span class="when">1968</span> Ivan Sutherland's head-mounted display, nicknamed the <em>Sword of Damocles</em> because it hung from the ceiling. Wireframe graphics, mechanical head tracking — the first true VR system.</li>
+  <li><span class="when">1985–89</span> Jaron Lanier's VPL Research sells the DataGlove and EyePhone and popularises the term “virtual reality”. NASA Ames builds VIEW for telerobotics research.</li>
+  <li><span class="when">1992</span> The CAVE at the University of Illinois Chicago: projected stereo walls, tracked glasses. Still used in engineering and science visualisation.</li>
+  <li><span class="when">1995</span> Nintendo Virtual Boy: monochrome red stereoscopic display, no head tracking, discontinued within a year. A lesson in what happens when immersion is partial and comfort is ignored.</li>
+  <li><span class="when">2012–13</span> Palmer Luckey's Oculus Rift Kickstarter; DK1 ships to developers. Smartphone display panels and inertial sensors make a wide-FOV, low-latency HMD affordable.</li>
+  <li><span class="when">2016</span> Oculus Rift CV1, HTC Vive (room-scale, tracked controllers), PlayStation VR. The modern consumer era begins.</li>
+  <li><span class="when">2019</span> Oculus Quest: the first mainstream standalone 6DoF headset. No PC required — the category your course targets.</li>
+  <li><span class="when">2023</span> Meta Quest 3: colour passthrough mixed reality, pancake lenses, roughly twice the GPU of Quest 2.</li>
+  <li><span class="when">2024</span> Apple Vision Pro popularises “spatial computing” and hand-and-eye input with no controllers. Meta releases Quest 3S at a lower price.</li>
+</ul>
+</details>
+
+<div class="quiz">
+  <p class="q">A student says: “My game runs at 90 fps with a 110° field of view, so it has high presence.” What is wrong with the claim?</p>
+  <label><input type="radio"> Nothing — those are the two numbers that define presence.</label>
+  <label data-correct data-why="Correct. Frame rate and FOV are immersion metrics — properties of the system. Presence is the user's psychological response, and it can still be broken by bad scale, poor interaction, or discomfort."><input type="radio"> Frame rate and FOV are measures of <em>immersion</em>; presence is the user's subjective response and must be observed or asked about.</label>
+  <label data-why="Frame rate and FOV do matter — they raise immersion. The error is in the word 'presence', which describes the user, not the hardware."><input type="radio"> Frame rate and field of view have nothing to do with VR quality.</label>
+</div>
+
+<h2>5. Why VR for games — and for more than games</h2>
+<p>Games are where VR found its first mass audience, but the same properties that make a VR game compelling make VR useful for training, therapy, design review, education, and remote collaboration. In Thursday's reading (Agbo et al., 2023) a VR game is used to teach computational thinking; in this week's TechRadar list you will see the commercial state of the art. As you read, sort each example by <em>which</em> property of VR it depends on:</p>
+<ul>
+  <li><strong>Scale and spatial understanding</strong> — standing inside a building, a molecule, or a battlefield map.</li>
+  <li><strong>Safe rehearsal</strong> — practising a surgery, a fire evacuation, or a difficult conversation without real consequences.</li>
+  <li><strong>Embodied perspective</strong> — seeing through another person's eyes; the empathy literature on VR is built on this.</li>
+  <li><strong>Impossible physics</strong> — flying, shrinking, slowing time. Games exploit this most freely.</li>
+  <li><strong>Co-presence</strong> — being <em>with</em> someone across distance, with body language.</li>
+</ul>
+<p>This list is the first tool for objective 2 (explaining the rationale for re-imagining an experience in VR). On Thursday of Week 2 we will turn it into a scoring rubric you can apply to any scenario.</p>
+
+<div class="callout unity"><span class="label">In-class activity slot (≈20 min)</span>
+<p>Open Unity Hub, confirm Unity <strong>6.5</strong> is installed with the <span class="ui">Android Build Support</span> module (Quest 3 is an Android device), and confirm your Quest 3 is on the latest system software with <strong>Developer Mode</strong> enabled in the Meta Horizon phone app. If anything is missing, start the download now — Thursday's session assumes it is done. The starter project for this week's activity is in the course GitHub repository.</p></div>
+
+<div class="box next"><h4>Before Thursday</h4>
+<ul>
+  <li>Read <em>XR Development with Unity</em>, Chapter 1 (the XR landscape) and skim Chapter 2 (setting up Unity for XR).</li>
+  <li>Read the TechRadar “Best VR games” article. Pick one game and write two sentences: what property of VR (from the list above) does it depend on most, and what would be lost on a flat screen?</li>
+  <li>Post your Summary of Current Course Content Knowledge and class introduction if you have not already.</li>
+</ul></div>
+</section>
+
+<!-- ===================================================== SESSION 2 -->
+<section class="session" data-tab="Week 1 · Thursday" data-sub="How VR works: seeing, tracking, comfort">
+<div class="session-head">
+  <div class="kicker">Session 2 of 4 · Week 1, Thursday</div>
+  <h2>How a headset fools your brain</h2>
+  <p class="lede">A VR headset is a stereoscope, a motion sensor, and a very fast renderer bolted together. Today we open it up: how two flat images become depth, how six numbers describe where your head is, and why 20 milliseconds is the most important deadline in this course.</p>
+</div>
+
+<div class="box agenda">
+  <h4>Today's 105 minutes</h4>
+  <table>
+    <tr><td>0–10</td><td>Recap: immersion vs presence; questions from the reading</td></tr>
+    <tr><td>10–35</td><td>Seeing depth: stereoscopy, IPD, field of view, lenses</td></tr>
+    <tr><td>35–60</td><td>Knowing where you are: degrees of freedom, tracking, latency</td></tr>
+    <tr><td>60–75</td><td>Staying comfortable: vergence–accommodation, simulator sickness</td></tr>
+    <tr><td>75–100</td><td>In-class activity: headset teardown (virtual) + first script</td></tr>
+    <tr><td>100–105</td><td>Wrap-up, reading for Tuesday</td></tr>
+  </table>
+</div>
+
+<h2>1. Seeing depth: the optics of an HMD</h2>
+<p>Your two eyes are about 63 mm apart, so each sees the world from a slightly different position. The horizontal difference between the two retinal images is called <dfn title="The horizontal offset between where a point appears in the left-eye image and the right-eye image. Larger disparity = closer object.">binocular disparity</dfn>, and your visual cortex converts it into a sense of depth (<dfn title="Depth perception produced by fusing the two eyes' images.">stereopsis</dfn>). A headset exploits this directly: it renders the scene <em>twice</em>, from two virtual cameras separated by the user's <dfn title="Interpupillary distance: the distance between the centres of the pupils, typically 54–74 mm in adults. Quest 3 adjusts its lenses continuously between 58 and 71 mm.">interpupillary distance (IPD)</dfn>, and shows each image to the matching eye through a lens.</p>
+
+<div class="concepts">
+  <div class="concept"><h4>Stereoscopy</h4><p>Presenting a separate image to each eye so that disparity produces depth. Wheatstone's 1838 stereoscope, red/blue anaglyph glasses, 3D cinema, and every VR headset all do this.</p></div>
+  <div class="concept"><h4>Interpupillary distance (IPD)</h4><p>The distance between your pupils. The virtual camera separation must match it: too wide and the world looks miniature (hyperstereo); too narrow and it looks like a giant's world. Unity reads the headset's IPD automatically — never hard-code it.</p></div>
+  <div class="concept"><h4>Vergence</h4><p>The inward rotation of the eyes to point both at the same object. Near objects need more vergence. Your brain uses the vergence angle as a depth cue in addition to disparity.</p></div>
+  <div class="concept"><h4>Field of view (FOV)</h4><p>The angular extent of the world visible at one instant. Human binocular FOV is roughly 200° horizontally (about 120° of it seen by both eyes); Quest 3 delivers about 110° horizontal × 96° vertical. Wider FOV raises immersion and — because more of the image moves when you move — can raise motion sickness too.</p></div>
+  <div class="concept"><h4>Lenses and pancake optics</h4><p>The display sits a few centimetres from the eye, far too close to focus on. A lens per eye collimates the light so the panel appears to be a couple of metres away. Quest 3's folded “pancake” lenses are thinner and sharper across the FOV than Quest 2's Fresnel lenses.</p></div>
+  <div class="concept"><h4>Resolution and pixels per degree (PPD)</h4><p>Because pixels are spread across a wide FOV, what matters is pixels <em>per degree</em>, not per inch. Quest 3 gives about 25 PPD; the human fovea resolves about 60. Text that is legible on a monitor is often unreadable in VR — a UI problem we return to in Topic 4.</p></div>
+</div>
+
+<h3>Disparity depends on distance — explore it</h3>
+<p>Below, a top-down view shows two eyes looking at a cube. The two panels show what each eye sees. Move the cube closer and watch the disparity grow; change the IPD and watch how the <em>same</em> cube reads as a different size. The vergence angle is:</p>
+<div class="eq"><span class="lbl">vergence angle for an object at distance <i>Z</i></span><i>θ</i> = 2 · arctan<span class="rm">(</span><span class="frac"><span class="num">IPD</span><span class="den">2<i>Z</i></span></span><span class="rm">)</span> = <span class="live" data-live="verg">—</span></div>
+<p>and the on-screen disparity in pixels, for a display with focal length <i>f</i> pixels, is <span class="math">d = f · IPD / Z</span> = <span class="live" data-live="disp">—</span> px (using <i>f</i> ≈ 1,000 px, a reasonable value for Quest 3's per-eye rendering).</p>
+
+<div class="widget" id="w-stereo">
+  <div class="widget-head"><strong>Stereo disparity explorer</strong><span>Two eyes, one cube, two images.</span></div>
+  <div class="widget-body">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<div class="callout tip"><span class="label">Design consequence</span>
+<p>Disparity falls off as 1/<i>Z</i>. Beyond about 10 m, stereo depth is almost gone and the brain relies on perspective, occlusion, and motion parallax instead. So: put things you want players to <em>feel</em> the depth of within arm's reach to a few metres, and don't waste polygons on stereo detail in distant mountains.</p></div>
+
+<h3>Field of view compared</h3>
+<div class="widget" id="w-fov">
+  <div class="widget-head"><strong>Field of view</strong><span>Top-down view of a scene. Change the FOV to see how much of the world enters the frame — and how much the image moves per degree of head turn.</span></div>
+  <div class="widget-body">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<h2>2. Knowing where you are: tracking</h2>
+<p>A rigid object in space has exactly six independent ways to move: three translations and three rotations. These are its <dfn title="The number of independent parameters that define an object's pose. A rigid body in 3D has six: three positions (x, y, z) and three rotations (pitch, yaw, roll).">degrees of freedom (DoF)</dfn>.</p>
+
+<div class="concepts">
+  <div class="concept"><h4>3DoF tracking</h4><p>Only the three rotations (looking up/down = <em>pitch</em>, left/right = <em>yaw</em>, tilting = <em>roll</em>) are tracked, from a gyroscope/accelerometer package (an <dfn title="Inertial measurement unit: gyroscope + accelerometer (+ magnetometer) that measures rotation and acceleration hundreds of times per second.">IMU</dfn>). Leaning or stepping does nothing. Cardboard viewers and 360° video players are 3DoF.</p></div>
+  <div class="concept"><h4>6DoF tracking</h4><p>Rotation <em>and</em> position. You can lean around a corner, crouch behind a rock, and walk across the room. Every modern headset and controller is 6DoF; it is the difference between watching a place and being in it.</p></div>
+  <div class="concept"><h4>Outside-in tracking</h4><p>External sensors (cameras or laser base stations) fixed in the room watch the headset. Very precise, but you must install hardware. HTC Vive and the original Rift used it.</p></div>
+  <div class="concept"><h4>Inside-out tracking</h4><p>Cameras on the headset watch the room and compute the headset's pose by tracking visual features — a computer-vision technique called <dfn title="Simultaneous Localisation and Mapping: building a map of the environment while estimating your own position within it.">SLAM</dfn>. Quest 3 uses four such cameras plus its IMU. No setup, but it needs light and visual texture; it fails in the dark or facing a blank wall.</p></div>
+  <div class="concept"><h4>Sensor fusion</h4><p>The IMU is fast (1,000 Hz) but drifts; the cameras are slow (30–60 Hz) but absolute. A filter fuses them so you get the speed of one and the accuracy of the other. When you see the world “swim” after covering the cameras, you are watching IMU drift without correction.</p></div>
+  <div class="concept"><h4>Guardian / boundary and room-scale</h4><p>A user-drawn play-area boundary that the system displays when you approach it. <em>Room-scale</em> VR lets the player physically walk within that boundary; <em>stationary</em> mode assumes they stay in one spot. Your project must handle both.</p></div>
+</div>
+
+<div class="widget" id="w-dof">
+  <div class="widget-head"><strong>3DoF vs 6DoF</strong><span>Drag in the view to turn your head; use the sliders to lean and step. Toggle 3DoF to see what a cheap viewer throws away.</span></div>
+  <div class="widget-body">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<h2>3. The 20-millisecond deadline: latency and frame rate</h2>
+<p>When you turn your head, the image must turn with it. The time between a head movement and the corresponding change of light reaching your eyes is <dfn title="The total delay from a physical motion to the photons that show its effect: sensor read → pose estimate → game logic → rendering → display scan-out.">motion-to-photon latency</dfn>. Research at Oculus and elsewhere converged on about <strong>20 ms</strong> as the threshold below which most people stop noticing the world lagging behind them. Above it, the world seems to “swim,” and simulator sickness rises quickly.</p>
+
+<div class="concepts">
+  <div class="concept"><h4>Refresh rate</h4><p>How many times per second the display shows a new image: 72, 90, or 120 Hz on Quest 3. Higher is smoother and lower-latency but costs proportionally more GPU time.</p></div>
+  <div class="concept"><h4>Frame time / frame budget</h4><p>The time you have to produce one frame: 1 ÷ refresh rate. At 72 Hz that is 13.9 ms; at 90 Hz, 11.1 ms; at 120 Hz, 8.3 ms — for <em>both</em> eyes, on a mobile chip. Missing the budget means a repeated frame, which the user feels as a stutter.</p></div>
+  <div class="concept"><h4>Asynchronous timewarp / reprojection</h4><p>A safety net: just before scan-out, the compositor re-projects the last finished frame using the newest head orientation. It hides small latency and occasional dropped frames, but cannot invent what was behind a moved object; rely on it and you will see judder and black edges.</p></div>
+  <div class="concept"><h4>Judder</h4><p>The visible smear or double-image caused when frames repeat or arrive late while the head is moving. The most common presence-breaker in student projects.</p></div>
+</div>
+
+<div class="eq"><span class="lbl">angular error caused by latency</span>error (degrees) = head angular velocity (°/s) × latency (s) = <span class="live" data-live="laterr">—</span>°</div>
+<p>A casual head turn is around 100°/s; a quick glance can exceed 300°/s. Use the simulator to see how far the world falls behind at different latencies.</p>
+
+<div class="widget" id="w-latency">
+  <div class="widget-head"><strong>Latency simulator</strong><span>The grey frame is where the world should be; the blue frame is what the display shows. Move the head with the slider or press Play for an automatic head turn.</span></div>
+  <div class="widget-body">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<h2>4. Staying comfortable</h2>
+<div class="concepts">
+  <div class="concept"><h4>Vergence–accommodation conflict</h4><p>Your eyes <em>converge</em> on a virtual object 30 cm away, but they must <em>focus</em> (accommodate) on the lens's fixed focal plane about 1.3–2 m away. In real life these two always agree; in a headset they don't. Result: eye strain, especially with objects held very close for long periods. Design rule: keep sustained-attention content (UI, text) 1–3 m away.</p></div>
+  <div class="concept"><h4>Simulator sickness (cybersickness)</h4><p>Nausea, sweating, disorientation, and headache produced when the eyes report motion that the inner ear does not feel (or vice versa) — the <em>sensory conflict theory</em>. Artificial locomotion, latency, low frame rate, and camera motion the user did not initiate are the main triggers. Topic 5 is devoted to designing around it.</p></div>
+  <div class="concept"><h4>Vection</h4><p>The illusion of self-motion caused by a large part of the visual field moving — the feeling of your stopped train moving when the neighbouring train pulls away. Vection without matching vestibular input is what makes smooth locomotion uncomfortable.</p></div>
+  <div class="concept"><h4>Screen-door effect and god rays</h4><p>Visible gaps between pixels (screen door) and lens flare from bright objects on dark backgrounds (god rays). Both are much reduced on Quest 3's pancake lenses, but high-contrast white-on-black UI still exaggerates them.</p></div>
+</div>
+
+<div class="callout comfort"><span class="label">Comfort rule you will hear all term</span>
+<p><strong>Never move the camera without the user's consent, and never rotate it for them.</strong> No cinematic camera shakes, no forced turns, no cutscenes that steal the head. The headset's camera belongs to the player's head; your code may move the <em>rig</em>, but only in response to a deliberate input.</p></div>
+
+<div class="quiz">
+  <p class="q">Your Quest 3 build runs at a stable 72 fps. A player reports the world “swims” when they turn their head quickly, but is fine when they hold still. Which is the most likely cause?</p>
+  <label data-why="A stable 72 fps means frames are not being dropped — the symptom points to latency rather than frame rate."><input type="radio"> The frame rate is too low; you must reach 120 fps.</label>
+  <label data-correct data-why="Correct. Latency shows up as error proportional to head angular velocity — nothing when still, large when turning fast. Suspect a long CPU-side frame (physics, scripts) delaying pose sampling, or a 'late latching' problem, before touching the GPU."><input type="radio"> Motion-to-photon latency is high: the error grows with head angular velocity, so it appears only during fast turns.</label>
+  <label data-why="IPD mismatch changes perceived scale, not the sense of the world lagging behind head motion."><input type="radio"> The IPD is set incorrectly.</label>
+</div>
+
+<h2>5. Your first VR-aware script</h2>
+<p>Everything above is handled for you by the headset runtime and Unity's XR plug-in — but your code can <em>read</em> the results. The head pose arrives in Unity as the <code>Transform</code> of the main camera inside the XR Origin (Tuesday's topic). The script below makes any object turn to face the player's head, a pattern you will reuse for floating labels and NPC eye contact. Read it for the ideas; type it in during the activity.</p>
+
+<div class="code" data-title="Billboard.cs"><pre><code class="lang-csharp">using UnityEngine;
+
+/// Rotates this object so its forward axis always points at the player's head.
+/// Attach to a world-space label, sign, or NPC face.
+public class Billboard : MonoBehaviour
+{
+    [Tooltip("Leave empty to use Camera.main (the XR Origin's head camera).")]
+    [SerializeField] private Transform target;
+
+    [Tooltip("If true, only rotate around the vertical axis (keeps signs upright).")]
+    [SerializeField] private bool yawOnly = true;
+
+    void Start()
+    {
+        if (target == null &amp;&amp; Camera.main != null)
+            target = Camera.main.transform;   // the headset, once XR is running
+    }
+
+    void LateUpdate()                          // after the camera has moved this frame
+    {
+        if (target == null) return;
+
+        Vector3 toHead = target.position - transform.position;
+        if (yawOnly) toHead.y = 0f;            // ignore height difference
+        if (toHead.sqrMagnitude &lt; 0.0001f) return;
+
+        // Quaternion.LookRotation builds a rotation whose forward (+Z) points along toHead.
+        transform.rotation = Quaternion.LookRotation(-toHead); // -toHead so the FRONT faces the head
+    }
+}</code></pre></div>
+
+<p>Three things to notice: (1) <code>Camera.main</code> is the headset once XR is initialised — you never write head-tracking code yourself; (2) <code>LateUpdate</code> runs after all <code>Update</code> calls, so it sees the camera's pose for <em>this</em> frame; (3) the whole script is stateless and runs in microseconds — a habit worth building on a mobile GPU budget.</p>
+
+<div class="callout unity"><span class="label">In-class activity slot (≈25 min)</span>
+<p>Using the starter project from GitHub: open the <span class="ui">Headset Anatomy</span> scene, put on the headset with the XR Device Simulator disabled, and identify each concept from today in the running scene (the two eye cameras in the Hierarchy during Play mode, the IPD value in <span class="ui">Window ▸ Analysis ▸ XR Interaction Debugger</span>, the frame time in the <span class="ui">Stats</span> overlay). Then add <code>Billboard.cs</code> to the floating sign. Record a 30-second screencast and post it, with three bullets (what you did, what works, what doesn't), to this week's Padlet.</p></div>
+
+<div class="box next"><h4>Before Tuesday</h4>
+<ul>
+  <li>Read <em>XR Development with Unity</em>, Chapters 2 and 3: installing the XR Interaction Toolkit, the XR Origin, and building a first scene. Tuesday is a hands-on Unity session; arrive with Unity 6.5 + Android Build Support installed and the Quest 3 in Developer Mode.</li>
+  <li>Bring one photo (or an AI-generated image) of a real-life experience you might re-imagine in VR for the Week 2 CLC assignment.</li>
+</ul></div>
+</section>
+
+<!-- ===================================================== SESSION 3 -->
+<section class="session" data-tab="Week 2 · Tuesday" data-sub="Unity for VR: your first mock view">
+<div class="session-head">
+  <div class="kicker">Session 3 of 4 · Week 2, Tuesday</div>
+  <h2>Unity for VR: building your first mock view</h2>
+  <p class="lede">Today is hands-on. We set up a Unity 6.5 project the way the rest of the course will use it, learn the handful of Unity ideas that every VR scene depends on — GameObjects, components, the Transform, the XR Origin — and block out a first “mock view” of a re-imagined scenario at true human scale.</p>
+</div>
+
+<div class="box agenda">
+  <h4>Today's 105 minutes</h4>
+  <table>
+    <tr><td>0–10</td><td>Recap: presence, tracking, latency. Check installs.</td></tr>
+    <tr><td>10–30</td><td>Unity's mental model: scene, GameObject, component, Transform</td></tr>
+    <tr><td>30–55</td><td>Guided setup: URP project, XR Interaction Toolkit, OpenXR, XR Origin, Device Simulator</td></tr>
+    <tr><td>55–70</td><td>Scale, eye height, and why mock views must be life-size</td></tr>
+    <tr><td>70–100</td><td>In-class activity: block out a mock view and test it on desktop, then in the headset</td></tr>
+    <tr><td>100–105</td><td>Wrap-up, reading for Thursday</td></tr>
+  </table>
+</div>
+
+<h2>1. Unity's mental model in six ideas</h2>
+<p>Unity is large, but a VR scene rests on a small set of concepts. Learn these six precisely and the Inspector stops being intimidating.</p>
+<div class="concepts">
+  <div class="concept"><h4>Scene</h4><p>A saved file (<code>.unity</code>) containing a hierarchy of objects — one level, one menu, one test room. Your project will have several scenes (forest, mountain, ruins) and load between them.</p></div>
+  <div class="concept"><h4>GameObject</h4><p>The basic “thing” in a scene: a container with a name, a Transform, and a list of components. A GameObject by itself does nothing; its components give it appearance and behaviour. GameObjects nest into a <em>hierarchy</em>, and children move with their parents.</p></div>
+  <div class="concept"><h4>Component</h4><p>A unit of data + behaviour attached to a GameObject: <code>MeshRenderer</code> draws it, <code>Collider</code> gives it a physical shape, <code>AudioSource</code> lets it make sound, and your own C# scripts (classes deriving from <code>MonoBehaviour</code>) add custom behaviour. This is <em>composition</em>: an object is what its components make it.</p></div>
+  <div class="concept"><h4>Transform</h4><p>The one component every GameObject has. It stores <strong>position</strong> (a <code>Vector3</code> in metres), <strong>rotation</strong> (shown as three Euler angles in degrees, stored as a <code>Quaternion</code>), and <strong>scale</strong> (a multiplier per axis), each relative to the parent. Almost everything you do in VR — moving the player, placing UI, aiming a teleport — is Transform arithmetic.</p></div>
+  <div class="concept"><h4>Prefab</h4><p>A GameObject (with its children and components) saved as a reusable asset. Drag a prefab into a scene to create an <em>instance</em>; edit the prefab and every instance updates. The XR Origin you will use today is a prefab from the toolkit's starter assets.</p></div>
+  <div class="concept"><h4>Camera</h4><p>The component that renders the scene from a point of view. On desktop you place it by hand. In VR you never position the camera directly — the headset does, every frame — so it lives inside a rig called the XR Origin whose <em>root</em> you are allowed to move.</p></div>
+</div>
+
+<h3>Unity's coordinate system</h3>
+<p>Unity uses a <dfn title="A coordinate system in which, with X pointing right and Y pointing up, Z points away from the viewer (into the screen). Unity, DirectX, and Unreal are left-handed; Blender, Maya, and OpenGL are right-handed.">left-handed</dfn>, <strong>Y-up</strong> coordinate system with <strong>one unit = one metre</strong>. That last clause is not a convention you may ignore in VR: the headset reports its position in real metres, so if your door is 1 unit tall, the player will see a one-metre door. Rotations follow the left-hand rule: positive rotation about an axis is clockwise when looking along that axis's positive direction.</p>
+
+<div class="widget" id="w-transform">
+  <div class="widget-head"><strong>Transform playground</strong><span>The Inspector fields, made visible. Position moves, rotation turns (Euler angles applied Z → X → Y, Unity's order), scale stretches. Drag the view to orbit.</span></div>
+  <div class="widget-body">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<p>Two facts hide in that widget that will save you hours later. First, Euler angles are three separate turns applied in a fixed order, which is why editing “Y” after “X” can produce an unexpected tilt (and why Unity stores a quaternion internally). Second, scale multiplies the <em>local</em> geometry, so a child of a scaled parent inherits the stretch — a classic source of “why is my hand model squashed?”</p>
+
+<h2>2. Setting up the course project</h2>
+<p>Every assignment this term builds on a project configured like this. Do it once carefully and copy it. The steps below follow Chapters 2–3 of the textbook, updated for Unity 6.5 and the XR Interaction Toolkit 3.x.</p>
+
+<ol class="steps">
+  <li><strong>Create the project.</strong> In Unity Hub choose <span class="ui">New project ▸ Universal 3D</span> (this uses the <dfn title="Universal Render Pipeline: Unity's scriptable render pipeline designed to scale from mobile to PC. Required for good Quest performance and for the XR toolkit's sample materials.">Universal Render Pipeline (URP)</dfn>, the pipeline that performs well on Quest). Name it something like <code>RealmOfLegends</code>. Never put spaces or special characters in the path.</li>
+  <li><strong>Install XR packages.</strong> <span class="ui">Window ▸ Package Manager ▸ Unity Registry</span>: install <span class="ui">XR Interaction Toolkit</span> (accept the prompt to enable the new Input System and restart), then <span class="ui">XR Plugin Management</span>, then <span class="ui">OpenXR Plugin</span>. In the XR Interaction Toolkit page open <span class="ui">Samples</span> and import <span class="ui">Starter Assets</span> and <span class="ui">XR Device Simulator</span>.</li>
+  <li><strong>Enable OpenXR.</strong> <span class="ui">Edit ▸ Project Settings ▸ XR Plug-in Management</span>: on both the <em>Desktop</em> and <em>Android</em> tabs tick <span class="ui">OpenXR</span>. Under <span class="ui">OpenXR ▸ Interaction Profiles</span> add <span class="ui">Oculus Touch Controller Profile</span> (Quest 3 controllers) and <span class="ui">Hand Interaction Profile</span>. On Android also enable the <span class="ui">Meta Quest Support</span> feature group.</li>
+  <li><strong>Fix the red warnings.</strong> The OpenXR page shows a validation list; click <span class="ui">Fix All</span>. Typical fixes: set Android to ARM64 / IL2CPP, disable legacy input, set colour space to Linear.</li>
+  <li><strong>Build a scene.</strong> Create a new scene, delete the default <span class="ui">Main Camera</span>, and drag in the <span class="ui">XR Origin (XR Rig)</span> prefab from <code>Assets/Samples/XR Interaction Toolkit/.../Starter Assets/Prefabs</code>. Add a <span class="ui">Plane</span> at (0,0,0) as a floor.</li>
+  <li><strong>Test without a headset.</strong> Drag the <span class="ui">XR Device Simulator</span> prefab into the scene. Press Play: <kbd>WASD</kbd> moves the simulated head, right-drag looks, <kbd>Tab</kbd> cycles which device you control. Remove or disable the simulator before building to the headset.</li>
+  <li><strong>Test in the headset (Thursday of Week 3 covers this in depth).</strong> Connect Quest 3 by USB, allow debugging in the headset, then <span class="ui">File ▸ Build Profiles ▸ Android ▸ Build and Run</span>. The first build takes several minutes; later builds are faster.</li>
+</ol>
+
+<div class="concepts">
+  <div class="concept"><h4>XR Interaction Toolkit (XRI)</h4><p>Unity's official package for VR/AR input and interaction: an XR Origin rig, interactors (ray, direct/grab, poke, gaze), interactables (grab, socket, UI), and locomotion providers. It saves you from writing controller-handling code yourself and works across headsets.</p></div>
+  <div class="concept"><h4>OpenXR</h4><p>A Khronos standard API between applications and XR runtimes. Building against OpenXR means one build talks to Meta's runtime on Quest and to SteamVR or Windows Mixed Reality on PC. Vendor extensions (e.g., Meta's passthrough) are opt-in features.</p></div>
+  <div class="concept"><h4>XR Origin</h4><p>The rig prefab: a root GameObject (which your locomotion code moves), a <em>Camera Offset</em> child, and inside it the <em>Main Camera</em> (driven by the headset) and the two controller objects (driven by tracking). Its <strong>Tracking Origin Mode</strong> should be <span class="ui">Floor</span> so the camera's height is the user's real eye height.</p></div>
+  <div class="concept"><h4>XR Device Simulator</h4><p>A sample prefab that fakes a headset and two controllers with mouse and keyboard, so you can iterate on desktop without putting the headset on for every change. Desktop-first, headset-second is this course's workflow for in-class activities.</p></div>
+  <div class="concept"><h4>Play mode</h4><p>Pressing Play runs the scene inside the Editor. Any change you make to objects <em>during</em> Play mode is discarded when you stop — a rule every Unity beginner learns the hard way. Tint the Editor in Play mode via <span class="ui">Preferences ▸ Colors ▸ Playmode tint</span> to make it obvious.</p></div>
+  <div class="concept"><h4>Mock view (blockout)</h4><p>A scene built from primitives and placeholder materials to test scale, layout, and sightlines before any real art exists. Game studios call this <em>greyboxing</em>. Your Week 2 assignment asks for mock views of three re-imagined scenarios; they should be blockouts, not finished art.</p></div>
+</div>
+
+<h2>3. Scale and eye height: why mock views must be life-size</h2>
+<p>On a monitor, the player never knows how big anything “really” is; the camera's field of view and distance do the work. In VR the player's own body is the ruler. A table at 0.75 m reads as a table; at 1.0 m it reads as a counter; at 0.5 m it reads as a stool. Because the headset places the camera at the player's real eye height (about 1.6 m standing, 1.2 m seated), every object's size is judged against the body.</p>
+<p>The same object subtends a visual angle that depends on size and distance:</p>
+<div class="eq"><span class="lbl">visual angle of an object of height <i>h</i>, centred at eye level, at distance <i>d</i></span><i>α</i> = 2 · arctan<span class="rm">(</span><span class="frac"><span class="num"><i>h</i></span><span class="den">2<i>d</i></span></span><span class="rm">)</span> = <span class="live" data-live="valpha">—</span></div>
+
+<div class="widget" id="w-scale">
+  <div class="widget-head"><strong>Scale, eye height and visual angle</strong><span>Side view of a standing player and an object. Match a real object's height and see how its apparent size changes with distance.</span></div>
+  <div class="widget-body">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<div class="callout tip"><span class="label">Blockout habits worth forming today</span>
+<ul>
+  <li>Keep a <strong>1 m reference cube</strong> and a <strong>1.7 m capsule</strong> (“human”) in every mock view scene until real assets replace them.</li>
+  <li>Doorways ≈ 2.1 × 0.9 m, table tops ≈ 0.75 m, seat height ≈ 0.45 m, counter ≈ 0.9 m, ceiling ≥ 2.4 m. Players notice 10 cm errors in these.</li>
+  <li>Put the XR Origin where the player will <em>stand</em>, at floor level (y = 0), with Tracking Origin Mode = Floor. Never raise the rig to “fix” eye height.</li>
+  <li>Check every mock view in the headset at least once. Desktop is for iteration; the headset is for judgement.</li>
+</ul></div>
+
+<h2>4. Your first behaviour: a script that moves something</h2>
+<p>Mock views come alive with one or two simple behaviours — a slowly rotating artifact, a door that swings. The script below rotates an object at a constant speed regardless of frame rate. Read the comments: they introduce <code>Update</code> and <code>Time.deltaTime</code>, two ideas you will use in every script this term.</p>
+
+<div class="code" data-title="Spin.cs"><pre><code class="lang-csharp">using UnityEngine;
+
+/// Rotates the object at a constant angular speed, independent of frame rate.
+public class Spin : MonoBehaviour
+{
+    [Tooltip("Degrees per second around each local axis.")]
+    public Vector3 degreesPerSecond = new Vector3(0f, 45f, 0f);
+
+    // Update is called once per rendered frame: 72, 90 or 120 times a second on Quest 3,
+    // and a different number on your laptop. Any motion written here must be scaled by
+    // Time.deltaTime (seconds since the last frame) or it will run at different speeds
+    // on different devices.
+    void Update()
+    {
+        transform.Rotate(degreesPerSecond * Time.deltaTime, Space.Self);
+    }
+}</code></pre></div>
+
+<div class="widget" id="w-deltatime">
+  <div class="widget-head"><strong>Why <code>Time.deltaTime</code> matters</strong><span>Two identical objects rotate at “45 degrees per frame”. One multiplies by deltaTime, one does not. Change the frame rate.</span></div>
+  <div class="widget-body">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<div class="quiz">
+  <p class="q">A student's mock view of a kitchen “feels like a doll's house” in the headset even though it looked fine in the Game view. Which fix addresses the actual cause?</p>
+  <label data-why="Moving the rig changes where the player stands, not the relationship between the player's body and the room's dimensions."><input type="radio"> Move the XR Origin closer to the counters.</label>
+  <label data-correct data-why="Correct. The desktop Game view hides scale errors because it has no body reference. In VR the player's real eye height is the ruler; a kitchen modelled at 0.7× scale reads as miniature. Measure the counters against a 1 m cube and fix the geometry."><input type="radio"> Check the counters against a 1 m reference cube; the room was probably modelled below real-world scale.</label>
+  <label data-why="Field of view is set by the headset and cannot be changed in a VR camera; changing it would also break comfort."><input type="radio"> Increase the camera's field of view.</label>
+</div>
+
+<div class="callout unity"><span class="label">In-class activity slot (≈30 min)</span>
+<p>From the GitHub starter project <span class="ui">Week2-MockView</span>: open the empty scene, confirm the XR Origin and Device Simulator are present, and block out <em>one</em> of the three re-imagined scenarios your team chose for this week's CLC assignment — using primitives, ProBuilder, or free Asset Store props. Include the 1 m cube and human capsule. Add <code>Spin.cs</code> to one focal object. Test on desktop, then <span class="ui">Build and Run</span> to a Quest 3 (one per team is enough today). Post a 30–60 s screencast from the headset plus three bullets to this week's Padlet.</p></div>
+
+<div class="box next"><h4>Before Thursday</h4>
+<ul>
+  <li>Read the Agbo et al. (2023) article on the VR game for computational thinking. Come with an answer to: which property of VR did the designers rely on, and how did they evaluate whether it worked?</li>
+  <li>Bring your team's three candidate scenarios (a life experience, a software application, a game) — Thursday we score them.</li>
+</ul></div>
+</section>
+
+<!-- ===================================================== SESSION 4 -->
+<section class="session" data-tab="Week 2 · Thursday" data-sub="Re-imagining experiences and planning the project">
+<div class="session-head">
+  <div class="kicker">Session 4 of 4 · Week 2, Thursday</div>
+  <h2>Re-imagining experiences in VR — and planning to build one</h2>
+  <p class="lede">A VR version of something is not automatically better. Today we build a disciplined way to decide <em>what</em> VR adds to an experience, <em>for whom</em>, and <em>at what cost</em> — then turn that discipline into a project plan for Realm of Legends.</p>
+</div>
+
+<div class="box agenda">
+  <h4>Today's 105 minutes</h4>
+  <table>
+    <tr><td>0–10</td><td>Recap; the Agbo et al. reading as a worked example</td></tr>
+    <tr><td>10–35</td><td>Re-imagining: characteristics, rationale, and the evaluation rubric</td></tr>
+    <tr><td>35–55</td><td>Team exercise: score your three scenarios (interactive matrix)</td></tr>
+    <tr><td>55–80</td><td>Project planning: milestones, scope, risk, the GDD</td></tr>
+    <tr><td>80–100</td><td>Team work: draft the timeline table in the Game Design Document</td></tr>
+    <tr><td>100–105</td><td>Wrap-up; Topic 2 preview</td></tr>
+  </table>
+</div>
+
+<h2>1. What “re-imagining in VR” means</h2>
+<p>To <dfn title="To redesign an existing experience, application, or game around the properties VR offers — scale, embodiment, spatiality, agency, safe rehearsal — rather than porting its screen-based form.">re-imagine</dfn> an experience in VR is to ask: if the user could <em>be there</em>, with a body, at real scale, what would this experience become? It is not “put the existing screens on a floating panel.” The Week 2 CLC assignment asks you to do this for a life experience, a software application, and a game; the method is the same for all three.</p>
+
+<h3>Step 1 — Identify characteristics</h3>
+<p>A <dfn title="A distinct, nameable property of an experience that could be rendered or transformed in VR: an object, an action, a spatial relationship, a sensory quality, a social element, or a constraint.">characteristic</dfn> is any distinct property of the experience you could point at in a picture: an object (the orange crates), an action (reaching up to pick), a spatial relationship (rows of trees receding), a sensory quality (heat, smell, the weight of the basket), a social element (the other pickers), a constraint (you can only carry so much). Find at least five. Concrete beats abstract: “the ladder wobbles when you climb” is a characteristic; “it is immersive” is not.</p>
+
+<h3>Step 2 — Explain how each would be re-imagined</h3>
+<p>For each characteristic, name the VR property (from Session 1) that transforms it, and describe the result in one sentence. Use this table as a prompt:</p>
+<div class="table-wrap"><table>
+  <tr><th>VR property</th><th>What it transforms</th><th>Example re-imagining</th></tr>
+  <tr><td><strong>Scale &amp; spatiality</strong></td><td>Anything whose size or layout matters</td><td>A spreadsheet becomes a room-sized table you walk along; a coral reef becomes a place you look up into.</td></tr>
+  <tr><td><strong>Embodiment &amp; direct manipulation</strong></td><td>Actions done with hands and body</td><td>Drag-and-drop file management becomes physically sorting objects onto shelves.</td></tr>
+  <tr><td><strong>Agency &amp; consequence</strong></td><td>Choices, feedback, cause and effect</td><td>In a strategy game, issuing an order means pointing across a physical map; consequences unfold around you.</td></tr>
+  <tr><td><strong>Safe rehearsal</strong></td><td>Anything risky, expensive, rare, or irreversible</td><td>First day at a new job becomes a rehearsable walkthrough with a patient virtual mentor.</td></tr>
+  <tr><td><strong>Perspective &amp; empathy</strong></td><td>Whose eyes you see through</td><td>A shopping app seen from a wheelchair user's height; a history lesson lived at ground level.</td></tr>
+  <tr><td><strong>Impossible physics</strong></td><td>Time, gravity, size, transparency</td><td>Debugging a database by shrinking into the index tree; replaying a match from inside the ball.</td></tr>
+  <tr><td><strong>Co-presence</strong></td><td>Anyone else in the experience</td><td>A remote team meeting around one shared 3D model instead of a grid of faces.</td></tr>
+</table></div>
+
+<h3>Step 3 — State the rationale: useful, and to whom</h3>
+<p>The <dfn title="The argument for why VR makes this experience better for a specific audience: what problem it solves or what it enables that the original could not.">rationale</dfn> answers two questions: <em>what does VR enable here that the original could not,</em> and <em>who benefits?</em> “It is cooler” is not a rationale. “Trainee pickers can practise ladder safety without falling, so orchards can onboard seasonal workers faster” is. The assignment also asks you to address the greater purpose of VR and design for those in need — in other words, to include audiences with limited mobility, limited access, or limited safety among your “to whom.” Good VR design has always been, at its heart, designing for people who cannot otherwise be there.</p>
+
+<h3>Step 4 — Evaluate effectiveness</h3>
+<p>Objective 3 asks you to <em>evaluate</em>, not just propose. Use explicit criteria with weights, score each scenario, and let the numbers argue with your intuition. The matrix below is the rubric we will use in class; it produces a weighted score:</p>
+<div class="eq"><span class="lbl">weighted score</span><i>S</i> = <span class="frac"><span class="num">Σ<sub><i>i</i></sub> <i>w<sub>i</sub></i> · <i>r<sub>i</sub></i></span><span class="den">Σ<sub><i>i</i></sub> <i>w<sub>i</sub></i></span></div>
+<p>where <i>w<sub>i</sub></i> is the weight of criterion <i>i</i> (how much your team cares) and <i>r<sub>i</sub></i> is the 0–5 rating of the scenario on that criterion.</p>
+
+<div class="widget" id="w-matrix">
+  <div class="widget-head"><strong>Re-imagining evaluation matrix</strong><span>Set the weights your team agrees on, then rate each scenario 0–5 on each criterion. The bars update live; a scenario with low <em>comfort</em> or <em>feasibility</em> should worry you regardless of its total.</span></div>
+  <div class="widget-body stacked">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<div class="concepts">
+  <div class="concept"><h4>Added value</h4><p>How much VR's properties transform the experience versus merely reproducing it. High: the VR version does something the original cannot. Low: a screen in a headset.</p></div>
+  <div class="concept"><h4>Audience &amp; need</h4><p>How clear and how large the group that benefits is, with extra weight for people the original excludes (distance, cost, disability, danger).</p></div>
+  <div class="concept"><h4>Presence potential</h4><p>How likely the scenario is to produce “being there”: does it have a place, a body, and things to do with hands?</p></div>
+  <div class="concept"><h4>Comfort</h4><p>Whether the scenario can be delivered without artificial locomotion, forced camera motion, or long close-focus work. Low comfort is a veto, not a trade-off.</p></div>
+  <div class="concept"><h4>Feasibility</h4><p>Whether a small team can build a convincing mock view — and later a prototype — with free assets and the skills this course teaches, on a standalone headset.</p></div>
+  <div class="concept"><h4>Novelty</h4><p>Whether the re-imagining offers something not already common on the Quest store. Lowest weight; a well-executed familiar idea beats a broken novel one.</p></div>
+</div>
+
+<div class="callout project"><span class="label">Worked example from the reading</span>
+<p>Agbo et al. (2023) re-imagined <em>learning computational thinking</em> as a VR game. Characteristics they transformed: abstract algorithm steps became physical actions in a space; feedback became immediate and visible; practice became repeatable and safe. Their evaluation combined usability measures with learning outcomes — a reminder that “effective” must be defined before you build. Score their design in the matrix as a calibration exercise.</p></div>
+
+<h2>2. Planning the project</h2>
+<p>Objective 4 asks for a <dfn title="A document that states what will be built, by whom, in what order, by when, with what risks — and how you will know each part is done.">project plan</dfn>. In this course the plan lives inside your <dfn title="Game Design Document: the living specification of a game — concept, story, characters, mechanics, UI, audio, and production plan. Yours is the template in Class Resources, filled in one section per topic.">Game Design Document (GDD)</dfn>, and its skeleton is fixed by the seven course milestones. What your team decides is the <em>scope</em> within each milestone and who does what.</p>
+
+<div class="concepts">
+  <div class="concept"><h4>Milestone</h4><p>A dated point at which a defined set of work is complete and demonstrable. The course has seven, one per topic; each ends with a GDD section and a video.</p></div>
+  <div class="concept"><h4>Deliverable</h4><p>A concrete artefact you can hand over: a scene, a build, a document section, a video. “Work on the forest” is a task; “forest scene loads on Quest at 72 fps with three interactive props” is a deliverable.</p></div>
+  <div class="concept"><h4>Scope and MVP</h4><p>Scope is the set of features you commit to. The <em>minimum viable product</em> is the smallest scope that still delivers the core experience — for Realm of Legends: one environment, one puzzle, one collectible, teleport locomotion, one sound. Build the MVP first; everything else is a stretch goal.</p></div>
+  <div class="concept"><h4>Risk</h4><p>Anything that could stop a deliverable: an asset that will not import, a build that will not deploy, a teammate's laptop that cannot run Unity. Name the top three risks per milestone and a fallback for each.</p></div>
+  <div class="concept"><h4>Task breakdown</h4><p>The deliverable split into tasks small enough to finish in one sitting (2–4 hours), each with an owner. If a task has no owner, it will not happen.</p></div>
+  <div class="concept"><h4>Version control</h4><p>Git with Git LFS for large binaries, a Unity <code>.gitignore</code>, and the rule <em>one person edits a scene at a time</em> (scene files merge badly). Commit small and often; the repository is your backup and your evidence of who did what.</p></div>
+</div>
+
+<div class="widget" id="w-plan">
+  <div class="widget-head"><strong>Course timeline planner</strong><span>The seven milestones across fifteen weeks. Drag the “today” marker to see what should be done and what is next. Edit the hours to sanity-check your team's capacity.</span></div>
+  <div class="widget-body">
+    <div class="controls" data-controls></div>
+    <div class="stage" data-stage></div>
+    <div class="readout" data-readout></div>
+  </div>
+</div>
+
+<h3>Estimating honestly</h3>
+<p>Most student projects fail on scope, not skill. A useful rule: estimate each task, then multiply by 2 for anything you have never done before (most things this term). Compare the total to the hours your team can actually give — the planner above does the arithmetic. If the estimate exceeds capacity, cut features from the <em>edges</em> (a fourth puzzle, a weather system), never from the <em>core</em> (locomotion comfort, a working build).</p>
+
+<div class="code" data-title=".gitignore (Unity essentials)" data-lang="text"><pre><code># Unity generates these; never commit them
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+*.csproj
+*.sln
+*.apk
+# Keep: Assets/, Packages/, ProjectSettings/</code></pre></div>
+
+<div class="quiz">
+  <p class="q">Your team's plan for Weeks 5–6 reads: “Build the enchanted forest, mountain pass, and ancient ruins with full lighting and weather.” What is the most useful correction?</p>
+  <label data-why="More hours will not fix an unbounded scope; the plan still has no definition of done."><input type="radio"> Add more hours to the schedule.</label>
+  <label data-correct data-why="Correct. Turn it into deliverables with a definition of done and an MVP: 'forest blockout with three props runs on Quest at 72 fps' first, then mountain and ruins as stretch goals, weather last. Name owners and the top risks (asset import, performance)."><input type="radio"> Rewrite it as measurable deliverables with an MVP first, owners, and named risks.</label>
+  <label data-why="Skipping the headset check is the single most common way scope problems stay hidden until the milestone."><input type="radio"> Skip headset testing until Week 6 to save time.</label>
+</div>
+
+<div class="callout unity"><span class="label">Team work slot (≈20 min)</span>
+<p>Open your Game Design Document. Fill in the fifteen-week <em>GROUND</em> timeline table with the course milestones, add your team's deliverables per week, and assign owners for Milestone 1 (Storyline and Characters sections, concept art descriptions, individual videos). Identify the top three risks. Commit the GDD to your team repository.</p></div>
+
+<div class="box next"><h4>Before Topic 2 (next Tuesday)</h4>
+<ul>
+  <li>Submit the CLC assignments due Sunday: <strong>Project Proposal and Concept Development</strong> (GDD Storyline and Characters + individual videos) and <strong>Re-imagining an Experience in VR</strong> (technical report with mock views + individual videos).</li>
+  <li>Read <em>XR Development with Unity</em>: review Chapter 2, read Chapter 5. Topic 2 configures your project for Quest 3 in detail and adds movement and interaction.</li>
+  <li>Read “Exploring the Different Kinds of Locomotion in VR” (XpertVR) — a short primer we will use on Tuesday.</li>
+</ul></div>
+</section>
+
+</main>
+
+<footer class="site-footer"><div class="inner"><span>Created by Isac Artzi</span><span>Introduction to VR · Topic 1 · Interactive lecture notes</span></div></footer>
+<script>
+/* Introduction to VR lecture notes — shared runtime (tabs, code, quizzes, widget helpers). No dependencies. */
+(function () {
+  'use strict';
+  const Notes = {};
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  Notes.clamp = clamp; Notes.lerp = lerp;
+  Notes.TAU = Math.PI * 2;
+  Notes.deg = r => r * 180 / Math.PI;
+  Notes.rad = d => d * Math.PI / 180;
+  Notes.fmt = (n, d) => (d === undefined ? (Math.abs(n) >= 100 ? n.toFixed(0) : Math.abs(n) >= 10 ? n.toFixed(1) : n.toFixed(2)) : Number(n).toFixed(d));
+
+  /* ---------------- Tabs ---------------- */
+  const sessions = [];
+  let currentIdx = 0;
+  const tabsEl = () => $('.tabs');
+  function buildTabs() {
+    const nav = tabsEl(); if (!nav) return;
+    $$('section.session').forEach((sec, i) => {
+      sessions.push(sec);
+      const b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.idx = i;
+      b.innerHTML = `<span class="t1">${sec.dataset.tab || ('Session ' + (i + 1))}</span><span class="t2">${sec.dataset.sub || ''}</span>`;
+      b.addEventListener('click', () => show(i, true));
+      nav.appendChild(b);
+      // prev/next nav
+      const sn = document.createElement('div'); sn.className = 'session-nav';
+      const prev = document.createElement('button'); prev.type = 'button'; prev.textContent = '← Previous session';
+      const next = document.createElement('button'); next.type = 'button'; next.textContent = 'Next session →';
+      prev.disabled = i === 0; next.disabled = false;
+      prev.addEventListener('click', () => show(i - 1, true));
+      next.addEventListener('click', () => show(i + 1, true));
+      sn.append(prev, next); sec.appendChild(sn);
+      sec._nextBtn = next;
+    });
+    if (sessions.length) sessions[sessions.length - 1]._nextBtn.disabled = true;
+    const fromHash = () => {
+      const m = location.hash.match(/^#s(\d+)/);
+      const i = m ? clamp(parseInt(m[1], 10) - 1, 0, sessions.length - 1) : 0;
+      show(i, false);
+    };
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+  }
+  function show(i, scroll) {
+    if (!sessions.length) return;
+    i = clamp(i, 0, sessions.length - 1);
+    currentIdx = i;
+    sessions.forEach((s, k) => s.classList.toggle('active', k === i));
+    $$('.tabs button').forEach((b, k) => { b.setAttribute('aria-selected', k === i ? 'true' : 'false'); if (k === i) b.scrollIntoView({ block: 'nearest', inline: 'nearest' }); });
+    const h = '#s' + (i + 1);
+    if (location.hash !== h) history.replaceState(null, '', h);
+    if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.dispatchEvent(new CustomEvent('notes:tabshown', { detail: { index: i, section: sessions[i] } }));
+  }
+  Notes.show = show;
+  Notes.isVisible = el => { const s = el.closest && el.closest('section.session'); return !s || s.classList.contains('active'); };
+
+  /* ---------------- Code blocks ---------------- */
+  const KW = /\b(abstract|as|async|await|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|get|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|set|short|sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|var|virtual|void|volatile|while|yield)\b/g;
+  const TY = /\b(Vector2|Vector3|Vector4|Quaternion|Transform|GameObject|MonoBehaviour|Rigidbody|Collider|Camera|Time|Mathf|Debug|Input|AudioSource|AudioListener|AudioClip|AudioMixer|Renderer|MeshRenderer|MeshFilter|Material|Texture2D|Color|Physics|RaycastHit|Ray|LayerMask|Coroutine|IEnumerator|WaitForSeconds|Canvas|Text|Button|Slider|Image|RectTransform|XRGrabInteractable|XRBaseInteractable|XRBaseInteractor|XRRayInteractor|XRDirectInteractor|XROrigin|LocomotionProvider|TeleportationProvider|ContinuousMoveProvider|ContinuousTurnProvider|SnapTurnProvider|InputActionReference|InputAction|SceneManager|AsyncOperation|Scene|List|Dictionary|Queue|Stack|Action|Func|Random|LODGroup|Light|Animator|CharacterController|SerializeField|Header|Range|Tooltip|RequireComponent|TextMeshProUGUI|TMP_Text|OVRManager|XRSettings|XRDisplaySubsystem|Application|Screen|QualitySettings|Gizmos|Handles|Object|Component|Behaviour|ScriptableObject|Sprite|ParticleSystem|TrailRenderer|LineRenderer|Bounds|Plane|Matrix4x4|Rect)\b/g;
+  function highlightCSharp(src) {
+    // Tokenize comments and strings first so keywords inside them are not touched.
+    const out = []; let i = 0; const n = src.length;
+    const pushPlain = t => { if (!t) return; out.push(t.replace(TY, '<span class="tok-t">$1</span>').replace(KW, '<span class="tok-k">$1</span>').replace(/\b(\d+\.?\d*f?)\b/g, '<span class="tok-n">$1</span>').replace(/(\[[A-Z][A-Za-z]*(\([^)]*\))?\])/g, '<span class="tok-a">$1</span>')); };
+    let plain = '';
+    while (i < n) {
+      const c = src[i], d = src[i + 1];
+      if (c === '/' && d === '/') { pushPlain(plain); plain = ''; let j = src.indexOf('\n', i); if (j < 0) j = n; out.push('<span class="tok-c">' + src.slice(i, j) + '</span>'); i = j; continue; }
+      if (c === '/' && d === '*') { pushPlain(plain); plain = ''; let j = src.indexOf('*/', i + 2); j = j < 0 ? n : j + 2; out.push('<span class="tok-c">' + src.slice(i, j) + '</span>'); i = j; continue; }
+      if (c === '"' || (c === '$' && d === '"') || (c === '@' && d === '"')) {
+        pushPlain(plain); plain = '';
+        let j = i + (c === '"' ? 1 : 2);
+        while (j < n && src[j] !== '"') { if (src[j] === '\\') j++; j++; }
+        j++; out.push('<span class="tok-s">' + src.slice(i, j) + '</span>'); i = j; continue;
+      }
+      plain += c; i++;
+    }
+    pushPlain(plain);
+    return out.join('');
+  }
+  function highlightGeneric(src) { return src; }
+  function setupCode() {
+    $$('.code').forEach(box => {
+      const pre = $('pre', box), code = pre && $('code', pre); if (!code) return;
+      const lang = (code.className.match(/lang-([\w#+-]+)/) || [])[1] || box.dataset.lang || '';
+      if (!$('.code-head', box)) {
+        const head = document.createElement('div'); head.className = 'code-head';
+        head.innerHTML = `<span>${box.dataset.title || (lang ? lang.toUpperCase() : 'CODE')}</span>`;
+        const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = 'Copy';
+        btn.addEventListener('click', () => { navigator.clipboard && navigator.clipboard.writeText(code.textContent).then(() => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1200); }); });
+        head.appendChild(btn); box.insertBefore(head, pre);
+      }
+      // Source is already HTML-escaped text inside <code>; highlight on the escaped text so entities survive.
+      const raw = code.innerHTML;
+      if (lang === 'csharp' || lang === 'cs' || lang === 'c#') code.innerHTML = highlightCSharp(raw);
+      else if (lang === 'js' || lang === 'javascript') code.innerHTML = highlightCSharp(raw);
+      else code.innerHTML = highlightGeneric(raw);
+    });
+  }
+
+  /* ---------------- Quizzes ---------------- */
+  function setupQuizzes() {
+    $$('.quiz').forEach((q, qi) => {
+      const why = document.createElement('div'); why.className = 'why'; q.appendChild(why);
+      $$('label', q).forEach(lab => {
+        const inp = $('input', lab); if (!inp) return; inp.name = inp.name || ('quiz' + qi);
+        inp.addEventListener('change', () => {
+          $$('label', q).forEach(l => l.classList.remove('correct', 'wrong'));
+          const ok = lab.dataset.correct !== undefined;
+          lab.classList.add(ok ? 'correct' : 'wrong');
+          why.textContent = lab.dataset.why || (ok ? 'Correct.' : 'Not quite — try again.');
+          why.className = 'why show ' + (ok ? 'ok' : 'no');
+        });
+      });
+    });
+  }
+
+  /* ---------------- Live values ---------------- */
+  Notes.live = {
+    set(name, value, digits) { $$(`[data-live="${name}"]`).forEach(el => { el.textContent = typeof value === 'number' ? Notes.fmt(value, digits) : value; el.classList.add('live'); }); }
+  };
+
+  /* ---------------- Controls ---------------- */
+  Notes.slider = function (parent, o) {
+    const wrap = document.createElement('label'); wrap.className = 'ctl';
+    const row = document.createElement('div'); row.className = 'ctl-row';
+    const lab = document.createElement('span'); lab.textContent = o.label;
+    const val = document.createElement('span'); val.className = 'ctl-val';
+    row.append(lab, val);
+    const input = document.createElement('input'); input.type = 'range';
+    input.min = o.min; input.max = o.max; input.step = o.step === undefined ? 'any' : o.step; input.value = o.value;
+    wrap.append(row, input);
+    if (o.help) { const s = document.createElement('small'); s.textContent = o.help; wrap.appendChild(s); }
+    parent.appendChild(wrap);
+    const intStep = o.step !== undefined && Number.isInteger(o.step) && o.step >= 1;
+    const fmt = o.format || (v => Notes.fmt(v, o.digits !== undefined ? o.digits : (intStep ? 0 : undefined)) + (o.unit ? (o.unit === '°' || o.unit === '%' ? '' : ' ') + o.unit : ''));
+    const api = { input, get value() { return parseFloat(input.value); }, set value(v) { input.value = v; upd(false); }, el: wrap };
+    function upd(fire) { val.textContent = fmt(api.value); if (fire && o.onInput) o.onInput(api.value); }
+    input.addEventListener('input', () => upd(true));
+    upd(false);
+    return api;
+  };
+  Notes.select = function (parent, o) {
+    const wrap = document.createElement('label'); wrap.className = 'ctl';
+    const lab = document.createElement('span'); lab.textContent = o.label;
+    const sel = document.createElement('select');
+    (o.options || []).forEach(op => { const opt = document.createElement('option'); if (typeof op === 'string') { opt.value = op; opt.textContent = op; } else { opt.value = op.value; opt.textContent = op.label; } sel.appendChild(opt); });
+    if (o.value !== undefined) sel.value = o.value;
+    wrap.append(lab, sel); parent.appendChild(wrap);
+    sel.addEventListener('change', () => o.onChange && o.onChange(sel.value));
+    return { el: wrap, select: sel, get value() { return sel.value; }, set value(v) { sel.value = v; } };
+  };
+  Notes.toggle = function (parent, o) {
+    const wrap = document.createElement('label'); wrap.className = 'ctl toggle';
+    const inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = !!o.value;
+    const lab = document.createElement('span'); lab.textContent = o.label;
+    wrap.append(inp, lab); parent.appendChild(wrap);
+    inp.addEventListener('change', () => o.onChange && o.onChange(inp.checked));
+    return { el: wrap, input: inp, get value() { return inp.checked; }, set value(v) { inp.checked = v; } };
+  };
+  Notes.radios = function (parent, o) {
+    const wrap = document.createElement('div'); wrap.className = 'ctl radios';
+    const lab = document.createElement('span'); lab.textContent = o.label; wrap.appendChild(lab);
+    const name = 'r' + Math.random().toString(36).slice(2, 8);
+    let value = o.value;
+    (o.options || []).forEach(op => {
+      const v = typeof op === 'string' ? op : op.value, t = typeof op === 'string' ? op : op.label;
+      const l = document.createElement('label'); const i = document.createElement('input'); i.type = 'radio'; i.name = name; i.value = v; i.checked = v === value;
+      i.addEventListener('change', () => { value = v; o.onChange && o.onChange(v); });
+      l.append(i, document.createTextNode(t)); wrap.appendChild(l);
+    });
+    parent.appendChild(wrap);
+    return { el: wrap, get value() { return value; } };
+  };
+  Notes.button = function (parent, o) {
+    const wrap = document.createElement('div'); wrap.className = 'ctl';
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = o.label; if (o.primary) b.className = 'primary';
+    b.addEventListener('click', () => o.onClick && o.onClick(b));
+    wrap.appendChild(b); parent.appendChild(wrap);
+    return { el: wrap, button: b };
+  };
+  Notes.readout = function (parent, items) {
+    parent.innerHTML = '';
+    const spans = {};
+    Object.keys(items).forEach(k => { const s = document.createElement('span'); s.innerHTML = `${k}: <b></b>`; parent.appendChild(s); spans[k] = $('b', s); spans[k].textContent = items[k]; });
+    return { set(k, v) { if (spans[k]) spans[k].textContent = v; } };
+  };
+
+  /* ---------------- Canvas ---------------- */
+  Notes.canvas = function (parent, o) {
+    o = o || {};
+    const canvas = document.createElement('canvas'); parent.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    const api = { canvas, ctx, w: 0, h: 0, dpr: 1, onResize: null };
+    function resize() {
+      const cs = getComputedStyle(parent);
+      const inner = parent.clientWidth - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0);
+      const cssW = Math.max(200, Math.floor(inner)) || (o.width || 600);
+      const aspect = o.aspect || (o.height && o.width ? o.height / o.width : 0.56);
+      const cssH = o.height && !o.aspect && !o.width ? o.height : Math.round(cssW * aspect);
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      if (api.w === cssW && api.h === cssH && api.dpr === dpr) return false;
+      api.w = cssW; api.h = cssH; api.dpr = dpr;
+      canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+      canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return true;
+    }
+    api.resize = resize;
+    api.clear = (bg) => { ctx.save(); ctx.setTransform(api.dpr, 0, 0, api.dpr, 0, 0); ctx.clearRect(0, 0, api.w, api.h); if (bg) { ctx.fillStyle = bg; ctx.fillRect(0, 0, api.w, api.h); } ctx.restore(); };
+    api.pointer = (handler) => {
+      const pos = e => { const r = canvas.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return { x: (p.clientX - r.left), y: (p.clientY - r.top) }; };
+      let down = false;
+      canvas.addEventListener('pointerdown', e => { down = true; canvas.setPointerCapture(e.pointerId); handler('down', pos(e), e); });
+      canvas.addEventListener('pointermove', e => handler(down ? 'drag' : 'move', pos(e), e));
+      canvas.addEventListener('pointerup', e => { down = false; handler('up', pos(e), e); });
+      canvas.addEventListener('pointerleave', e => { if (!down) handler('leave', pos(e), e); });
+      canvas.style.touchAction = 'none';
+    };
+    api.animate = (fn, opts) => Notes.animate(fn, Object.assign({ visibleEl: canvas }, opts || {}));
+    resize();
+    window.addEventListener('resize', () => { if (resize() && api.onResize) api.onResize(); });
+    document.addEventListener('notes:tabshown', () => { requestAnimationFrame(() => { if (resize() && api.onResize) api.onResize(); else if (api.onResize && Notes.isVisible(canvas)) api.onResize(); }); });
+    return api;
+  };
+
+  /* ---------------- Animation ---------------- */
+  Notes.animate = function (fn, opts) {
+    opts = opts || {};
+    let running = false, raf = 0, last = 0, t = 0;
+    const el = opts.visibleEl;
+    function frame(now) {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now; t += dt;
+      if (!el || Notes.isVisible(el)) fn(dt, t);
+      raf = requestAnimationFrame(frame);
+    }
+    const api = {
+      start() { if (running) return; running = true; last = performance.now(); raf = requestAnimationFrame(frame); },
+      stop() { running = false; cancelAnimationFrame(raf); },
+      get running() { return running; }, get t() { return t; }, set t(v) { t = v; }
+    };
+    if (opts.autostart !== false) api.start();
+    return api;
+  };
+
+  /* ---------------- Drawing helpers ---------------- */
+  Notes.draw = {
+    arrow(ctx, x1, y1, x2, y2, size) {
+      size = size || 8; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      const a = Math.atan2(y2 - y1, x2 - x1);
+      ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - size * Math.cos(a - .45), y2 - size * Math.sin(a - .45)); ctx.lineTo(x2 - size * Math.cos(a + .45), y2 - size * Math.sin(a + .45)); ctx.closePath(); ctx.fill();
+    },
+    text(ctx, s, x, y, o) {
+      o = o || {}; ctx.save(); ctx.font = (o.weight || '500') + ' ' + (o.size || 12) + 'px ' + (o.mono ? 'ui-monospace, Menlo, monospace' : '-apple-system, Segoe UI, Roboto, sans-serif');
+      ctx.fillStyle = o.color || '#4a5169'; ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.baseline || 'alphabetic';
+      if (o.bg) { const m = ctx.measureText(s); const pad = 3; const w = m.width + pad * 2; const hgt = (o.size || 12) + pad * 2; let bx = x - pad; if (o.align === 'center') bx = x - w / 2; if (o.align === 'right') bx = x - w + pad; ctx.fillStyle = o.bg; ctx.fillRect(bx, y - (o.size || 12) - pad + 2, w, hgt); ctx.fillStyle = o.color || '#4a5169'; }
+      ctx.fillText(s, x, y); ctx.restore();
+    },
+    grid(ctx, w, h, step, color) { ctx.save(); ctx.strokeStyle = color || '#eef0f6'; ctx.lineWidth = 1; ctx.beginPath(); for (let x = 0; x <= w; x += step) { ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, h); } for (let y = 0; y <= h; y += step) { ctx.moveTo(0, y + .5); ctx.lineTo(w, y + .5); } ctx.stroke(); ctx.restore(); },
+    dot(ctx, x, y, r, color) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); },
+    // Simple 2D plot: fns = [{f, color, label}], domain x0..x1, range y0..y1 (auto if null)
+    plot(ctx, box, o) {
+      const { x, y, w, h } = box; const x0 = o.x0, x1 = o.x1; let y0 = o.y0, y1 = o.y1;
+      const N = o.samples || 200; const series = o.series || [];
+      const data = series.map(s => { const pts = []; for (let i = 0; i <= N; i++) { const xv = lerp(x0, x1, i / N); const yv = s.f(xv); if (isFinite(yv)) pts.push([xv, yv]); } return pts; });
+      if (y0 === undefined || y1 === undefined) { let mn = Infinity, mx = -Infinity; data.forEach(p => p.forEach(([, yv]) => { mn = Math.min(mn, yv); mx = Math.max(mx, yv); })); if (!isFinite(mn)) { mn = 0; mx = 1; } if (mn === mx) { mn -= 1; mx += 1; } const pad = (mx - mn) * .08; if (y0 === undefined) y0 = mn - pad; if (y1 === undefined) y1 = mx + pad; }
+      const sx = xv => x + (xv - x0) / (x1 - x0) * w, sy = yv => y + h - (yv - y0) / (y1 - y0) * h;
+      ctx.save(); ctx.fillStyle = '#fff'; ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = '#eef0f6'; ctx.lineWidth = 1; ctx.beginPath();
+      const ticks = o.ticks || 5;
+      for (let i = 0; i <= ticks; i++) { const gx = x + w * i / ticks, gy = y + h * i / ticks; ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); } ctx.stroke();
+      if (y0 < 0 && y1 > 0) { ctx.strokeStyle = '#cfd4e3'; ctx.beginPath(); ctx.moveTo(x, sy(0)); ctx.lineTo(x + w, sy(0)); ctx.stroke(); }
+      ctx.strokeStyle = '#cfd4e3'; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+      for (let i = 0; i <= ticks; i++) { const xv = lerp(x0, x1, i / ticks), yv = lerp(y0, y1, 1 - i / ticks); Notes.draw.text(ctx, (o.xfmt || Notes.fmt)(xv), x + w * i / ticks, y + h + 14, { size: 11, align: 'center', color: '#7b819a', mono: true }); Notes.draw.text(ctx, (o.yfmt || Notes.fmt)(yv), x - 6, y + h * i / ticks + 4, { size: 11, align: 'right', color: '#7b819a', mono: true }); }
+      if (o.xlabel) Notes.draw.text(ctx, o.xlabel, x + w / 2, y + h + 30, { size: 12, align: 'center', color: '#4a5169' });
+      if (o.ylabel) { ctx.save(); ctx.translate(x - 44, y + h / 2); ctx.rotate(-Math.PI / 2); Notes.draw.text(ctx, o.ylabel, 0, 0, { size: 12, align: 'center', color: '#4a5169' }); ctx.restore(); }
+      ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+      data.forEach((pts, k) => { const s = series[k]; ctx.strokeStyle = s.color || '#3b4fd8'; ctx.lineWidth = s.width || 2; if (s.dash) ctx.setLineDash(s.dash); else ctx.setLineDash([]); ctx.beginPath(); pts.forEach(([xv, yv], i) => { const px = sx(xv), py = sy(yv); if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }); ctx.stroke(); ctx.setLineDash([]); });
+      (o.marks || []).forEach(m => { const px = sx(m.x), py = sy(m.y); if (m.vline) { ctx.strokeStyle = m.color || '#c2334d'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px, y + h); ctx.stroke(); ctx.setLineDash([]); } if (m.hline) { ctx.strokeStyle = m.color || '#c2334d'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x + w, py); ctx.stroke(); ctx.setLineDash([]); } if (!m.noDot) Notes.draw.dot(ctx, px, py, m.r || 5, m.color || '#c2334d'); if (m.label) Notes.draw.text(ctx, m.label, px + 8, py - 8, { size: 11, color: m.color || '#c2334d', weight: '600', bg: 'rgba(255,255,255,.85)' }); });
+      ctx.restore();
+      let lx = x + 10, ly = y + 16;
+      series.forEach(s => { if (!s.label) return; ctx.fillStyle = s.color || '#3b4fd8'; ctx.fillRect(lx, ly - 8, 14, 3); Notes.draw.text(ctx, s.label, lx + 18, ly - 3, { size: 11, color: '#4a5169' }); ly += 16; });
+      ctx.restore();
+      return { sx, sy, y0, y1 };
+    }
+  };
+
+  /* ---------------- Minimal 3D (wireframe, perspective) ---------------- */
+  const V = {
+    add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+    sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+    scale: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+    dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+    cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+    len: a => Math.hypot(a[0], a[1], a[2]),
+    norm: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; },
+    rotX: (p, a) => { const c = Math.cos(a), s = Math.sin(a); return [p[0], p[1] * c - p[2] * s, p[1] * s + p[2] * c]; },
+    rotY: (p, a) => { const c = Math.cos(a), s = Math.sin(a); return [p[0] * c + p[2] * s, p[1], -p[0] * s + p[2] * c]; },
+    rotZ: (p, a) => { const c = Math.cos(a), s = Math.sin(a); return [p[0] * c - p[1] * s, p[0] * s + p[1] * c, p[2]]; }
+  };
+  Notes.V = V;
+  // Camera: {pos, yaw, pitch, fov (deg vertical), near}. Projects world point -> {x, y, z(depth)} in canvas px for a viewport {x,y,w,h}.
+  Notes.camera = function (cam, vp) {
+    const fovR = Notes.rad(cam.fov || 60); const f = 1 / Math.tan(fovR / 2);
+    const aspect = vp.w / vp.h;
+    return {
+      toView(p) { let q = V.sub(p, cam.pos); q = V.rotY(q, -(cam.yaw || 0)); q = V.rotX(q, -(cam.pitch || 0)); return q; },
+      project(p) {
+        const q = this.toView(p); const z = q[2]; if (z < (cam.near || 0.05)) return null;
+        const nx = (q[0] * f / aspect) / z, ny = (q[1] * f) / z;
+        return { x: vp.x + (nx * 0.5 + 0.5) * vp.w, y: vp.y + (0.5 - ny * 0.5) * vp.h, z };
+      },
+      line(ctx, a, b) { const A = this.project(a), B = this.project(b); if (!A || !B) return; ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke(); },
+      poly(ctx, pts, fill, stroke) { const P = pts.map(p => this.project(p)); if (P.some(p => !p)) return; ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); } },
+      grid(ctx, size, step, y, color, zmin) { zmin = zmin === undefined ? 0.3 : zmin; ctx.strokeStyle = color || '#e3e6ef'; ctx.lineWidth = 1; for (let i = -size; i <= size; i += step) { this.line(ctx, [i, y, zmin], [i, y, size]); if (i >= zmin) this.line(ctx, [-size, y, i], [size, y, i]); } }
+    };
+  };
+  Notes.box = function (cx, cy, cz, sx, sy, sz) {
+    const hx = sx / 2, hy = sy / 2, hz = sz / 2;
+    const v = [[-hx, -hy, -hz], [hx, -hy, -hz], [hx, hy, -hz], [-hx, hy, -hz], [-hx, -hy, hz], [hx, -hy, hz], [hx, hy, hz], [-hx, hy, hz]].map(p => [p[0] + cx, p[1] + cy, p[2] + cz]);
+    const e = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
+    const faces = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [2, 3, 7, 6], [1, 2, 6, 5], [0, 3, 7, 4]];
+    return { v, e, faces };
+  };
+
+  /* ---------------- Widgets ---------------- */
+  const pendingWidgets = [];
+  Notes.widget = function (id, fn) {
+    const run = () => {
+      const root = document.getElementById(id); if (!root) { console.warn('widget missing', id); return; }
+      const body = $('.widget-body', root) || root;
+      const w = { root, body, controls: $('[data-controls]', root) || $('.controls', root), stage: $('[data-stage]', root) || $('.stage', root), readout: $('[data-readout]', root) || $('.readout', root) };
+      try { fn(w); } catch (err) { console.error('widget ' + id, err); if (w.stage) w.stage.innerHTML = '<p style="color:#c2334d;font-size:.9rem">This visualization failed to load: ' + err.message + '</p>'; }
+    };
+    if (document.readyState === 'loading') pendingWidgets.push(run); else run();
+  };
+
+  /* ---------------- Init ---------------- */
+  function init() {
+    buildTabs(); setupCode(); setupQuizzes();
+    pendingWidgets.splice(0).forEach(f => f());
+    $$('[data-year]').forEach(e => e.textContent = new Date().getFullYear());
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  window.Notes = Notes;
+})();
+
+</script>
+<script>
+/* ============================ Session 1 widgets ============================ */
+Notes.widget('w-immersion', w => {
+  const axes = [
+    { key: 'fov', label: 'Field of view', min: 0, max: 210, value: 110, unit: '°' },
+    { key: 'dof', label: 'Tracking (degrees of freedom)', min: 0, max: 6, step: 3, value: 6, format: v => v === 0 ? 'none' : v + ' DoF' },
+    { key: 'hz', label: 'Refresh rate', min: 0, max: 144, step: 1, value: 90, unit: 'Hz' },
+    { key: 'hands', label: 'Hand input', min: 0, max: 3, step: 1, value: 2, format: v => ['none', 'gaze/1 button', 'controllers', 'controllers + hands'][v] },
+    { key: 'audio', label: 'Audio', min: 0, max: 3, step: 1, value: 2, format: v => ['none', 'mono', 'stereo', 'spatial'][v] },
+    { key: 'haptics', label: 'Haptics', min: 0, max: 3, step: 1, value: 1, format: v => ['none', 'rumble', 'per-hand', 'full body'][v] }
+  ];
+  const presets = { 'Quest 3': [110, 6, 90, 3, 3, 1], 'Cardboard viewer': [90, 3, 60, 1, 1, 0], 'Desktop game': [0, 0, 60, 0, 2, 0], 'CAVE room': [180, 6, 120, 2, 3, 0], 'Sensorama (1962)': [140, 0, 24, 0, 2, 2] };
+  const sliders = {};
+  const sel = Notes.select(w.controls, { label: 'Preset', options: Object.keys(presets), value: 'Quest 3', onChange: v => { presets[v].forEach((val, i) => { sliders[axes[i].key].value = val; }); draw(); } });
+  axes.forEach(a => { sliders[a.key] = Notes.slider(w.controls, Object.assign({ onInput: draw }, a)); });
+  presets['Quest 3'].forEach((val, i) => { sliders[axes[i].key].value = val; });
+  const c = Notes.canvas(w.stage, { aspect: 0.62 });
+  const ro = Notes.readout(w.readout, { 'Immersion index (0–100)': '', 'Weakest contributor': '' });
+  function draw() {
+    c.clear('#fff');
+    const cx = c.w / 2, cy = c.h / 2 + 8, R = Math.min(c.w, c.h) * 0.36;
+    const n = axes.length; const ctx = c.ctx;
+    // rings
+    for (let r = 1; r <= 4; r++) { ctx.beginPath(); for (let i = 0; i <= n; i++) { const a = -Math.PI / 2 + i / n * Math.PI * 2; const x = cx + Math.cos(a) * R * r / 4, y = cy + Math.sin(a) * R * r / 4; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.strokeStyle = '#e3e6ef'; ctx.stroke(); }
+    const vals = axes.map(a => Notes.clamp(sliders[a.key].value / a.max, 0, 1));
+    ctx.beginPath();
+    vals.forEach((v, i) => { const a = -Math.PI / 2 + i / n * Math.PI * 2; const x = cx + Math.cos(a) * R * v, y = cy + Math.sin(a) * R * v; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.closePath(); ctx.fillStyle = 'rgba(59,79,216,.18)'; ctx.fill(); ctx.strokeStyle = '#3b4fd8'; ctx.lineWidth = 2; ctx.stroke();
+    axes.forEach((a, i) => { const ang = -Math.PI / 2 + i / n * Math.PI * 2; const x = cx + Math.cos(ang) * (R + 18), y = cy + Math.sin(ang) * (R + 18); ctx.strokeStyle = '#cfd4e3'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ang) * R, cy + Math.sin(ang) * R); ctx.stroke(); Notes.draw.text(ctx, a.label, x, y + 4, { size: 11, align: Math.abs(Math.cos(ang)) < .2 ? 'center' : Math.cos(ang) > 0 ? 'left' : 'right', color: '#4a5169', weight: '600' }); Notes.draw.dot(ctx, cx + Math.cos(ang) * R * vals[i], cy + Math.sin(ang) * R * vals[i], 4, '#3b4fd8'); });
+    // geometric mean punishes a single missing contributor (no tracking ⇒ little immersion regardless of FOV)
+    const gm = Math.exp(vals.reduce((s, v) => s + Math.log(Math.max(v, 0.02)), 0) / n) * 100;
+    let weak = 0; vals.forEach((v, i) => { if (v < vals[weak]) weak = i; });
+    ro.set('Immersion index (0–100)', gm.toFixed(0)); ro.set('Weakest contributor', axes[weak].label);
+    Notes.draw.text(ctx, 'Index uses a geometric mean: one missing sense drags everything down.', cx, c.h - 6, { size: 11, align: 'center', color: '#7b819a' });
+  }
+  c.onResize = draw; draw();
+});
+
+Notes.widget('w-continuum', w => {
+  const c = Notes.canvas(w.stage, { aspect: 0.34 });
+  const items = [
+    { p: 0.00, n: 'Real room' }, { p: 0.10, n: 'Car heads-up display' }, { p: 0.22, n: 'Phone AR furniture app' }, { p: 0.36, n: 'Quest 3 passthrough MR game' },
+    { p: 0.50, n: 'Virtual cockpit, real hands on video' }, { p: 0.64, n: '360° video' }, { p: 0.78, n: 'Desktop 3D game' }, { p: 0.90, n: 'VR game (Quest 3, full occlusion)' }, { p: 1.00, n: 'Ideal fully virtual world' }
+  ];
+  let pos = 0.36;
+  const ro = Notes.readout(w.readout, { 'Nearest example': '', 'Region': '' });
+  function draw() {
+    c.clear('#fff'); const ctx = c.ctx; const x0 = 40, x1 = c.w - 40, y = c.h * 0.55;
+    const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, '#2f8f4e'); g.addColorStop(0.5, '#0f8b8d'); g.addColorStop(1, '#3b4fd8');
+    ctx.fillStyle = g; ctx.fillRect(x0, y - 6, x1 - x0, 12);
+    Notes.draw.text(ctx, 'Real environment', x0, y - 22, { size: 12, weight: '700', color: '#2f8f4e' });
+    Notes.draw.text(ctx, 'Virtual environment', x1, y - 22, { size: 12, weight: '700', color: '#3b4fd8', align: 'right' });
+    Notes.draw.text(ctx, 'Mixed reality (Milgram & Kishino, 1994)', (x0 + x1) / 2, y - 22, { size: 12, color: '#0f8b8d', align: 'center', weight: '600' });
+    [['AR', 0.02, 0.42], ['MR', 0.30, 0.70], ['VR', 0.70, 1.0]].forEach(([n, a, b], i) => { const ax = Notes.lerp(x0, x1, a), bx = Notes.lerp(x0, x1, b); const yy = y + 22 + i * 14; ctx.strokeStyle = '#cfd4e3'; ctx.beginPath(); ctx.moveTo(ax, yy); ctx.lineTo(bx, yy); ctx.stroke(); Notes.draw.text(ctx, n, (ax + bx) / 2, yy + 4, { size: 10, align: 'center', color: '#7b819a', bg: '#fff', mono: true }); });
+    items.forEach(it => { const x = Notes.lerp(x0, x1, it.p); Notes.draw.dot(ctx, x, y, 4, '#fff'); Notes.draw.dot(ctx, x, y, 2.5, '#1d2233'); });
+    const mx = Notes.lerp(x0, x1, pos);
+    ctx.fillStyle = '#c2334d'; ctx.beginPath(); ctx.moveTo(mx, y - 12); ctx.lineTo(mx - 8, y - 26); ctx.lineTo(mx + 8, y - 26); ctx.closePath(); ctx.fill();
+    let best = items[0]; items.forEach(it => { if (Math.abs(it.p - pos) < Math.abs(best.p - pos)) best = it; });
+    Notes.draw.text(ctx, best.n, Notes.clamp(mx, 90, c.w - 90), y + 80, { size: 13, align: 'center', weight: '700', color: '#1d2233' });
+    ro.set('Nearest example', best.n);
+    ro.set('Region', pos < 0.05 ? 'Reality' : pos < 0.35 ? 'Augmented reality: real world primary' : pos < 0.65 ? 'Mixed reality / augmented virtuality: real and virtual interact' : pos < 0.98 ? 'Virtual reality: real world replaced' : 'Fully virtual');
+  }
+  c.pointer((type, p) => { if (type === 'down' || type === 'drag') { pos = Notes.clamp((p.x - 40) / (c.w - 80), 0, 1); draw(); } });
+  c.onResize = draw; draw();
+});
+
+Notes.widget('w-timeline', w => {
+  const events = [
+    [1838, 'Wheatstone stereoscope', 'Two offset drawings, one per eye, fuse into depth. The optical principle behind every HMD.', 'optics'],
+    [1962, 'Sensorama', 'Heilig\'s multisensory booth: stereo film, sound, wind, vibration, smell. Immersive but not interactive.', 'immersion'],
+    [1968, 'Sword of Damocles', 'Sutherland\'s ceiling-mounted HMD with mechanical head tracking and wireframe graphics. First true VR.', 'tracking'],
+    [1987, 'VPL DataGlove & EyePhone', 'Lanier commercialises gloves and HMDs, coins "virtual reality". Hardware costs tens of thousands of dollars.', 'input'],
+    [1992, 'CAVE', 'Projected stereo room at UIC. Shared, high-FOV, still used in industry.', 'immersion'],
+    [1995, 'Virtual Boy', 'Nintendo\'s red monochrome tabletop stereoscope. No head tracking, eye strain complaints, discontinued in a year.', 'comfort'],
+    [2013, 'Oculus Rift DK1', 'Smartphone panels + cheap IMUs = wide-FOV low-latency HMD for $300. The modern revival.', 'optics'],
+    [2016, 'Rift CV1 / HTC Vive / PSVR', 'Room-scale tracking and tracked controllers reach consumers.', 'tracking'],
+    [2019, 'Oculus Quest', 'Standalone 6DoF: inside-out camera tracking, no PC. The platform class you target.', 'standalone'],
+    [2023, 'Meta Quest 3', 'Colour passthrough MR, pancake lenses, XR2 Gen 2. Your development device.', 'standalone'],
+    [2024, 'Apple Vision Pro', 'Eye + hand input with no controllers, "spatial computing". Quest 3S lowers the entry price.', 'input']
+  ];
+  const colors = { optics: '#3b4fd8', immersion: '#0f8b8d', tracking: '#b26a00', input: '#5b3fa8', comfort: '#c2334d', standalone: '#2f8f4e' };
+  let idx = 9;
+  const s = Notes.slider(w.controls, { label: 'Year', min: 0, max: events.length - 1, step: 1, value: idx, format: v => String(events[Math.round(v)][0]), onInput: v => { idx = Math.round(v); draw(); } });
+  const c = Notes.canvas(w.stage, { aspect: 0.32 });
+  const ro = Notes.readout(w.readout, { 'Milestone': '', 'What it contributed': '' });
+  function xOf(year) { return Notes.lerp(30, c.w - 30, (year - 1830) / (2030 - 1830)); }
+  function draw() {
+    c.clear('#fff'); const ctx = c.ctx; const y = c.h * 0.48;
+    ctx.strokeStyle = '#cfd4e3'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(30, y); ctx.lineTo(c.w - 30, y); ctx.stroke();
+    for (let yr = 1840; yr <= 2020; yr += 20) { const x = xOf(yr); ctx.strokeStyle = '#e3e6ef'; ctx.beginPath(); ctx.moveTo(x, y - 6); ctx.lineTo(x, y + 6); ctx.stroke(); Notes.draw.text(ctx, yr, x, y + 22, { size: 10, align: 'center', color: '#7b819a', mono: true }); }
+    // gap markers: long quiet periods
+    [[1840, 1960, 'stereoscopes, film, flight trainers'], [1996, 2012, '"VR winter": hardware too slow, heavy, expensive']].forEach(([a, b, t]) => { const ax = xOf(a), bx = xOf(b); ctx.fillStyle = 'rgba(178,106,0,.08)'; ctx.fillRect(ax, y - 30, bx - ax, 24); Notes.draw.text(ctx, t, (ax + bx) / 2, y - 14, { size: 10, align: 'center', color: '#b26a00' }); });
+    events.forEach((e, i) => { const x = xOf(e[0]); const col = colors[e[3]]; Notes.draw.dot(ctx, x, y, i === idx ? 9 : 5, col); if (i === idx) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 13, 0, Math.PI * 2); ctx.stroke(); } });
+    const e = events[idx]; const x = xOf(e[0]);
+    Notes.draw.text(ctx, e[0] + ' · ' + e[1], Notes.clamp(x, 120, c.w - 120), y + 52, { size: 14, align: 'center', weight: '700', color: colors[e[3]] });
+    ro.set('Milestone', e[0] + ' — ' + e[1]); ro.set('What it contributed', e[2]);
+  }
+  c.pointer((type, p) => { if (type !== 'down') return; let best = 0; events.forEach((e, i) => { if (Math.abs(xOf(e[0]) - p.x) < Math.abs(xOf(events[best][0]) - p.x)) best = i; }); idx = best; s.value = best; draw(); });
+  c.onResize = draw; draw();
+});
+/* ============================ Session 2 widgets ============================ */
+Notes.widget('w-stereo', w => {
+  const ipd = Notes.slider(w.controls, { label: 'IPD', min: 50, max: 80, step: 1, value: 63, unit: 'mm', onInput: draw });
+  const dist = Notes.slider(w.controls, { label: 'Cube distance Z', min: 0.3, max: 10, step: 0.1, value: 1.5, unit: 'm', onInput: draw });
+  const size = Notes.slider(w.controls, { label: 'Cube size', min: 0.1, max: 1.5, step: 0.05, value: 0.4, unit: 'm', onInput: draw });
+  const c = Notes.canvas(w.stage, { aspect: 0.62 });
+  const ro = Notes.readout(w.readout, { 'Vergence angle': '', 'Disparity (f = 1000 px)': '', 'Apparent size if IPD were 63 mm': '' });
+  function eyeView(ctx, vx, vy, vw, vh, eyeX, Z, S, label) {
+    ctx.save(); ctx.beginPath(); ctx.rect(vx, vy, vw, vh); ctx.clip(); ctx.fillStyle = '#f7f8fc'; ctx.fillRect(vx, vy, vw, vh);
+    const f = vw * 0.9; // px focal length for this little panel (60° fov-ish)
+    const cx = vx + vw / 2, cy = vy + vh / 2;
+    // ground grid for context
+    ctx.strokeStyle = '#e3e6ef'; for (let z = 1; z <= 12; z += 1) { const y = cy + f * 1.2 / z; ctx.beginPath(); ctx.moveTo(vx, y); ctx.lineTo(vx + vw, y); ctx.stroke(); }
+    for (let x = -6; x <= 6; x += 1) { ctx.beginPath(); ctx.moveTo(cx + f * (x - eyeX) / 0.9, cy + f * 1.2 / 0.9); ctx.lineTo(cx + f * (x - eyeX) / 12, cy + f * 1.2 / 12); ctx.stroke(); }
+    // cube faces: front at Z - S/2, back at Z + S/2
+    const cube = Notes.box(0, 0, Z, S, S, S);
+    const P = cube.v.map(p => ({ x: cx + f * (p[0] - eyeX) / p[2], y: cy - f * p[1] / p[2] }));
+    ctx.strokeStyle = '#3b4fd8'; ctx.lineWidth = 1.5;
+    ctx.fillStyle = 'rgba(59,79,216,.10)'; ctx.beginPath(); [4, 5, 6, 7].forEach((i, k) => k ? ctx.lineTo(P[i].x, P[i].y) : ctx.moveTo(P[i].x, P[i].y)); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(59,79,216,.22)'; ctx.beginPath(); [0, 1, 2, 3].forEach((i, k) => k ? ctx.lineTo(P[i].x, P[i].y) : ctx.moveTo(P[i].x, P[i].y)); ctx.closePath(); ctx.fill(); ctx.stroke();
+    cube.e.slice(8).forEach(([a, b]) => { ctx.beginPath(); ctx.moveTo(P[a].x, P[a].y); ctx.lineTo(P[b].x, P[b].y); ctx.stroke(); });
+    ctx.strokeStyle = '#c2334d'; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(cx, vy); ctx.lineTo(cx, vy + vh); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore(); ctx.strokeStyle = '#cfd4e3'; ctx.strokeRect(vx + .5, vy + .5, vw - 1, vh - 1);
+    Notes.draw.text(ctx, label, vx + 8, vy + 16, { size: 12, weight: '700', color: '#1d2233' });
+    const front = (P[0].x + P[1].x) / 2; return front - cx;
+  }
+  function draw() {
+    c.clear('#fff'); const ctx = c.ctx; const I = ipd.value / 1000, Z = dist.value, S = size.value;
+    const topH = c.h * 0.46; const vw = (c.w - 30) / 2, vh = c.h - topH - 18;
+    // top-down diagram
+    const ox = c.w / 2, oy = topH - 24; const scale = (topH - 50) / 10.5;
+    ctx.strokeStyle = '#e3e6ef'; for (let z = 0; z <= 10; z += 1) { const y = oy - z * scale; ctx.beginPath(); ctx.moveTo(ox - 120, y); ctx.lineTo(ox + 120, y); ctx.stroke(); Notes.draw.text(ctx, z + ' m', ox + 126, y + 4, { size: 10, color: '#7b819a', mono: true }); }
+    const eL = { x: ox - I * 1000 * 0.9, y: oy }, eR = { x: ox + I * 1000 * 0.9, y: oy }; // exaggerate eye spacing 0.9 px/mm
+    const cz = oy - Z * scale; const half = S * scale / 2;
+    ctx.fillStyle = 'rgba(59,79,216,.15)'; ctx.strokeStyle = '#3b4fd8'; ctx.fillRect(ox - half, cz - half, half * 2, half * 2); ctx.strokeRect(ox - half, cz - half, half * 2, half * 2);
+    ctx.strokeStyle = '#c2334d'; ctx.lineWidth = 1.2; [eL, eR].forEach(e => { ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(ox, cz); ctx.stroke(); });
+    Notes.draw.dot(ctx, eL.x, eL.y, 6, '#1d2233'); Notes.draw.dot(ctx, eR.x, eR.y, 6, '#1d2233');
+    Notes.draw.text(ctx, 'L', eL.x, eL.y + 20, { size: 11, align: 'center', weight: '700' }); Notes.draw.text(ctx, 'R', eR.x, eR.y + 20, { size: 11, align: 'center', weight: '700' });
+    Notes.draw.text(ctx, 'IPD ' + ipd.value + ' mm (drawn exaggerated)', eL.x - 16, oy + 4, { size: 11, align: 'right', color: '#7b819a' });
+    const theta = 2 * Math.atan(I / (2 * Z));
+    Notes.draw.text(ctx, 'θ = ' + Notes.deg(theta).toFixed(2) + '°', ox + 8, cz + half + 14, { size: 12, color: '#c2334d', weight: '700' });
+    Notes.draw.text(ctx, 'top-down view', 10, 16, { size: 12, weight: '700', color: '#1d2233' });
+    // eye views
+    const dL = eyeView(ctx, 10, topH, vw, vh, -I / 2, Z, S, 'Left eye sees');
+    const dR = eyeView(ctx, 20 + vw, topH, vw, vh, I / 2, Z, S, 'Right eye sees');
+    Notes.draw.text(ctx, 'dashed line = straight ahead for each eye; the cube shifts opposite ways', c.w / 2, c.h - 4, { size: 10, align: 'center', color: '#7b819a' });
+    const disp = 1000 * I / Z;
+    Notes.live.set('verg', Notes.deg(theta).toFixed(2) + '°'); Notes.live.set('disp', disp.toFixed(1));
+    ro.set('Vergence angle', Notes.deg(theta).toFixed(2) + '°'); ro.set('Disparity (f = 1000 px)', disp.toFixed(1) + ' px');
+    ro.set('Apparent size if IPD were 63 mm', (S * ipd.value / 63).toFixed(2) + ' m  (world scales with camera separation)');
+  }
+  c.onResize = draw; draw();
+});
+
+Notes.widget('w-fov', w => {
+  const fov = Notes.slider(w.controls, { label: 'Horizontal FOV', min: 30, max: 210, step: 1, value: 110, unit: '°', onInput: draw });
+  const yaw = Notes.slider(w.controls, { label: 'Head yaw', min: -90, max: 90, step: 1, value: 0, unit: '°', onInput: draw });
+  Notes.button(w.controls, { label: 'Quest 3 (≈110°)', onClick: () => { fov.value = 110; draw(); } });
+  Notes.button(w.controls, { label: 'Human binocular (≈200°)', onClick: () => { fov.value = 200; draw(); } });
+  Notes.button(w.controls, { label: 'Cardboard viewer (≈90°)', onClick: () => { fov.value = 90; draw(); } });
+  const c = Notes.canvas(w.stage, { aspect: 0.6 });
+  const ro = Notes.readout(w.readout, { 'Objects in view': '', 'Image shift per 1° head turn (1000-px-wide eye buffer)': '' });
+  const objs = [];
+  for (let i = 0; i < 26; i++) { const a = -Math.PI + i / 26 * Math.PI * 2 + 0.1; const r = 2 + (i * 7919 % 5); objs.push({ x: Math.cos(a) * r, z: Math.sin(a) * r, col: ['#3b4fd8', '#0f8b8d', '#b26a00', '#5b3fa8', '#2f8f4e'][i % 5] }); }
+  function draw() {
+    c.clear('#fff'); const ctx = c.ctx; const ox = c.w / 2, oy = c.h / 2 + 10, sc = Math.min(c.w, c.h) / 16;
+    const F = Notes.rad(fov.value), Y = Notes.rad(yaw.value);
+    // fov wedge
+    const R = 9 * sc; ctx.fillStyle = 'rgba(59,79,216,.10)'; ctx.beginPath(); ctx.moveTo(ox, oy);
+    if (fov.value >= 360) ctx.arc(ox, oy, R, 0, Math.PI * 2); else ctx.arc(ox, oy, R, -Math.PI / 2 + Y - F / 2, -Math.PI / 2 + Y + F / 2); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#3b4fd8'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + Math.cos(-Math.PI / 2 + Y - F / 2) * R, oy + Math.sin(-Math.PI / 2 + Y - F / 2) * R); ctx.moveTo(ox, oy); ctx.lineTo(ox + Math.cos(-Math.PI / 2 + Y + F / 2) * R, oy + Math.sin(-Math.PI / 2 + Y + F / 2) * R); ctx.stroke();
+    let inView = 0;
+    objs.forEach(o => { const px = ox + o.x * sc, py = oy - o.z * sc; let ang = Math.atan2(o.x, o.z) - Y; ang = Math.atan2(Math.sin(ang), Math.cos(ang)); const vis = Math.abs(ang) <= F / 2; if (vis) inView++; ctx.globalAlpha = vis ? 1 : 0.25; ctx.fillStyle = o.col; ctx.fillRect(px - 7, py - 7, 14, 14); ctx.globalAlpha = 1; });
+    // head
+    Notes.draw.dot(ctx, ox, oy, 12, '#1d2233'); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + Math.sin(Y) * 14, oy - Math.cos(Y) * 14); ctx.stroke();
+    Notes.draw.text(ctx, fov.value + '° FOV', ox, oy + 34, { size: 13, align: 'center', weight: '700', color: '#3b4fd8' });
+    // periphery note
+    Notes.draw.text(ctx, 'faded = outside the field of view (it still exists — the user must turn to see it)', c.w / 2, c.h - 6, { size: 11, align: 'center', color: '#7b819a' });
+    ro.set('Objects in view', inView + ' of ' + objs.length);
+    ro.set('Image shift per 1° head turn (1000-px-wide eye buffer)', (1000 / fov.value).toFixed(1) + ' px  — narrower FOV means more pixels per degree but a smaller window');
+  }
+  c.onResize = draw; draw();
+});
+
+Notes.widget('w-dof', w => {
+  const three = Notes.toggle(w.controls, { label: '3DoF only (ignore position)', value: false, onChange: draw });
+  const lean = Notes.slider(w.controls, { label: 'Lean sideways (x)', min: -1, max: 1, step: 0.01, value: 0, unit: 'm', onInput: draw });
+  const crouch = Notes.slider(w.controls, { label: 'Crouch / stand (y)', min: -0.8, max: 0.4, step: 0.01, value: 0, unit: 'm', onInput: draw });
+  const step = Notes.slider(w.controls, { label: 'Step forward (z)', min: -1, max: 2, step: 0.01, value: 0, unit: 'm', onInput: draw });
+  Notes.button(w.controls, { label: 'Reset pose', onClick: () => { lean.value = 0; crouch.value = 0; step.value = 0; cam.yaw = 0; cam.pitch = 0; draw(); } });
+  const c = Notes.canvas(w.stage, { aspect: 0.6 });
+  const ro = Notes.readout(w.readout, { 'Head pose (x, y, z | pitch, yaw)': '', 'What the tracker reports': '' });
+  const cam = { pos: [0, 1.6, 0], yaw: 0, pitch: 0, fov: 70, near: 0.1 };
+  const pillars = []; for (let i = 0; i < 7; i++) pillars.push(Notes.box((i - 3) * 1.2, 1.0, 4 + (i % 3) * 1.5, 0.4, 2.0, 0.4));
+  const wall = Notes.box(1.2, 1.0, 2.2, 0.15, 2.0, 1.4);
+  const treasure = Notes.box(2.0, 0.3, 4.2, 0.5, 0.5, 0.5);
+  function draw() {
+    c.clear('#fff'); const ctx = c.ctx;
+    const t = three.value;
+    cam.pos = t ? [0, 1.6, 0] : [lean.value, 1.6 + crouch.value, step.value];
+    const K = Notes.camera(cam, { x: 0, y: 0, w: c.w, h: c.h });
+    // sky/floor
+    const g = ctx.createLinearGradient(0, 0, 0, c.h); g.addColorStop(0, '#eef2ff'); g.addColorStop(1, '#ffffff'); ctx.fillStyle = g; ctx.fillRect(0, 0, c.w, c.h);
+    K.grid(ctx, 10, 1, 0, '#e3e6ef');
+    const drawBox = (b, fill, stroke) => { const order = b.faces.map(f => ({ f, d: f.reduce((s, i) => s + K.toView(b.v[i])[2], 0) / 4 })).sort((a, b2) => b2.d - a.d); order.forEach(o => K.poly(ctx, o.f.map(i => b.v[i]), fill, stroke)); };
+    const all = [...pillars.map(p => ({ b: p, f: 'rgba(15,139,141,.35)', s: '#0f8b8d' })), { b: treasure, f: 'rgba(178,106,0,.7)', s: '#b26a00' }, { b: wall, f: 'rgb(74,81,105)', s: '#1d2233' }];
+    all.map(o => ({ o, d: K.toView([o.b.v[0][0], o.b.v[0][1], o.b.v[0][2]])[2] + K.toView(o.b.v[6])[2] })).sort((a, b2) => b2.d - a.d).forEach(({ o }) => drawBox(o.b, o.f, o.s));
+    if (t && (Math.abs(lean.value) > 0.02 || Math.abs(crouch.value) > 0.02 || Math.abs(step.value) > 0.02)) Notes.draw.text(ctx, 'Your body moved — a 3DoF viewer cannot tell. The wall never gets out of the way.', c.w / 2, 24, { size: 12, align: 'center', weight: '700', color: '#c2334d', bg: 'rgba(255,255,255,.9)' });
+    else Notes.draw.text(ctx, 'Lean to peek around the dark wall at the treasure chest.', c.w / 2, 24, { size: 12, align: 'center', color: '#4a5169', bg: 'rgba(255,255,255,.9)' });
+    Notes.draw.text(ctx, 'drag to look around', c.w - 10, c.h - 8, { size: 10, align: 'right', color: '#7b819a' });
+    ro.set('Head pose (x, y, z | pitch, yaw)', `${lean.value.toFixed(2)}, ${(1.6 + crouch.value).toFixed(2)}, ${step.value.toFixed(2)} | ${Notes.deg(cam.pitch).toFixed(0)}°, ${Notes.deg(cam.yaw).toFixed(0)}°`);
+    ro.set('What the tracker reports', t ? 'rotation only (pitch, yaw, roll) — position is assumed fixed' : 'rotation + position — all six degrees of freedom');
+  }
+  let last = null;
+  c.pointer((type, p) => { if (type === 'down') last = p; else if (type === 'drag' && last) { cam.yaw += (p.x - last.x) * 0.005; cam.pitch = Notes.clamp(cam.pitch - (p.y - last.y) * 0.005, -1, 1); last = p; draw(); } else if (type === 'up') last = null; });
+  c.onResize = draw; draw();
+});
+
+Notes.widget('w-latency', w => {
+  const lat = Notes.slider(w.controls, { label: 'Motion-to-photon latency', min: 0, max: 150, step: 1, value: 20, unit: 'ms', onInput: () => draw() });
+  const vel = Notes.slider(w.controls, { label: 'Head angular velocity', min: 0, max: 400, step: 5, value: 120, unit: '°/s', onInput: () => draw() });
+  const head = Notes.slider(w.controls, { label: 'Head yaw (manual)', min: -60, max: 60, step: 1, value: 0, unit: '°', onInput: v => { manual = v; auto.stop(); playBtn.button.textContent = 'Play automatic head turn'; draw(); } });
+  let manual = 0; let hist = []; // [time, yaw]
+  const c = Notes.canvas(w.stage, { aspect: 0.5 });
+  const ro = Notes.readout(w.readout, { 'Angular error': '', 'Verdict': '' });
+  const auto = c.animate((dt, t) => { const y = 55 * Math.sin(t * (vel.value / 400) * 2.2); manual = y; head.value = y; draw(t); }, { autostart: false });
+  const playBtn = Notes.button(w.controls, { label: 'Play automatic head turn', primary: true, onClick: b => { if (auto.running) { auto.stop(); b.textContent = 'Play automatic head turn'; } else { auto.start(); b.textContent = 'Pause'; } } });
+  function drawScene(ctx, yawDeg, color, alpha, label) {
+    const cam = { pos: [0, 1.6, 0], yaw: Notes.rad(yawDeg), pitch: 0, fov: 70 };
+    const K = Notes.camera(cam, { x: 0, y: 0, w: c.w, h: c.h });
+    ctx.save(); ctx.globalAlpha = alpha; ctx.strokeStyle = color; ctx.lineWidth = 2;
+    for (let i = -6; i <= 6; i++) { const b = Notes.box(i * 1.5, 1.0, 5, 0.5, 2, 0.5); b.e.forEach(([a, d]) => K.line(ctx, b.v[a], b.v[d])); }
+    K.grid(ctx, 8, 1, 0, color === '#3b4fd8' ? '#d7dcf8' : '#e3e6ef');
+    ctx.restore();
+  }
+  function draw(t) {
+    c.clear('#fff'); const ctx = c.ctx;
+    const err = vel.value * lat.value / 1000; // degrees the world lags
+    // true world vs displayed: when turning right (+yaw), display still shows the older (smaller) yaw
+    const dir = auto.running ? Math.sign(Math.cos((t || 0) * (vel.value / 400) * 2.2)) || 1 : 1;
+    drawScene(ctx, manual, '#9aa0b8', 0.6, 'true');
+    drawScene(ctx, manual - dir * err, '#3b4fd8', 1, 'displayed');
+    ctx.fillStyle = '#9aa0b8'; ctx.fillRect(10, 10, 14, 4); Notes.draw.text(ctx, 'where the world should be (true head pose)', 30, 16, { size: 11 });
+    ctx.fillStyle = '#3b4fd8'; ctx.fillRect(10, 28, 14, 4); Notes.draw.text(ctx, 'what the display shows (pose sampled ' + lat.value + ' ms ago)', 30, 34, { size: 11 });
+    Notes.live.set('laterr', err.toFixed(1));
+    ro.set('Angular error', err.toFixed(1) + '° at ' + vel.value + '°/s × ' + lat.value + ' ms');
+    ro.set('Verdict', lat.value <= 20 ? 'imperceptible for most users' : lat.value <= 40 ? 'noticeable swim during fast turns' : lat.value <= 80 ? 'obvious lag; presence breaks, sickness likely' : 'unusable — the world drags behind the head');
+  }
+  c.onResize = () => draw(); draw();
+});
+/* ============================ Session 3 widgets ============================ */
+Notes.widget('w-transform', w => {
+  const px = Notes.slider(w.controls, { label: 'Position X', min: -3, max: 3, step: 0.1, value: 0, unit: 'm', onInput: draw });
+  const py = Notes.slider(w.controls, { label: 'Position Y', min: 0, max: 3, step: 0.1, value: 1, unit: 'm', onInput: draw });
+  const pz = Notes.slider(w.controls, { label: 'Position Z', min: -3, max: 3, step: 0.1, value: 0, unit: 'm', onInput: draw });
+  const rx = Notes.slider(w.controls, { label: 'Rotation X (pitch)', min: -180, max: 180, step: 1, value: 0, unit: '°', onInput: draw });
+  const ry = Notes.slider(w.controls, { label: 'Rotation Y (yaw)', min: -180, max: 180, step: 1, value: 30, unit: '°', onInput: draw });
+  const rz = Notes.slider(w.controls, { label: 'Rotation Z (roll)', min: -180, max: 180, step: 1, value: 0, unit: '°', onInput: draw });
+  const sx = Notes.slider(w.controls, { label: 'Scale X', min: 0.2, max: 3, step: 0.1, value: 1, onInput: draw });
+  const sy = Notes.slider(w.controls, { label: 'Scale Y', min: 0.2, max: 3, step: 0.1, value: 1, onInput: draw });
+  const sz = Notes.slider(w.controls, { label: 'Scale Z', min: 0.2, max: 3, step: 0.1, value: 1, onInput: draw });
+  const c = Notes.canvas(w.stage, { aspect: 0.72 });
+  const ro = Notes.readout(w.readout, { 'Inspector › Transform': '' });
+  const orbit = { yaw: 0.6, pitch: 0.38, dist: 6.5 };
+  function draw() {
+    c.clear('#fff'); const ctx = c.ctx;
+    const camPos = [Math.sin(orbit.yaw) * Math.cos(orbit.pitch) * orbit.dist, Math.sin(orbit.pitch) * orbit.dist + 1, -Math.cos(orbit.yaw) * Math.cos(orbit.pitch) * orbit.dist];
+    const K = Notes.camera({ pos: camPos, yaw: -orbit.yaw, pitch: orbit.pitch, fov: 45 }, { x: 0, y: 0, w: c.w, h: c.h });
+    K.grid(ctx, 4, 1, 0, '#e3e6ef', -4);
+    // world axes
+    ctx.lineWidth = 2; ctx.strokeStyle = '#c2334d'; K.line(ctx, [0, 0, 0], [1.5, 0, 0]); ctx.strokeStyle = '#2f8f4e'; K.line(ctx, [0, 0, 0], [0, 1.5, 0]); ctx.strokeStyle = '#3b4fd8'; K.line(ctx, [0, 0, 0], [0, 0, 1.5]);
+    const lab = (p, t, col) => { const q = K.project(p); if (q) Notes.draw.text(ctx, t, q.x + 4, q.y - 4, { size: 12, weight: '700', color: col }); };
+    lab([1.6, 0, 0], 'X (right)', '#c2334d'); lab([0, 1.6, 0], 'Y (up)', '#2f8f4e'); lab([0, 0, 1.6], 'Z (forward)', '#3b4fd8');
+    // local transform: scale, then rotate (Unity applies Euler as Z, then X, then Y), then translate
+    const S = [sx.value, sy.value, sz.value], R = [Notes.rad(rx.value), Notes.rad(ry.value), Notes.rad(rz.value)], T = [px.value, py.value, pz.value];
+    const xf = p => { let q = [p[0] * S[0], p[1] * S[1], p[2] * S[2]]; q = Notes.V.rotZ(q, R[2]); q = Notes.V.rotX(q, R[0]); q = Notes.V.rotY(q, R[1]); return Notes.V.add(q, T); };
+    const b = Notes.box(0, 0, 0, 1, 1, 1); const v = b.v.map(xf);
+    const faces = b.faces.map(f => ({ f, d: f.reduce((s, i) => s + K.toView(v[i])[2], 0) })).sort((a, b2) => b2.d - a.d);
+    faces.forEach((o, k) => K.poly(ctx, o.f.map(i => v[i]), k < 3 ? 'rgba(59,79,216,.12)' : 'rgba(59,79,216,.28)', '#3b4fd8'));
+    // local axes of the object
+    ctx.lineWidth = 2.5; ctx.strokeStyle = '#c2334d'; K.line(ctx, T, xf([1.2 / S[0], 0, 0])); ctx.strokeStyle = '#2f8f4e'; K.line(ctx, T, xf([0, 1.2 / S[1], 0])); ctx.strokeStyle = '#3b4fd8'; K.line(ctx, T, xf([0, 0, 1.2 / S[2]]));
+    // front-face marker (a small "F" on +Z face)
+    const fz = K.project(xf([0, 0, 0.51])); if (fz) Notes.draw.text(ctx, 'front (+Z)', fz.x, fz.y, { size: 10, align: 'center', color: '#3b4fd8', bg: 'rgba(255,255,255,.8)' });
+    Notes.draw.text(ctx, 'thin axes = world; thick axes = the object\'s local axes (they turn and stretch with it)', c.w / 2, c.h - 6, { size: 11, align: 'center', color: '#7b819a' });
+    ro.set('Inspector › Transform', `Position (${px.value.toFixed(1)}, ${py.value.toFixed(1)}, ${pz.value.toFixed(1)})   Rotation (${rx.value}, ${ry.value}, ${rz.value})   Scale (${sx.value.toFixed(1)}, ${sy.value.toFixed(1)}, ${sz.value.toFixed(1)})`);
+  }
+  let last = null;
+  c.pointer((t, p) => { if (t === 'down') last = p; else if (t === 'drag' && last) { orbit.yaw += (p.x - last.x) * 0.006; orbit.pitch = Notes.clamp(orbit.pitch + (p.y - last.y) * 0.006, 0.05, 1.3); last = p; draw(); } else if (t === 'up') last = null; });
+  c.onResize = draw; draw();
+});
+
+Notes.widget('w-scale', w => {
+  const eye = Notes.slider(w.controls, { label: 'Player eye height', min: 1.0, max: 2.0, step: 0.01, value: 1.6, unit: 'm', help: 'Standing adult ≈ 1.6 m; seated ≈ 1.2 m', onInput: draw });
+  const hgt = Notes.slider(w.controls, { label: 'Object height h', min: 0.1, max: 4, step: 0.05, value: 0.75, unit: 'm', onInput: draw });
+  const dist = Notes.slider(w.controls, { label: 'Distance d', min: 0.3, max: 8, step: 0.1, value: 2, unit: 'm', onInput: draw });
+  const preset = Notes.select(w.controls, { label: 'Real-world reference', options: ['table (0.75 m)', 'seat (0.45 m)', 'counter (0.9 m)', 'door (2.1 m)', 'ceiling (2.4 m)', 'person (1.7 m)', 'NPC guide, ethereal (2.0 m)'], value: 'table (0.75 m)', onChange: v => { hgt.value = parseFloat(v.match(/([\d.]+) m/)[1]); draw(); } });
+  const c = Notes.canvas(w.stage, { aspect: 0.55 });
+  const ro = Notes.readout(w.readout, { 'Visual angle α': '', 'Top of object relative to eye': '', 'Reads as': '' });
+  function draw() {
+    c.clear('#fff'); const ctx = c.ctx; const floor = c.h - 40; const sc = Math.min((c.w - 120) / 8.5, (floor - 30) / 4.2);
+    const x0 = 60; // player x
+    ctx.strokeStyle = '#cfd4e3'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(10, floor); ctx.lineTo(c.w - 10, floor); ctx.stroke();
+    for (let m = 0; m <= 8; m++) { const x = x0 + m * sc; ctx.strokeStyle = '#e3e6ef'; ctx.beginPath(); ctx.moveTo(x, floor); ctx.lineTo(x, floor + 6); ctx.stroke(); Notes.draw.text(ctx, m + ' m', x, floor + 18, { size: 10, align: 'center', color: '#7b819a', mono: true }); }
+    // player
+    const E = eye.value; const eyeY = floor - E * sc;
+    ctx.strokeStyle = '#1d2233'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x0, floor); ctx.lineTo(x0, eyeY + 0.12 * sc); ctx.stroke(); // body
+    ctx.beginPath(); ctx.arc(x0, eyeY - 0.02 * sc, 0.12 * sc, 0, Math.PI * 2); ctx.stroke(); // head
+    ctx.beginPath(); ctx.moveTo(x0, eyeY + 0.4 * sc); ctx.lineTo(x0 + 0.35 * sc, eyeY + 0.25 * sc); ctx.stroke(); // arm
+    Notes.draw.text(ctx, 'eye ' + E.toFixed(2) + ' m', x0 - 8, eyeY + 4, { size: 11, align: 'right', color: '#1d2233', weight: '600' });
+    // object
+    const ox = x0 + dist.value * sc, top = floor - hgt.value * sc; const wdt = Math.max(10, 0.5 * sc);
+    ctx.fillStyle = 'rgba(59,79,216,.18)'; ctx.strokeStyle = '#3b4fd8'; ctx.lineWidth = 2; ctx.fillRect(ox - wdt / 2, top, wdt, floor - top); ctx.strokeRect(ox - wdt / 2, top, wdt, floor - top);
+    // sight lines
+    ctx.strokeStyle = '#c2334d'; ctx.lineWidth = 1.2; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(x0 + 0.1 * sc, eyeY); ctx.lineTo(ox - wdt / 2, top); ctx.moveTo(x0 + 0.1 * sc, eyeY); ctx.lineTo(ox - wdt / 2, floor); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = '#9aa0b8'; ctx.beginPath(); ctx.moveTo(x0 + 0.1 * sc, eyeY); ctx.lineTo(ox, eyeY); ctx.stroke(); Notes.draw.text(ctx, 'eye level', ox + 6, eyeY + 4, { size: 10, color: '#7b819a' });
+    const alpha = Notes.deg(Math.atan2(hgt.value - E, dist.value) - Math.atan2(-E, dist.value));
+    Notes.draw.text(ctx, 'α = ' + alpha.toFixed(1) + '°', x0 + 0.8 * sc, eyeY - 8, { size: 13, color: '#c2334d', weight: '700' });
+    Notes.draw.text(ctx, 'h = ' + hgt.value.toFixed(2) + ' m', ox + wdt / 2 + 6, top + 12, { size: 11, color: '#3b4fd8', weight: '600' });
+    const centred = Notes.deg(2 * Math.atan(hgt.value / (2 * dist.value)));
+    Notes.live.set('valpha', centred.toFixed(1) + '°');
+    ro.set('Visual angle α', alpha.toFixed(1) + '° as drawn (object on the floor); ' + centred.toFixed(1) + '° if centred at eye level');
+    const rel = hgt.value - E; ro.set('Top of object relative to eye', (rel >= 0 ? '+' : '') + rel.toFixed(2) + ' m ' + (rel > 0.3 ? '— player must look up; imposing' : rel > -0.3 ? '— at eye level; UI sweet spot' : rel > -0.9 ? '— glance down; table/counter zone' : '— look well down; floor objects'));
+    const h = hgt.value; ro.set('Reads as', h < 0.3 ? 'step / low box' : h < 0.55 ? 'seat / bench' : h < 0.85 ? 'table / desk' : h < 1.1 ? 'counter / railing' : h < 1.9 ? 'person / tall furniture' : h < 2.3 ? 'doorway / tall NPC' : 'wall / ceiling / monument');
+  }
+  c.onResize = draw; draw();
+});
+
+Notes.widget('w-deltatime', w => {
+  const fps = Notes.slider(w.controls, { label: 'Simulated frame rate', min: 10, max: 120, step: 1, value: 60, unit: 'fps', onInput: () => {} });
+  Notes.button(w.controls, { label: 'Reset angles', onClick: () => { a1 = 0; a2 = 0; } });
+  const c = Notes.canvas(w.stage, { aspect: 0.45 });
+  const ro = Notes.readout(w.readout, { 'With Time.deltaTime (45°/s)': '', 'Without (45° per frame)': '' });
+  let a1 = 0, a2 = 0, acc = 0;
+  function cube(ctx, cx, cy, ang, col, label) {
+    const cam = Notes.camera({ pos: [0, 0.9, -3.4], yaw: 0, pitch: 0.22, fov: 40 }, { x: cx - 110, y: cy - 90, w: 220, h: 180 });
+    const b = Notes.box(0, 0, 0, 1, 1, 1); const v = b.v.map(p => Notes.V.rotY(p, ang));
+    const faces = b.faces.map(f => ({ f, d: f.reduce((s, i) => s + cam.toView(v[i])[2], 0) })).sort((p, q) => q.d - p.d);
+    faces.forEach((o, k) => cam.poly(ctx, o.f.map(i => v[i]), k < 3 ? col.replace('1)', '.15)') : col.replace('1)', '.35)'), col.replace('1)', '1)')));
+    Notes.draw.text(ctx, label, cx, cy + 108, { size: 11.5, align: 'center', weight: '700', color: '#1d2233', mono: true });
+  }
+  c.animate((dt) => {
+    acc += dt; const frameTime = 1 / fps.value; let frames = 0;
+    while (acc >= frameTime) { acc -= frameTime; frames++; a1 += Notes.rad(45) * frameTime; a2 += Notes.rad(45); }
+    c.clear('#fff'); const ctx = c.ctx;
+    cube(ctx, c.w * 0.28, c.h / 2 - 10, a1, 'rgba(47,143,78,1)', 'transform.Rotate(45 * Time.deltaTime)');
+    cube(ctx, c.w * 0.72, c.h / 2 - 10, a2, 'rgba(194,51,77,1)', 'transform.Rotate(45)  — no deltaTime');
+    Notes.draw.text(ctx, fps.value + ' fps → frame time ' + (1000 / fps.value).toFixed(1) + ' ms', c.w / 2, 18, { size: 12, align: 'center', color: '#4a5169' });
+    ro.set('With Time.deltaTime (45°/s)', '45°/s at any frame rate — one turn every 8 s');
+    ro.set('Without (45° per frame)', (45 * fps.value) + '°/s at ' + fps.value + ' fps — ' + (45 * fps.value / 360).toFixed(1) + ' turns per second');
+  });
+});
+
+/* ============================ Session 4 widgets ============================ */
+Notes.widget('w-matrix', w => {
+  const criteria = [['Added value', 5], ['Audience & need', 4], ['Presence potential', 4], ['Comfort', 5], ['Feasibility', 4], ['Novelty', 2]];
+  const scen = ['Life experience', 'Software app', 'Game'];
+  const weights = criteria.map((cr, i) => Notes.slider(w.controls, { label: 'Weight · ' + cr[0], min: 0, max: 5, step: 1, value: cr[1], onInput: draw }));
+  const ratings = scen.map(() => criteria.map(() => 3));
+  const c = Notes.canvas(w.stage, { aspect: 0.4 });
+  const ro = Notes.readout(w.readout, { 'Scores': '', 'Watch out': '' });
+  const cell = { x0: 190, top: 34, rowH: 0, colW: 0 };
+  function draw() {
+    c.clear('#fff'); const ctx = c.ctx;
+    const gridW = c.w * 0.58; cell.colW = (gridW - cell.x0) / scen.length; cell.rowH = (c.h - cell.top - 20) / criteria.length;
+    scen.forEach((s, j) => Notes.draw.text(ctx, s, cell.x0 + cell.colW * (j + .5), 22, { size: 12, align: 'center', weight: '700', color: '#1d2233' }));
+    criteria.forEach((cr, i) => {
+      const y = cell.top + i * cell.rowH; ctx.strokeStyle = '#eef0f6'; ctx.beginPath(); ctx.moveTo(10, y); ctx.lineTo(gridW, y); ctx.stroke();
+      Notes.draw.text(ctx, cr[0] + '  (w=' + weights[i].value + ')', 12, y + cell.rowH / 2 + 4, { size: 11.5, color: '#4a5169' });
+      scen.forEach((s, j) => { const r = ratings[j][i]; for (let k = 0; k < 5; k++) { const dx = cell.x0 + cell.colW * j + 14 + k * 16, dy = y + cell.rowH / 2; Notes.draw.dot(ctx, dx, dy, 6, k < r ? '#3b4fd8' : '#e3e6ef'); } });
+    });
+    Notes.draw.text(ctx, 'click dots to rate 0–5', 12, c.h - 6, { size: 10, color: '#7b819a' });
+    // bars
+    const bx = gridW + 24, bw = c.w - bx - 12; const W = weights.reduce((s, ws) => s + ws.value, 0) || 1;
+    const scores = scen.map((s, j) => ratings[j].reduce((sum, r, i) => sum + r * weights[i].value, 0) / W);
+    scores.forEach((sc, j) => { const y = 40 + j * 62; Notes.draw.text(ctx, scen[j], bx, y - 6, { size: 12, weight: '700' }); ctx.fillStyle = '#eef0fd'; ctx.fillRect(bx, y, bw, 22); ctx.fillStyle = sc >= 3.5 ? '#2f8f4e' : sc >= 2.5 ? '#b26a00' : '#c2334d'; ctx.fillRect(bx, y, bw * sc / 5, 22); Notes.draw.text(ctx, sc.toFixed(2) + ' / 5', bx + bw - 6, y + 16, { size: 12, align: 'right', weight: '700', color: '#1d2233', mono: true }); });
+    const flags = []; scen.forEach((s, j) => { if (ratings[j][3] <= 2) flags.push(s + ': comfort ≤ 2 (veto risk)'); if (ratings[j][4] <= 2) flags.push(s + ': feasibility ≤ 2'); });
+    ro.set('Scores', scen.map((s, j) => s + ' ' + scores[j].toFixed(2)).join('   ·   '));
+    ro.set('Watch out', flags.length ? flags.join('; ') : 'no vetoes — now argue about the weights');
+  }
+  c.pointer((t, p) => { if (t !== 'down') return; if (p.x < cell.x0 || p.y < cell.top) return; const j = Math.floor((p.x - cell.x0) / cell.colW), i = Math.floor((p.y - cell.top) / cell.rowH); if (j < 0 || j >= scen.length || i < 0 || i >= criteria.length) return; const k = Math.round((p.x - (cell.x0 + cell.colW * j + 14)) / 16); const r = Notes.clamp(k + 1, 0, 5); ratings[j][i] = ratings[j][i] === r ? r - 1 : r; draw(); });
+  c.onResize = draw; draw();
+});
+
+Notes.widget('w-plan', w => {
+  const ms = [
+    ['M1 Proposal & concept', 1, 2, 'GDD: storyline, characters; mock views; videos'], ['M2 Platform compatibility', 3, 4, 'Quest build with movement, interaction, UI'], ['M3 Environment creation', 5, 6, 'Forest / mountain / ruins; optimisation report; Exam 1'],
+    ['M4 UI & interaction', 7, 8, 'Menus, inventory, dialogue; user test round 1'], ['M5 Movement mechanics', 9, 10, 'Teleport + smooth + hybrid; comfort testing; worldview scene'], ['M6 Sound design', 11, 12, 'Music, ambience, SFX, spatial audio; dark mode'], ['M7 Final integration', 13, 15, 'Full game, playtests, presentation; Exam 2']
+  ];
+  const today = Notes.slider(w.controls, { label: 'Today (week)', min: 1, max: 15, step: 0.1, value: 2.6, format: v => 'week ' + Math.floor(v), onInput: draw });
+  const team = Notes.slider(w.controls, { label: 'Team size', min: 1, max: 5, step: 1, value: 3, onInput: draw });
+  const hrs = Notes.slider(w.controls, { label: 'Hours / person / week outside class', min: 2, max: 15, step: 1, value: 6, unit: 'h', onInput: draw });
+  const est = Notes.slider(w.controls, { label: 'Estimated build hours per milestone (before ×2)', min: 10, max: 120, step: 5, value: 40, unit: 'h', onInput: draw });
+  const c = Notes.canvas(w.stage, { aspect: 0.6 });
+  const ro = Notes.readout(w.readout, { 'Capacity per 2-week milestone': '', 'Estimate × 2 (first-time multiplier)': '', 'Verdict': '' });
+  function draw() {
+    c.clear('#fff'); const ctx = c.ctx; const x0 = 170, x1 = c.w - 16, top = 34, rowH = (c.h - top - 34) / ms.length;
+    const wx = wk => x0 + (wk - 1) / 15 * (x1 - x0);
+    for (let wk = 1; wk <= 15; wk++) { ctx.fillStyle = wk % 2 ? '#fafbfe' : '#fff'; ctx.fillRect(wx(wk), top, (x1 - x0) / 15, c.h - top - 34); Notes.draw.text(ctx, 'W' + wk, wx(wk + .5), 14, { size: 10, align: 'center', color: '#7b819a', mono: true }); }
+    ctx.fillStyle = 'rgba(178,106,0,.10)'; ctx.fillRect(wx(9.98), top, wx(10.02) - wx(9.98), c.h - top - 34);
+    const tw = today.value;
+    ms.forEach((m, i) => {
+      const y = top + i * rowH + 8, h = rowH - 16; const a = wx(m[1]), b = wx(m[2] + 1);
+      const done = tw >= m[2] + 1, cur = tw >= m[1] && tw < m[2] + 1;
+      ctx.fillStyle = done ? '#2f8f4e' : cur ? '#3b4fd8' : '#e3e6ef'; ctx.fillRect(a + 2, y, b - a - 4, h);
+      Notes.draw.text(ctx, m[0], x0 - 8, y + h / 2 + 4, { size: 11.5, align: 'right', weight: cur ? '700' : '500', color: cur ? '#3b4fd8' : '#4a5169' });
+      if (cur) Notes.draw.text(ctx, 'now: ' + m[3], c.w / 2, c.h - 16, { size: 11.5, align: 'center', color: '#3b4fd8', weight: '600' });
+      else if (done) Notes.draw.text(ctx, 'done', a + 8, y + h / 2 + 4, { size: 11, color: '#fff' });
+    });
+    const tx = wx(tw); ctx.strokeStyle = '#c2334d'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(tx, top - 4); ctx.lineTo(tx, c.h - 34); ctx.stroke(); ctx.setLineDash([]);
+    Notes.draw.text(ctx, 'today', tx, top - 8, { size: 11, align: 'center', color: '#c2334d', weight: '700', bg: '#fff' });
+    Notes.draw.text(ctx, 'Exam 1 end of W6 · spring break between W9 and W10 · Exam 2 end of W15', c.w / 2, c.h - 2, { size: 10, align: 'center', color: '#7b819a' });
+    const cap = team.value * hrs.value * 2, need = est.value * 2;
+    ro.set('Capacity per 2-week milestone', cap + ' h  (' + team.value + ' × ' + hrs.value + ' h × 2 weeks)');
+    ro.set('Estimate × 2 (first-time multiplier)', need + ' h');
+    ro.set('Verdict', need <= cap * 0.8 ? 'fits with margin — add a stretch goal' : need <= cap ? 'tight — protect the MVP, cut the edges' : 'over capacity by ' + (need - cap) + ' h — cut scope now, not in week 6');
+  }
+  c.onResize = draw; draw();
+});
+</script>
+</body>
+</html>

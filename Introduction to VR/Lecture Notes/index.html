@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Introduction to VR Lecture Notes — Virtual Reality &amp; Game Development</title>
+<style>
+/* Introduction to VR lecture notes — shared stylesheet (light mode, self-contained) */
+:root {
+  --bg: #fbfbfd;
+  --paper: #ffffff;
+  --ink: #1d2233;
+  --ink-2: #4a5169;
+  --ink-3: #7b819a;
+  --line: #e3e6ef;
+  --line-2: #cfd4e3;
+  --accent: #3b4fd8;
+  --accent-2: #2a3aa6;
+  --accent-soft: #eef0fd;
+  --teal: #0f8b8d;
+  --teal-soft: #e6f5f5;
+  --amber: #b26a00;
+  --amber-soft: #fff5e0;
+  --rose: #c2334d;
+  --rose-soft: #fdeaee;
+  --green: #2f8f4e;
+  --green-soft: #e8f6ec;
+  --code-bg: #f4f5f9;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(20, 25, 50, .06), 0 6px 20px rgba(20, 25, 50, .05);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --serif: Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 16.5px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.55rem; margin: 2.4rem 0 .8rem; padding-top: .4rem; }
+h3 { font-size: 1.2rem; margin: 1.8rem 0 .6rem; color: var(--ink); }
+h4 { font-size: 1.02rem; margin: 1.2rem 0 .4rem; }
+p, ul, ol { margin: 0 0 1rem; }
+ul, ol { padding-left: 1.4rem; }
+li { margin: .25rem 0; }
+strong { font-weight: 650; }
+code { font-family: var(--mono); font-size: .9em; background: var(--code-bg); padding: .1em .35em; border-radius: 5px; }
+pre { margin: 1rem 0; }
+pre code { background: none; padding: 0; font-size: .86rem; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2rem 0; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; }
+th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--accent-soft); font-weight: 650; color: var(--accent-2); }
+.table-wrap { overflow-x: auto; }
+kbd { font-family: var(--mono); font-size: .82em; background: #fff; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 5px; padding: .05em .4em; }
+
+/* ---------- Layout ---------- */
+.site-header {
+  background: var(--paper); border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 50;
+}
+.site-header .inner { max-width: 1080px; margin: 0 auto; padding: .7rem 1.25rem 0; }
+.crumbs { font-size: .8rem; color: var(--ink-3); display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.crumbs a { color: var(--ink-3); }
+.crumbs a:hover { color: var(--accent); }
+.title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: .15rem; }
+.title-row h1 { font-size: 1.35rem; }
+.title-row .topic-tag { font-size: .78rem; color: var(--accent-2); background: var(--accent-soft); padding: .15rem .6rem; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+.tabs { display: flex; gap: .25rem; overflow-x: auto; margin-top: .6rem; scrollbar-width: thin; }
+.tabs button {
+  appearance: none; border: 0; background: none; cursor: pointer; font: inherit;
+  padding: .55rem .85rem; color: var(--ink-2); border-bottom: 3px solid transparent;
+  white-space: nowrap; font-size: .9rem; display: flex; flex-direction: column; align-items: flex-start; gap: .05rem;
+  border-radius: 6px 6px 0 0;
+}
+.tabs button .t1 { font-weight: 650; }
+.tabs button .t2 { font-size: .74rem; color: var(--ink-3); font-weight: 400; }
+.tabs button:hover { background: var(--accent-soft); }
+.tabs button[aria-selected="true"] { color: var(--accent-2); border-bottom-color: var(--accent); }
+.tabs button[aria-selected="true"] .t2 { color: var(--accent-2); }
+
+main { max-width: 1080px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+.session { display: none; animation: fade .25s ease; }
+.session.active { display: block; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none; } }
+
+.session-head { margin: .5rem 0 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.session-head .kicker { color: var(--accent-2); font-weight: 650; font-size: .82rem; text-transform: uppercase; letter-spacing: .08em; }
+.session-head h2 { margin: .2rem 0 .4rem; font-size: 1.9rem; }
+.session-head .lede { color: var(--ink-2); font-size: 1.08rem; max-width: 62ch; }
+
+/* Topic overview page (first tab) */
+.topic-intro { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; align-items: start; }
+@media (max-width: 820px) { .topic-intro { grid-template-columns: 1fr; } }
+
+/* ---------- Boxes ---------- */
+.box {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1rem 1.2rem; margin: 1.2rem 0; box-shadow: var(--shadow);
+}
+.box > :last-child { margin-bottom: 0; }
+.box h4 { margin-top: 0; }
+.objectives { border-left: 4px solid var(--accent); }
+.objectives h4 { color: var(--accent-2); }
+.agenda { border-left: 4px solid var(--teal); }
+.agenda h4 { color: var(--teal); }
+.agenda table { margin: .4rem 0 0; font-size: .9rem; }
+.agenda td:first-child { white-space: nowrap; color: var(--ink-3); font-family: var(--mono); font-size: .82rem; }
+.next { border-left: 4px solid var(--ink-3); }
+.next h4 { color: var(--ink-2); }
+
+.callout { border-radius: var(--radius); padding: .9rem 1.1rem; margin: 1.2rem 0; border: 1px solid transparent; }
+.callout > :last-child { margin-bottom: 0; }
+.callout .label { display: block; font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; margin-bottom: .3rem; }
+.callout.note { background: var(--accent-soft); border-color: #d7dcf8; }
+.callout.note .label { color: var(--accent-2); }
+.callout.tip { background: var(--green-soft); border-color: #cfe8d6; }
+.callout.tip .label { color: var(--green); }
+.callout.warn { background: var(--amber-soft); border-color: #f2dfb3; }
+.callout.warn .label { color: var(--amber); }
+.callout.comfort { background: var(--rose-soft); border-color: #f4c9d1; }
+.callout.comfort .label { color: var(--rose); }
+.callout.unity { background: var(--teal-soft); border-color: #bfe3e3; }
+.callout.unity .label { color: var(--teal); }
+.callout.project { background: #f3f0fb; border-color: #dcd3f2; }
+.callout.project .label { color: #5b3fa8; }
+
+/* Concept definitions */
+.concepts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .9rem; margin: 1.2rem 0; }
+.concept {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: .9rem 1rem; box-shadow: var(--shadow);
+}
+.concept dt, .concept h4 { font-weight: 700; color: var(--accent-2); margin: 0 0 .3rem; font-size: 1rem; }
+.concept dd, .concept p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+.concept .why { margin-top: .5rem; font-size: .86rem; color: var(--ink-3); border-top: 1px dashed var(--line); padding-top: .4rem; }
+.concept .why b { color: var(--ink-2); }
+dfn { font-style: normal; font-weight: 650; color: var(--accent-2); border-bottom: 1px dotted var(--accent); cursor: help; }
+
+/* Steps (Unity procedures) */
+.steps { counter-reset: step; list-style: none; padding-left: 0; margin: 1rem 0; }
+.steps > li { position: relative; padding-left: 2.6rem; margin: .7rem 0; }
+.steps > li::before {
+  counter-increment: step; content: counter(step);
+  position: absolute; left: 0; top: .05rem; width: 1.8rem; height: 1.8rem; border-radius: 50%;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: .85rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.steps > li > :first-child { margin-top: 0; }
+.ui { font-weight: 600; color: var(--ink); background: #f0f1f6; padding: .05em .4em; border-radius: 4px; font-size: .92em; }
+
+/* Code blocks */
+.code {
+  position: relative; background: var(--code-bg); border: 1px solid var(--line); border-radius: var(--radius);
+  margin: 1rem 0; overflow: hidden;
+}
+.code .code-head { display: flex; justify-content: space-between; align-items: center; padding: .4rem .9rem; border-bottom: 1px solid var(--line); background: #eceef5; font-size: .8rem; color: var(--ink-2); font-family: var(--mono); }
+.code .code-head button { font: inherit; font-size: .75rem; border: 1px solid var(--line-2); background: #fff; border-radius: 6px; padding: .15rem .6rem; cursor: pointer; color: var(--ink-2); }
+.code .code-head button:hover { border-color: var(--accent); color: var(--accent); }
+.code pre { margin: 0; padding: .9rem 1rem; overflow-x: auto; line-height: 1.5; }
+.code pre code { background: none; }
+.tok-k { color: #8a2be2; font-weight: 600; }      /* keyword */
+.tok-t { color: #1a7f7f; }                        /* type */
+.tok-s { color: #b3541e; }                        /* string */
+.tok-c { color: #7b819a; font-style: italic; }    /* comment */
+.tok-n { color: #1f5fbf; }                        /* number */
+.tok-a { color: #5b3fa8; }                        /* attribute [ ... ] */
+
+/* Math */
+.math { font-family: var(--serif); font-style: italic; font-size: 1.05em; }
+.math .rm { font-style: normal; }
+.eq {
+  font-family: var(--serif); font-size: 1.2rem; text-align: center; margin: 1.1rem 0; padding: .8rem 1rem;
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow-x: auto;
+}
+.eq .lbl { float: right; font-family: var(--font); font-size: .78rem; color: var(--ink-3); font-style: normal; }
+.eq i, .eq var { font-style: italic; }
+.eq .rm { font-style: normal; }
+.frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 .2em; line-height: 1.15; }
+.frac .num { border-bottom: 1.5px solid currentColor; padding: 0 .25em .05em; }
+.frac .den { padding: .05em .25em 0; }
+.sqrt { display: inline-block; border-top: 1.5px solid currentColor; padding: .05em .2em 0; margin-left: .1em; }
+.sqrt::before { content: "\221A"; margin-left: -1.1em; position: relative; top: -.15em; font-style: normal; }
+.live { font-family: var(--mono); font-style: normal; color: var(--accent-2); background: var(--accent-soft); padding: 0 .3em; border-radius: 4px; }
+
+/* Widgets */
+.widget {
+  background: var(--paper); border: 1px solid var(--line-2); border-radius: 14px; margin: 1.4rem 0;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.widget-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; padding: .75rem 1.1rem; background: linear-gradient(90deg, var(--accent-soft), #fff); border-bottom: 1px solid var(--line); }
+.widget-head strong { font-size: 1rem; color: var(--accent-2); }
+.widget-head strong::before { content: "\25B6\FE0E"; font-size: .7rem; margin-right: .5rem; color: var(--accent); }
+.widget-head span { font-size: .86rem; color: var(--ink-2); }
+.widget-body { display: grid; grid-template-columns: 260px 1fr; gap: 0; }
+.widget-body.stacked { grid-template-columns: 1fr; }
+@media (max-width: 760px) { .widget-body { grid-template-columns: 1fr; } }
+.controls { padding: .9rem 1rem; border-right: 1px solid var(--line); background: #fafbfe; display: flex; flex-direction: column; gap: .7rem; }
+.widget-body.stacked .controls { border-right: 0; border-bottom: 1px solid var(--line); flex-direction: row; flex-wrap: wrap; }
+@media (max-width: 760px) { .controls { border-right: 0; border-bottom: 1px solid var(--line); } }
+.stage { padding: .8rem; min-width: 0; }
+.stage canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: #fff; }
+.readout { grid-column: 1 / -1; padding: .6rem 1.1rem .8rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--ink-2); background: #fafbfe; display: flex; gap: 1.4rem; flex-wrap: wrap; }
+.readout:empty { display: none; }
+.readout b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
+.ctl { display: flex; flex-direction: column; gap: .15rem; font-size: .84rem; color: var(--ink-2); min-width: 0; }
+.widget-body.stacked .ctl { flex: 1 1 180px; }
+.ctl .ctl-row { display: flex; justify-content: space-between; gap: .5rem; }
+.ctl .ctl-val { font-family: var(--mono); color: var(--accent-2); font-weight: 600; }
+.ctl input[type=range] { width: 100%; accent-color: var(--accent); margin: 0; }
+.ctl select, .ctl button { font: inherit; font-size: .86rem; padding: .3rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: #fff; color: var(--ink); }
+.ctl button { cursor: pointer; }
+.ctl button:hover { border-color: var(--accent); color: var(--accent); }
+.ctl button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.ctl.toggle { flex-direction: row; align-items: center; gap: .5rem; }
+.ctl.toggle input { accent-color: var(--accent); }
+.ctl.radios { gap: .3rem; }
+.ctl.radios label { display: flex; gap: .4rem; align-items: center; }
+.ctl.radios input { accent-color: var(--accent); }
+.ctl small { color: var(--ink-3); }
+.legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .8rem; color: var(--ink-2); margin-top: .5rem; }
+.legend i { display: inline-block; width: .8rem; height: .8rem; border-radius: 3px; vertical-align: -1px; margin-right: .3rem; }
+
+/* Quiz / self-check */
+.quiz { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: .9rem 1.1rem; margin: 1.2rem 0; }
+.quiz .q { font-weight: 650; margin-bottom: .5rem; }
+.quiz .q::before { content: "Check yourself"; display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); font-weight: 700; margin-bottom: .2rem; }
+.quiz label { display: flex; gap: .55rem; align-items: flex-start; padding: .35rem .5rem; border-radius: 6px; cursor: pointer; }
+.quiz label:hover { background: var(--accent-soft); }
+.quiz input { accent-color: var(--accent); margin-top: .3rem; }
+.quiz label.correct { background: var(--green-soft); }
+.quiz label.wrong { background: var(--rose-soft); }
+.quiz .why { margin-top: .5rem; font-size: .9rem; padding: .5rem .7rem; border-radius: 6px; display: none; }
+.quiz .why.show { display: block; }
+.quiz .why.ok { background: var(--green-soft); color: #205f36; }
+.quiz .why.no { background: var(--rose-soft); color: #8a2036; }
+
+details.more { border: 1px solid var(--line); border-radius: var(--radius); padding: .6rem 1rem; margin: 1rem 0; background: var(--paper); }
+details.more summary { cursor: pointer; font-weight: 650; color: var(--accent-2); }
+details.more[open] summary { margin-bottom: .5rem; }
+
+/* Two-column figure/text */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+figure { margin: 1.2rem 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: .86rem; color: var(--ink-3); margin-top: .4rem; text-align: center; }
+
+/* Timeline */
+.timeline { list-style: none; padding: 0; margin: 1rem 0; border-left: 2px solid var(--line-2); }
+.timeline li { position: relative; padding: 0 0 .9rem 1.4rem; }
+.timeline li::before { content: ""; position: absolute; left: -7px; top: .45rem; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--accent); }
+.timeline .when { font-family: var(--mono); font-size: .8rem; color: var(--accent-2); font-weight: 600; }
+
+/* Checklist */
+.checklist { list-style: none; padding: 0; }
+.checklist li { padding-left: 1.7rem; position: relative; margin: .35rem 0; }
+.checklist li::before { content: "\2610"; position: absolute; left: 0; top: -.05rem; color: var(--accent); font-size: 1.1rem; }
+
+/* Footer */
+.site-footer { border-top: 1px solid var(--line); margin-top: 2rem; padding: 1.2rem 1.25rem 2rem; color: var(--ink-3); font-size: .85rem; }
+.site-footer .inner { max-width: 1080px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+.session-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.session-nav button { font: inherit; border: 1px solid var(--line-2); background: #fff; border-radius: 8px; padding: .5rem .9rem; cursor: pointer; color: var(--accent-2); font-weight: 600; }
+.session-nav button:hover { border-color: var(--accent); }
+.session-nav button:disabled { opacity: .35; cursor: default; }
+
+/* Index page cards */
+.topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.topic-card { display: block; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 1.1rem 1.2rem; box-shadow: var(--shadow); color: inherit; transition: transform .15s ease, border-color .15s ease; }
+.topic-card:hover { text-decoration: none; transform: translateY(-2px); border-color: var(--accent); }
+.topic-card .num { font-family: var(--mono); font-size: .78rem; color: var(--accent-2); font-weight: 700; }
+.topic-card h3 { margin: .2rem 0 .4rem; font-size: 1.1rem; }
+.topic-card p { font-size: .9rem; color: var(--ink-2); margin: 0 0 .5rem; }
+.topic-card .meta { font-size: .78rem; color: var(--ink-3); }
+
+@media print {
+  .site-header { position: static; }
+  .tabs, .session-nav { display: none; }
+  .session { display: block !important; page-break-before: always; }
+  .widget { break-inside: avoid; }
+}
+
+</style>
+<style>
+  .hero { padding: 2.5rem 0 1rem; }
+  .hero h1 { font-size: 2.2rem; }
+  .hero p { max-width: 64ch; color: var(--ink-2); font-size: 1.08rem; }
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin: 1.5rem 0 2rem; }
+</style>
+</head>
+<body>
+<header class="site-header"><div class="inner">
+  <div class="crumbs"><span>Introduction to VR · Virtual Reality &amp; Game Development</span></div>
+  <div class="title-row"><h1>Interactive lecture notes</h1><span class="topic-tag">7 topics · 15 weeks · 30 sessions</span></div>
+  <div style="height:.6rem"></div>
+</div></header>
+
+<main>
+<div class="hero">
+  <h1>Build a VR game — and understand why it works.</h1>
+  <p>These notes accompany a fifteen-week course in virtual reality and game development with Unity 6 and the Meta Quest 3. Each topic is one page with a tab per class session. Concepts are defined where they appear, formulas are live, and the visualizations respond to your input. Open a topic, pick today's session, and follow along.</p>
+</div>
+
+<div class="how">
+  <div class="box"><h4>How the notes work</h4><p>Tabs across the top of each topic are class sessions (Tuesday and Thursday). Boxes marked ▶ are interactive — drag, click, and change parameters. “Check yourself” questions give instant feedback. Nothing is sent anywhere; everything runs in your browser and works offline.</p></div>
+  <div class="box"><h4>What you need</h4><p>Unity 6.5 with Android Build Support, Visual Studio Code, a Meta Quest 3 in Developer Mode, and the starter projects from the course GitHub repository. In-class activities are desktop-first, then ported to the headset.</p></div>
+  <div class="box"><h4>The course project</h4><p><strong>Realm of Legends</strong>: a VR adventure quest through an enchanted forest, a mountain pass, and ancient ruins. Each topic adds one system to your team's game, documented in your Game Design Document.</p></div>
+</div>
+
+<h2>Topics</h2>
+<div class="topic-grid">
+  <a class="topic-card" href="topic-1.html"><div class="num">TOPIC 1 · WEEKS 1–2</div><h3>Introduction to Virtual Reality</h3><p>Immersion and presence, the XR continuum, how headsets see and track, Unity fundamentals, mock views at human scale, re-imagining experiences, and project planning.</p><div class="meta">4 sessions · 12 interactive figures</div></a>
+  <a class="topic-card" href="topic-2.html"><div class="num">TOPIC 2 · WEEKS 3–4</div><h3>VR Game Design Principles on a Variety of Platforms</h3><p>Platform landscape, design principles for presence and comfort, configuring Unity for Quest 3, frame budgets, basic movement and interaction with the XR Interaction Toolkit, building and deploying a prototype.</p><div class="meta">4 sessions</div></a>
+  <a class="topic-card" href="topic-3.html"><div class="num">TOPIC 3 · WEEKS 5–6</div><h3>3D Modeling and VR Environments</h3><p>Meshes, UVs, textures and PBR materials; assembling environments from ready-made assets; level of detail, occlusion culling, lightmapping; profiling and performance comparison.</p><div class="meta">4 sessions</div></a>
+  <a class="topic-card" href="topic-4.html"><div class="num">TOPIC 4 · WEEKS 7–8</div><h3>VR Interaction and User Interfaces</h3><p>Diegetic and spatial UI, legibility and comfort zones, world-space canvases, ray, direct and poke interaction, inventories and dialogue, user testing and iteration.</p><div class="meta">4 sessions</div></a>
+  <a class="topic-card" href="topic-5.html"><div class="num">TOPIC 5 · WEEKS 9–10</div><h3>VR Locomotion and Movement</h3><p>Vection and sensory conflict, teleportation and its arc, snap and smooth turning, smooth locomotion and vignettes, hybrid methods, comfort testing, and designing with a worldview.</p><div class="meta">4 sessions</div></a>
+  <a class="topic-card" href="topic-6.html"><div class="num">TOPIC 6 · WEEKS 11–12</div><h3>VR Audio and Sound Design</h3><p>How we hear direction and distance, spatial audio and HRTFs, Unity's audio system and mixer, soundscapes for each environment, sound-only navigation, and audio user testing.</p><div class="meta">4 sessions</div></a>
+  <a class="topic-card" href="topic-7.html"><div class="num">TOPIC 7 · WEEKS 13–15</div><h3>VR Game Development Project</h3><p>Integrating every system, scene management and builds, structured playtesting, analysing and prioritising feedback, accessibility and polish, and presenting the finished game.</p><div class="meta">6 sessions</div></a>
+</div>
+
+<div class="callout note"><span class="label">Textbook</span><p>Braun, A., &amp; Rizzo, R. (2023). <em>XR Development with Unity</em>. Packt. Chapter references appear in each session's “Before next class” box.</p></div>
+</main>
+
+<footer class="site-footer"><div class="inner"><span>Created by Isac Artzi</span><span>Introduction to VR · Interactive lecture notes</span></div></footer>
+<script>
+/* Introduction to VR lecture notes — shared runtime (tabs, code, quizzes, widget helpers). No dependencies. */
+(function () {
+  'use strict';
+  const Notes = {};
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  Notes.clamp = clamp; Notes.lerp = lerp;
+  Notes.TAU = Math.PI * 2;
+  Notes.deg = r => r * 180 / Math.PI;
+  Notes.rad = d => d * Math.PI / 180;
+  Notes.fmt = (n, d) => (d === undefined ? (Math.abs(n) >= 100 ? n.toFixed(0) : Math.abs(n) >= 10 ? n.toFixed(1) : n.toFixed(2)) : Number(n).toFixed(d));
+
+  /* ---------------- Tabs ---------------- */
+  const sessions = [];
+  let currentIdx = 0;
+  const tabsEl = () => $('.tabs');
+  function buildTabs() {
+    const nav = tabsEl(); if (!nav) return;
+    $$('section.session').forEach((sec, i) => {
+      sessions.push(sec);
+      const b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.idx = i;
+      b.innerHTML = `<span class="t1">${sec.dataset.tab || ('Session ' + (i + 1))}</span><span class="t2">${sec.dataset.sub || ''}</span>`;
+      b.addEventListener('click', () => show(i, true));
+      nav.appendChild(b);
+      // prev/next nav
+      const sn = document.createElement('div'); sn.className = 'session-nav';
+      const prev = document.createElement('button'); prev.type = 'button'; prev.textContent = '← Previous session';
+      const next = document.createElement('button'); next.type = 'button'; next.textContent = 'Next session →';
+      prev.disabled = i === 0; next.disabled = false;
+      prev.addEventListener('click', () => show(i - 1, true));
+      next.addEventListener('click', () => show(i + 1, true));
+      sn.append(prev, next); sec.appendChild(sn);
+      sec._nextBtn = next;
+    });
+    if (sessions.length) sessions[sessions.length - 1]._nextBtn.disabled = true;
+    const fromHash = () => {
+      const m = location.hash.match(/^#s(\d+)/);
+      const i = m ? clamp(parseInt(m[1], 10) - 1, 0, sessions.length - 1) : 0;
+      show(i, false);
+    };
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+  }
+  function show(i, scroll) {
+    if (!sessions.length) return;
+    i = clamp(i, 0, sessions.length - 1);
+    currentIdx = i;
+    sessions.forEach((s, k) => s.classList.toggle('active', k === i));
+    $$('.tabs button').forEach((b, k) => { b.setAttribute('aria-selected', k === i ? 'true' : 'false'); if (k === i) b.scrollIntoView({ block: 'nearest', inline: 'nearest' }); });
+    const h = '#s' + (i + 1);
+    if (location.hash !== h) history.replaceState(null, '', h);
+    if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.dispatchEvent(new CustomEvent('notes:tabshown', { detail: { index: i, section: sessions[i] } }));
+  }
+  Notes.show = show;
+  Notes.isVisible = el => { const s = el.closest && el.closest('section.session'); return !s || s.classList.contains('active'); };
+
+  /* ---------------- Code blocks ---------------- */
+  const KW = /\b(abstract|as|async|await|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|get|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|set|short|sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|var|virtual|void|volatile|while|yield)\b/g;
+  const TY = /\b(Vector2|Vector3|Vector4|Quaternion|Transform|GameObject|MonoBehaviour|Rigidbody|Collider|Camera|Time|Mathf|Debug|Input|AudioSource|AudioListener|AudioClip|AudioMixer|Renderer|MeshRenderer|MeshFilter|Material|Texture2D|Color|Physics|RaycastHit|Ray|LayerMask|Coroutine|IEnumerator|WaitForSeconds|Canvas|Text|Button|Slider|Image|RectTransform|XRGrabInteractable|XRBaseInteractable|XRBaseInteractor|XRRayInteractor|XRDirectInteractor|XROrigin|LocomotionProvider|TeleportationProvider|ContinuousMoveProvider|ContinuousTurnProvider|SnapTurnProvider|InputActionReference|InputAction|SceneManager|AsyncOperation|Scene|List|Dictionary|Queue|Stack|Action|Func|Random|LODGroup|Light|Animator|CharacterController|SerializeField|Header|Range|Tooltip|RequireComponent|TextMeshProUGUI|TMP_Text|OVRManager|XRSettings|XRDisplaySubsystem|Application|Screen|QualitySettings|Gizmos|Handles|Object|Component|Behaviour|ScriptableObject|Sprite|ParticleSystem|TrailRenderer|LineRenderer|Bounds|Plane|Matrix4x4|Rect)\b/g;
+  function highlightCSharp(src) {
+    // Tokenize comments and strings first so keywords inside them are not touched.
+    const out = []; let i = 0; const n = src.length;
+    const pushPlain = t => { if (!t) return; out.push(t.replace(TY, '<span class="tok-t">$1</span>').replace(KW, '<span class="tok-k">$1</span>').replace(/\b(\d+\.?\d*f?)\b/g, '<span class="tok-n">$1</span>').replace(/(\[[A-Z][A-Za-z]*(\([^)]*\))?\])/g, '<span class="tok-a">$1</span>')); };
+    let plain = '';
+    while (i < n) {
+      const c = src[i], d = src[i + 1];
+      if (c === '/' && d === '/') { pushPlain(plain); plain = ''; let j = src.indexOf('\n', i); if (j < 0) j = n; out.push('<span class="tok-c">' + src.slice(i, j) + '</span>'); i = j; continue; }
+      if (c === '/' && d === '*') { pushPlain(plain); plain = ''; let j = src.indexOf('*/', i + 2); j = j < 0 ? n : j + 2; out.push('<span class="tok-c">' + src.slice(i, j) + '</span>'); i = j; continue; }
+      if (c === '"' || (c === '$' && d === '"') || (c === '@' && d === '"')) {
+        pushPlain(plain); plain = '';
+        let j = i + (c === '"' ? 1 : 2);
+        while (j < n && src[j] !== '"') { if (src[j] === '\\') j++; j++; }
+        j++; out.push('<span class="tok-s">' + src.slice(i, j) + '</span>'); i = j; continue;
+      }
+      plain += c; i++;
+    }
+    pushPlain(plain);
+    return out.join('');
+  }
+  function highlightGeneric(src) { return src; }
+  function setupCode() {
+    $$('.code').forEach(box => {
+      const pre = $('pre', box), code = pre && $('code', pre); if (!code) return;
+      const lang = (code.className.match(/lang-([\w#+-]+)/) || [])[1] || box.dataset.lang || '';
+      if (!$('.code-head', box)) {
+        const head = document.createElement('div'); head.className = 'code-head';
+        head.innerHTML = `<span>${box.dataset.title || (lang ? lang.toUpperCase() : 'CODE')}</span>`;
+        const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = 'Copy';
+        btn.addEventListener('click', () => { navigator.clipboard && navigator.clipboard.writeText(code.textContent).then(() => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1200); }); });
+        head.appendChild(btn); box.insertBefore(head, pre);
+      }
+      // Source is already HTML-escaped text inside <code>; highlight on the escaped text so entities survive.
+      const raw = code.innerHTML;
+      if (lang === 'csharp' || lang === 'cs' || lang === 'c#') code.innerHTML = highlightCSharp(raw);
+      else if (lang === 'js' || lang === 'javascript') code.innerHTML = highlightCSharp(raw);
+      else code.innerHTML = highlightGeneric(raw);
+    });
+  }
+
+  /* ---------------- Quizzes ---------------- */
+  function setupQuizzes() {
+    $$('.quiz').forEach((q, qi) => {
+      const why = document.createElement('div'); why.className = 'why'; q.appendChild(why);
+      $$('label', q).forEach(lab => {
+        const inp = $('input', lab); if (!inp) return; inp.name = inp.name || ('quiz' + qi);
+        inp.addEventListener('change', () => {
+          $$('label', q).forEach(l => l.classList.remove('correct', 'wrong'));
+          const ok = lab.dataset.correct !== undefined;
+          lab.classList.add(ok ? 'correct' : 'wrong');
+          why.textContent = lab.dataset.why || (ok ? 'Correct.' : 'Not quite — try again.');
+          why.className = 'why show ' + (ok ? 'ok' : 'no');
+        });
+      });
+    });
+  }
+
+  /* ---------------- Live values ---------------- */
+  Notes.live = {
+    set(name, value, digits) { $$(`[data-live="${name}"]`).forEach(el => { el.textContent = typeof value === 'number' ? Notes.fmt(value, digits) : value; el.classList.add('live'); }); }
+  };
+
+  /* ---------------- Controls ---------------- */
+  Notes.slider = function (parent, o) {
+    const wrap = document.createElement('label'); wrap.className = 'ctl';
+    const row = document.createElement('div'); row.className = 'ctl-row';
+    const lab = document.createElement('span'); lab.textContent = o.label;
+    const val = document.createElement('span'); val.className = 'ctl-val';
+    row.append(lab, val);
+    const input = document.createElement('input'); input.type = 'range';
+    input.min = o.min; input.max = o.max; input.step = o.step === undefined ? 'any' : o.step; input.value = o.value;
+    wrap.append(row, input);
+    if (o.help) { const s = document.createElement('small'); s.textContent = o.help; wrap.appendChild(s); }
+    parent.appendChild(wrap);
+    const intStep = o.step !== undefined && Number.isInteger(o.step) && o.step >= 1;
+    const fmt = o.format || (v => Notes.fmt(v, o.digits !== undefined ? o.digits : (intStep ? 0 : undefined)) + (o.unit ? (o.unit === '°' || o.unit === '%' ? '' : ' ') + o.unit : ''));
+    const api = { input, get value() { return parseFloat(input.value); }, set value(v) { input.value = v; upd(false); }, el: wrap };
+    function upd(fire) { val.textContent = fmt(api.value); if (fire && o.onInput) o.onInput(api.value); }
+    input.addEventListener('input', () => upd(true));
+    upd(false);
+    return api;
+  };
+  Notes.select = function (parent, o) {
+    const wrap = document.createElement('label'); wrap.className = 'ctl';
+    const lab = document.createElement('span'); lab.textContent = o.label;
+    const sel = document.createElement('select');
+    (o.options || []).forEach(op => { const opt = document.createElement('option'); if (typeof op === 'string') { opt.value = op; opt.textContent = op; } else { opt.value = op.value; opt.textContent = op.label; } sel.appendChild(opt); });
+    if (o.value !== undefined) sel.value = o.value;
+    wrap.append(lab, sel); parent.appendChild(wrap);
+    sel.addEventListener('change', () => o.onChange && o.onChange(sel.value));
+    return { el: wrap, select: sel, get value() { return sel.value; }, set value(v) { sel.value = v; } };
+  };
+  Notes.toggle = function (parent, o) {
+    const wrap = document.createElement('label'); wrap.className = 'ctl toggle';
+    const inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = !!o.value;
+    const lab = document.createElement('span'); lab.textContent = o.label;
+    wrap.append(inp, lab); parent.appendChild(wrap);
+    inp.addEventListener('change', () => o.onChange && o.onChange(inp.checked));
+    return { el: wrap, input: inp, get value() { return inp.checked; }, set value(v) { inp.checked = v; } };
+  };
+  Notes.radios = function (parent, o) {
+    const wrap = document.createElement('div'); wrap.className = 'ctl radios';
+    const lab = document.createElement('span'); lab.textContent = o.label; wrap.appendChild(lab);
+    const name = 'r' + Math.random().toString(36).slice(2, 8);
+    let value = o.value;
+    (o.options || []).forEach(op => {
+      const v = typeof op === 'string' ? op : op.value, t = typeof op === 'string' ? op : op.label;
+      const l = document.createElement('label'); const i = document.createElement('input'); i.type = 'radio'; i.name = name; i.value = v; i.checked = v === value;
+      i.addEventListener('change', () => { value = v; o.onChange && o.onChange(v); });
+      l.append(i, document.createTextNode(t)); wrap.appendChild(l);
+    });
+    parent.appendChild(wrap);
+    return { el: wrap, get value() { return value; } };
+  };
+  Notes.button = function (parent, o) {
+    const wrap = document.createElement('div'); wrap.className = 'ctl';
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = o.label; if (o.primary) b.className = 'primary';
+    b.addEventListener('click', () => o.onClick && o.onClick(b));
+    wrap.appendChild(b); parent.appendChild(wrap);
+    return { el: wrap, button: b };
+  };
+  Notes.readout = function (parent, items) {
+    parent.innerHTML = '';
+    const spans = {};
+    Object.keys(items).forEach(k => { const s = document.createElement('span'); s.innerHTML = `${k}: <b></b>`; parent.appendChild(s); spans[k] = $('b', s); spans[k].textContent = items[k]; });
+    return { set(k, v) { if (spans[k]) spans[k].textContent = v; } };
+  };
+
+  /* ---------------- Canvas ---------------- */
+  Notes.canvas = function (parent, o) {
+    o = o || {};
+    const canvas = document.createElement('canvas'); parent.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    const api = { canvas, ctx, w: 0, h: 0, dpr: 1, onResize: null };
+    function resize() {
+      const cs = getComputedStyle(parent);
+      const inner = parent.clientWidth - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0);
+      const cssW = Math.max(200, Math.floor(inner)) || (o.width || 600);
+      const aspect = o.aspect || (o.height && o.width ? o.height / o.width : 0.56);
+      const cssH = o.height && !o.aspect && !o.width ? o.height : Math.round(cssW * aspect);
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      if (api.w === cssW && api.h === cssH && api.dpr === dpr) return false;
+      api.w = cssW; api.h = cssH; api.dpr = dpr;
+      canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+      canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return true;
+    }
+    api.resize = resize;
+    api.clear = (bg) => { ctx.save(); ctx.setTransform(api.dpr, 0, 0, api.dpr, 0, 0); ctx.clearRect(0, 0, api.w, api.h); if (bg) { ctx.fillStyle = bg; ctx.fillRect(0, 0, api.w, api.h); } ctx.restore(); };
+    api.pointer = (handler) => {
+      const pos = e => { const r = canvas.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return { x: (p.clientX - r.left), y: (p.clientY - r.top) }; };
+      let down = false;
+      canvas.addEventListener('pointerdown', e => { down = true; canvas.setPointerCapture(e.pointerId); handler('down', pos(e), e); });
+      canvas.addEventListener('pointermove', e => handler(down ? 'drag' : 'move', pos(e), e));
+      canvas.addEventListener('pointerup', e => { down = false; handler('up', pos(e), e); });
+      canvas.addEventListener('pointerleave', e => { if (!down) handler('leave', pos(e), e); });
+      canvas.style.touchAction = 'none';
+    };
+    api.animate = (fn, opts) => Notes.animate(fn, Object.assign({ visibleEl: canvas }, opts || {}));
+    resize();
+    window.addEventListener('resize', () => { if (resize() && api.onResize) api.onResize(); });
+    document.addEventListener('notes:tabshown', () => { requestAnimationFrame(() => { if (resize() && api.onResize) api.onResize(); else if (api.onResize && Notes.isVisible(canvas)) api.onResize(); }); });
+    return api;
+  };
+
+  /* ---------------- Animation ---------------- */
+  Notes.animate = function (fn, opts) {
+    opts = opts || {};
+    let running = false, raf = 0, last = 0, t = 0;
+    const el = opts.visibleEl;
+    function frame(now) {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now; t += dt;
+      if (!el || Notes.isVisible(el)) fn(dt, t);
+      raf = requestAnimationFrame(frame);
+    }
+    const api = {
+      start() { if (running) return; running = true; last = performance.now(); raf = requestAnimationFrame(frame); },
+      stop() { running = false; cancelAnimationFrame(raf); },
+      get running() { return running; }, get t() { return t; }, set t(v) { t = v; }
+    };
+    if (opts.autostart !== false) api.start();
+    return api;
+  };
+
+  /* ---------------- Drawing helpers ---------------- */
+  Notes.draw = {
+    arrow(ctx, x1, y1, x2, y2, size) {
+      size = size || 8; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      const a = Math.atan2(y2 - y1, x2 - x1);
+      ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - size * Math.cos(a - .45), y2 - size * Math.sin(a - .45)); ctx.lineTo(x2 - size * Math.cos(a + .45), y2 - size * Math.sin(a + .45)); ctx.closePath(); ctx.fill();
+    },
+    text(ctx, s, x, y, o) {
+      o = o || {}; ctx.save(); ctx.font = (o.weight || '500') + ' ' + (o.size || 12) + 'px ' + (o.mono ? 'ui-monospace, Menlo, monospace' : '-apple-system, Segoe UI, Roboto, sans-serif');
+      ctx.fillStyle = o.color || '#4a5169'; ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.baseline || 'alphabetic';
+      if (o.bg) { const m = ctx.measureText(s); const pad = 3; const w = m.width + pad * 2; const hgt = (o.size || 12) + pad * 2; let bx = x - pad; if (o.align === 'center') bx = x - w / 2; if (o.align === 'right') bx = x - w + pad; ctx.fillStyle = o.bg; ctx.fillRect(bx, y - (o.size || 12) - pad + 2, w, hgt); ctx.fillStyle = o.color || '#4a5169'; }
+      ctx.fillText(s, x, y); ctx.restore();
+    },
+    grid(ctx, w, h, step, color) { ctx.save(); ctx.strokeStyle = color || '#eef0f6'; ctx.lineWidth = 1; ctx.beginPath(); for (let x = 0; x <= w; x += step) { ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, h); } for (let y = 0; y <= h; y += step) { ctx.moveTo(0, y + .5); ctx.lineTo(w, y + .5); } ctx.stroke(); ctx.restore(); },
+    dot(ctx, x, y, r, color) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); },
+    // Simple 2D plot: fns = [{f, color, label}], domain x0..x1, range y0..y1 (auto if null)
+    plot(ctx, box, o) {
+      const { x, y, w, h } = box; const x0 = o.x0, x1 = o.x1; let y0 = o.y0, y1 = o.y1;
+      const N = o.samples || 200; const series = o.series || [];
+      const data = series.map(s => { const pts = []; for (let i = 0; i <= N; i++) { const xv = lerp(x0, x1, i / N); const yv = s.f(xv); if (isFinite(yv)) pts.push([xv, yv]); } return pts; });
+      if (y0 === undefined || y1 === undefined) { let mn = Infinity, mx = -Infinity; data.forEach(p => p.forEach(([, yv]) => { mn = Math.min(mn, yv); mx = Math.max(mx, yv); })); if (!isFinite(mn)) { mn = 0; mx = 1; } if (mn === mx) { mn -= 1; mx += 1; } const pad = (mx - mn) * .08; if (y0 === undefined) y0 = mn - pad; if (y1 === undefined) y1 = mx + pad; }
+      const sx = xv => x + (xv - x0) / (x1 - x0) * w, sy = yv => y + h - (yv - y0) / (y1 - y0) * h;
+      ctx.save(); ctx.fillStyle = '#fff'; ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = '#eef0f6'; ctx.lineWidth = 1; ctx.beginPath();
+      const ticks = o.ticks || 5;
+      for (let i = 0; i <= ticks; i++) { const gx = x + w * i / ticks, gy = y + h * i / ticks; ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); } ctx.stroke();
+      if (y0 < 0 && y1 > 0) { ctx.strokeStyle = '#cfd4e3'; ctx.beginPath(); ctx.moveTo(x, sy(0)); ctx.lineTo(x + w, sy(0)); ctx.stroke(); }
+      ctx.strokeStyle = '#cfd4e3'; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+      for (let i = 0; i <= ticks; i++) { const xv = lerp(x0, x1, i / ticks), yv = lerp(y0, y1, 1 - i / ticks); Notes.draw.text(ctx, (o.xfmt || Notes.fmt)(xv), x + w * i / ticks, y + h + 14, { size: 11, align: 'center', color: '#7b819a', mono: true }); Notes.draw.text(ctx, (o.yfmt || Notes.fmt)(yv), x - 6, y + h * i / ticks + 4, { size: 11, align: 'right', color: '#7b819a', mono: true }); }
+      if (o.xlabel) Notes.draw.text(ctx, o.xlabel, x + w / 2, y + h + 30, { size: 12, align: 'center', color: '#4a5169' });
+      if (o.ylabel) { ctx.save(); ctx.translate(x - 44, y + h / 2); ctx.rotate(-Math.PI / 2); Notes.draw.text(ctx, o.ylabel, 0, 0, { size: 12, align: 'center', color: '#4a5169' }); ctx.restore(); }
+      ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+      data.forEach((pts, k) => { const s = series[k]; ctx.strokeStyle = s.color || '#3b4fd8'; ctx.lineWidth = s.width || 2; if (s.dash) ctx.setLineDash(s.dash); else ctx.setLineDash([]); ctx.beginPath(); pts.forEach(([xv, yv], i) => { const px = sx(xv), py = sy(yv); if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }); ctx.stroke(); ctx.setLineDash([]); });
+      (o.marks || []).forEach(m => { const px = sx(m.x), py = sy(m.y); if (m.vline) { ctx.strokeStyle = m.color || '#c2334d'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px, y + h); ctx.stroke(); ctx.setLineDash([]); } if (m.hline) { ctx.strokeStyle = m.color || '#c2334d'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x + w, py); ctx.stroke(); ctx.setLineDash([]); } if (!m.noDot) Notes.draw.dot(ctx, px, py, m.r || 5, m.color || '#c2334d'); if (m.label) Notes.draw.text(ctx, m.label, px + 8, py - 8, { size: 11, color: m.color || '#c2334d', weight: '600', bg: 'rgba(255,255,255,.85)' }); });
+      ctx.restore();
+      let lx = x + 10, ly = y + 16;
+      series.forEach(s => { if (!s.label) return; ctx.fillStyle = s.color || '#3b4fd8'; ctx.fillRect(lx, ly - 8, 14, 3); Notes.draw.text(ctx, s.label, lx + 18, ly - 3, { size: 11, color: '#4a5169' }); ly += 16; });
+      ctx.restore();
+      return { sx, sy, y0, y1 };
+    }
+  };
+
+  /* ---------------- Minimal 3D (wireframe, perspective) ---------------- */
+  const V = {
+    add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+    sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+    scale: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+    dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+    cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+    len: a => Math.hypot(a[0], a[1], a[2]),
+    norm: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; },
+    rotX: (p, a) => { const c = Math.cos(a), s = Math.sin(a); return [p[0], p[1] * c - p[2] * s, p[1] * s + p[2] * c]; },
+    rotY: (p, a) => { const c = Math.cos(a), s = Math.sin(a); return [p[0] * c + p[2] * s, p[1], -p[0] * s + p[2] * c]; },
+    rotZ: (p, a) => { const c = Math.cos(a), s = Math.sin(a); return [p[0] * c - p[1] * s, p[0] * s + p[1] * c, p[2]]; }
+  };
+  Notes.V = V;
+  // Camera: {pos, yaw, pitch, fov (deg vertical), near}. Projects world point -> {x, y, z(depth)} in canvas px for a viewport {x,y,w,h}.
+  Notes.camera = function (cam, vp) {
+    const fovR = Notes.rad(cam.fov || 60); const f = 1 / Math.tan(fovR / 2);
+    const aspect = vp.w / vp.h;
+    return {
+      toView(p) { let q = V.sub(p, cam.pos); q = V.rotY(q, -(cam.yaw || 0)); q = V.rotX(q, -(cam.pitch || 0)); return q; },
+      project(p) {
+        const q = this.toView(p); const z = q[2]; if (z < (cam.near || 0.05)) return null;
+        const nx = (q[0] * f / aspect) / z, ny = (q[1] * f) / z;
+        return { x: vp.x + (nx * 0.5 + 0.5) * vp.w, y: vp.y + (0.5 - ny * 0.5) * vp.h, z };
+      },
+      line(ctx, a, b) { const A = this.project(a), B = this.project(b); if (!A || !B) return; ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke(); },
+      poly(ctx, pts, fill, stroke) { const P = pts.map(p => this.project(p)); if (P.some(p => !p)) return; ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); } },
+      grid(ctx, size, step, y, color, zmin) { zmin = zmin === undefined ? 0.3 : zmin; ctx.strokeStyle = color || '#e3e6ef'; ctx.lineWidth = 1; for (let i = -size; i <= size; i += step) { this.line(ctx, [i, y, zmin], [i, y, size]); if (i >= zmin) this.line(ctx, [-size, y, i], [size, y, i]); } }
+    };
+  };
+  Notes.box = function (cx, cy, cz, sx, sy, sz) {
+    const hx = sx / 2, hy = sy / 2, hz = sz / 2;
+    const v = [[-hx, -hy, -hz], [hx, -hy, -hz], [hx, hy, -hz], [-hx, hy, -hz], [-hx, -hy, hz], [hx, -hy, hz], [hx, hy, hz], [-hx, hy, hz]].map(p => [p[0] + cx, p[1] + cy, p[2] + cz]);
+    const e = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
+    const faces = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [2, 3, 7, 6], [1, 2, 6, 5], [0, 3, 7, 4]];
+    return { v, e, faces };
+  };
+
+  /* ---------------- Widgets ---------------- */
+  const pendingWidgets = [];
+  Notes.widget = function (id, fn) {
+    const run = () => {
+      const root = document.getElementById(id); if (!root) { console.warn('widget missing', id); return; }
+      const body = $('.widget-body', root) || root;
+      const w = { root, body, controls: $('[data-controls]', root) || $('.controls', root), stage: $('[data-stage]', root) || $('.stage', root), readout: $('[data-readout]', root) || $('.readout', root) };
+      try { fn(w); } catch (err) { console.error('widget ' + id, err); if (w.stage) w.stage.innerHTML = '<p style="color:#c2334d;font-size:.9rem">This visualization failed to load: ' + err.message + '</p>'; }
+    };
+    if (document.readyState === 'loading') pendingWidgets.push(run); else run();
+  };
+
+  /* ---------------- Init ---------------- */
+  function init() {
+    buildTabs(); setupCode(); setupQuizzes();
+    pendingWidgets.splice(0).forEach(f => f());
+    $$('[data-year]').forEach(e => e.textContent = new Date().getFullYear());
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  window.Notes = Notes;
+})();
+
+</script>
+</body>
+</html>
