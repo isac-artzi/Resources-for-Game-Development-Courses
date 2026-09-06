@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Topic 1 · Understanding Bugs — Advanced Game Testing and Debugging</title>
+<style id="lesson-kit">
+:root{
+  --bg:#0e1116; --bg2:#161b22; --bg3:#1c232d; --line:#2a3441; --line2:#3a4757;
+  --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#4da3ff; --acc2:#1f6feb;
+  --ok:#3fb950; --warn:#d29922; --crit:#f85149; --info:#a371f7; --teal:#39c5bb;
+  --unity:#5ec8f2; --unreal:#f0a44a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --sh:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 120px}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .crumb{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.topbar .spacer{flex:1}
+.topbar a{color:var(--tx2);text-decoration:none;font-size:13.5px;padding:5px 10px;
+  border-radius:7px;border:1px solid transparent}
+.topbar a:hover{color:var(--tx);background:var(--bg3);border-color:var(--line)}
+.progressbar{position:fixed;top:0;left:0;height:3px;background:var(--acc);
+  width:0;z-index:60;transition:width .12s linear}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero .kicker{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.14;margin:0 0 14px;
+  letter-spacing:-.02em;font-weight:800}
+.hero .lede{font-size:19px;color:var(--tx2);max-width:70ch;margin:0}
+.metarow{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:12.5px;color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+
+/* ---------- typography ---------- */
+h2{font-size:27px;margin:56px 0 6px;letter-spacing:-.015em;font-weight:750;
+  scroll-margin-top:80px}
+h2 .num{color:var(--acc);font-family:var(--mono);font-size:16px;
+  margin-right:11px;font-weight:600}
+h3{font-size:20px;margin:34px 0 6px;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16.5px;margin:24px 0 4px;font-weight:700;color:var(--tx)}
+p{margin:13px 0}
+a{color:var(--acc)}
+ul,ol{margin:13px 0;padding-left:24px}
+li{margin:7px 0}
+li::marker{color:var(--tx3)}
+strong{color:#fff;font-weight:650}
+em{color:var(--tx)}
+code{font-family:var(--mono);font-size:.885em;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;padding:1.5px 6px;color:#bfe3ff}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.subtle{color:var(--tx2)}
+.small{font-size:14px}
+
+/* ---------- callouts ---------- */
+.box{border:1px solid var(--line);border-left:3px solid var(--acc);
+  background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin:22px 0}
+.box .lbl{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:800;color:var(--acc);margin-bottom:7px}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.why{border-left-color:var(--info)}   .box.why .lbl{color:var(--info)}
+.box.warn{border-left-color:var(--warn)}  .box.warn .lbl{color:var(--warn)}
+.box.crit{border-left-color:var(--crit)}  .box.crit .lbl{color:var(--crit)}
+.box.ok{border-left-color:var(--ok)}      .box.ok .lbl{color:var(--ok)}
+.box.field{border-left-color:var(--teal)} .box.field .lbl{color:var(--teal)}
+
+/* ---------- objectives / goals ---------- */
+.goals{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;margin:26px 0}
+.goals h4{margin:0 0 10px;font-size:12px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx3)}
+.goals ol{margin:0;padding-left:20px}
+
+/* ---------- code ---------- */
+.codeblock{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  margin:20px 0;overflow:hidden}
+.codeblock .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);font-size:12.5px;
+  color:var(--tx2);font-family:var(--mono)}
+.codeblock .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);
+  font-size:13.4px;line-height:1.62;color:#d5e2f0}
+.codeblock pre .c{color:#6a7d91;font-style:italic}   /* comment */
+.codeblock pre .k{color:#ff7b9c}                     /* keyword */
+.codeblock pre .t{color:#7ee0c6}                     /* type    */
+.codeblock pre .s{color:#ffcf8f}                     /* string  */
+.codeblock pre .n{color:#c3a6ff}                     /* number  */
+.codeblock pre .f{color:#82c8ff}                     /* func    */
+
+/* annotated code: clickable gutter markers */
+.annot{display:grid;grid-template-columns:1fr;gap:0;margin:22px 0}
+.annot .rows{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.annot .arow{display:grid;grid-template-columns:34px 1fr;align-items:stretch;
+  border-bottom:1px solid rgba(42,52,65,.55)}
+.annot .arow:last-child{border-bottom:0}
+.annot .arow.hasnote{cursor:pointer}
+.annot .arow.hasnote:hover{background:rgba(77,163,255,.07)}
+.annot .gut{display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--tx3);font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--line);user-select:none}
+.annot .arow.hasnote .gut{color:#fff;background:var(--acc2);font-weight:700}
+.annot .arow.open .gut{background:var(--acc)}
+.annot .ln{font-family:var(--mono);font-size:13.3px;line-height:1.65;padding:2px 14px;
+  white-space:pre;overflow-x:auto;color:#d5e2f0}
+.annot .note{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--line);
+  padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease;
+  font-size:14.6px;color:var(--tx2)}
+.annot .arow.open + .note,.annot .note.open{max-height:600px;padding:13px 18px}
+.annot .note b{color:var(--tx)}
+.annot .hint{font-size:12.5px;color:var(--tx3);margin:8px 2px 0}
+
+/* ---------- engine tabs (Unity / Unreal) ---------- */
+.tabs{margin:24px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tabs .tabhd{display:flex;background:var(--bg3);border-bottom:1px solid var(--line)}
+.tabs .tabhd button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:14px;font-weight:650;padding:11px 20px;cursor:pointer}
+.tabs .tabhd button:hover{color:var(--tx2)}
+.tabs .tabhd button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tabs .tabhd button[data-engine="unity"].on{border-bottom-color:var(--unity);color:var(--unity)}
+.tabs .tabhd button[data-engine="unreal"].on{border-bottom-color:var(--unreal);color:var(--unreal)}
+.tabs .tabbody{padding:4px 20px 16px;background:var(--bg2)}
+.tabs .tabpane{display:none}.tabs .tabpane.on{display:block}
+.tabs .tabbody .codeblock{margin:16px -6px}
+
+/* ---------- quiz / check ---------- */
+.check{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin:26px 0}
+.check .q{font-weight:650;margin:0 0 14px}
+.check .opt{display:block;width:100%;text-align:left;background:var(--bg3);
+  border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin:8px 0;
+  color:var(--tx);font:inherit;font-size:15.2px;cursor:pointer;transition:.12s}
+.check .opt:hover{border-color:var(--line2);background:#222b36}
+.check .opt.right{border-color:var(--ok);background:rgba(63,185,80,.11)}
+.check .opt.wrong{border-color:var(--crit);background:rgba(248,81,73,.11)}
+.check .opt .tag{float:right;font-size:12px;font-weight:700;letter-spacing:.06em}
+.check .opt.right .tag{color:var(--ok)}.check .opt.wrong .tag{color:var(--crit)}
+.check .exp{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--tx2)}
+.check .exp.on{display:block}
+.check .exp b{color:var(--tx)}
+.check .exp .ex{margin:9px 0}
+.check .exp .ex .who{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em}
+
+/* ---------- widgets / simulators ---------- */
+.widget{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.widget > .whd{display:flex;align-items:baseline;gap:10px;margin:-2px 0 4px}
+.widget > .whd .wt{font-weight:750;font-size:17px}
+.widget > .whd .wk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--teal);font-weight:800;border:1px solid rgba(57,197,187,.35);
+  border-radius:5px;padding:2px 7px}
+.widget > .wsub{color:var(--tx2);font-size:14.5px;margin:4px 0 16px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;align-items:center;
+  gap:12px;margin:11px 0}
+.ctl label{font-size:14px;color:var(--tx2)}
+.ctl output{font-family:var(--mono);font-size:13.5px;color:var(--acc);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:22px}
+.btn{background:var(--acc2);border:1px solid var(--acc);color:#fff;font:inherit;
+  font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--acc)}
+.btn.ghost{background:var(--bg3);border-color:var(--line2);color:var(--tx2)}
+.btn.ghost:hover{background:#242e3a;color:var(--tx)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:10px;margin:16px 0 0}
+.readout .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px}
+.readout .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.readout .cell .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.readout .cell .v.ok{color:var(--ok)}.readout .cell .v.warn{color:var(--warn)}
+.readout .cell .v.crit{color:var(--crit)}
+.verdict{margin:16px 0 0;padding:13px 16px;border-radius:9px;font-size:14.8px;
+  background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--acc)}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict.crit{border-left-color:var(--crit)}
+canvas{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:9px;margin:16px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;
+  color:var(--tx2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px}
+
+/* ---------- decision tree ---------- */
+.tree{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.tree .path{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  margin:0 0 14px;min-height:17px}
+.tree .path span{color:var(--acc)}
+.tree .qq{font-size:17.5px;font-weight:700;margin:0 0 6px}
+.tree .qh{color:var(--tx2);font-size:14.5px;margin:0 0 14px}
+.tree .choices{display:grid;gap:9px}
+.tree .choices button{text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:12px 15px;color:var(--tx);font:inherit;font-size:15px;
+  cursor:pointer;transition:.12s}
+.tree .choices button:hover{border-color:var(--acc);background:#222c38}
+.tree .choices button .sub{display:block;color:var(--tx3);font-size:13px;margin-top:3px}
+.tree .leaf{border-left:3px solid var(--ok);background:var(--bg3);border-radius:9px;
+  padding:15px 18px}
+.tree .leaf h5{margin:0 0 8px;font-size:16.5px;color:var(--ok)}
+.tree .leaf p{margin:9px 0;font-size:15px}
+.tree .leaf .tool{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:14.6px}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+th{background:var(--bg3);font-weight:700;font-size:13px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--tx2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.017)}
+td code{font-size:.85em}
+
+/* ---------- misc ---------- */
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2.5px 9px;border-radius:999px;vertical-align:1px}
+.pill.s0{background:rgba(248,81,73,.16);color:var(--crit);border:1px solid rgba(248,81,73,.4)}
+.pill.s1{background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pill.s2{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pill.s3{background:rgba(159,176,195,.13);color:var(--tx2);border:1px solid var(--line2)}
+.pill.unity{background:rgba(94,200,242,.14);color:var(--unity);border:1px solid rgba(94,200,242,.4)}
+.pill.unreal{background:rgba(240,164,74,.14);color:var(--unreal);border:1px solid rgba(240,164,74,.4)}
+
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);
+  padding:0 18px;margin:20px 0}
+details.more > summary{cursor:pointer;padding:13px 0;font-weight:650;font-size:15.5px;
+  list-style:none;color:var(--tx)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"▸ ";color:var(--acc);font-weight:800}
+details.more[open] > summary::before{content:"▾ "}
+details.more[open]{padding-bottom:14px}
+details.more > summary:hover{color:var(--acc)}
+
+.deliver{background:linear-gradient(180deg,rgba(77,163,255,.07),transparent);
+  border:1px solid var(--acc2);border-radius:12px;padding:20px 24px;margin:40px 0 0}
+.deliver h3{margin-top:0;color:var(--acc)}
+
+footer.lf{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:13.5px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap}
+footer.lf a{color:var(--tx2);text-decoration:none}
+footer.lf a:hover{color:var(--acc)}
+
+@media (max-width:720px){
+  body{font-size:16px}
+  .ctl{grid-template-columns:1fr;gap:4px}
+  .ctl output{text-align:left}
+  .hero{padding:34px 0 24px}
+}
+@media print{
+  .topbar,.progressbar{display:none}
+  body{background:#fff;color:#111}
+  .widget,.tree,.check,.box,.goals{break-inside:avoid}
+}
+</style>
+<style id="lesson-local">
+/* lesson-specific additions only */
+.matrixgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 22px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.seg button{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button:hover{border-color:var(--line2);color:var(--tx)}
+.seg button.on{background:var(--acc2);border-color:var(--acc);color:#fff;font-weight:650}
+.ladder{display:grid;gap:10px;margin:20px 0}
+.ladder .rung{display:grid;grid-template-columns:66px 1fr;gap:14px;align-items:start;
+  background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:12px 15px}
+.ladder .rung .sv{font-family:var(--mono);font-weight:800;font-size:19px;text-align:center;
+  padding-top:2px}
+.ladder .rung.r0 .sv{color:var(--crit)} .ladder .rung.r1 .sv{color:var(--warn)}
+.ladder .rung.r2 .sv{color:var(--acc)}  .ladder .rung.r3 .sv{color:var(--tx2)}
+.ladder .rung b{display:block;color:#fff}
+.ladder .rung p{margin:4px 0 0;font-size:14.4px;color:var(--tx2)}
+.axes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:22px 0}
+.axes .ax{background:var(--bg2);border:1px solid var(--line);border-top:3px solid var(--acc);
+  border-radius:9px;padding:14px 17px}
+.axes .ax h5{margin:0 0 6px;font-size:15.5px}
+.axes .ax p{margin:0;font-size:14.3px;color:var(--tx2)}
+.axes .ax.a2{border-top-color:var(--warn)} .axes .ax.a3{border-top-color:var(--teal)}
+.readlist{font-size:14.6px;color:var(--tx2)}
+.readlist li b{color:var(--tx)}
+.num2{font-family:var(--mono);color:var(--acc)}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <span class="crumb">Advanced Game Testing and Debugging · Topic 1</span><span class="spacer"></span>
+  <a href="../index.html">Course hub</a>
+  <a href="lesson-02-test-design-diagramming.html">Next &rarr;</a>
+</div></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Topic 1 · Sep 8&ndash;13 · Week 1 · Sessions 1&ndash;2</div>
+    <h1>Understanding Bugs</h1>
+    <p class="lede">You already know how to make a game. This week you start learning how to
+    prove one works &mdash; beginning with the vocabulary that lets a room full of tired people
+    agree on what is broken, how broken it is, and what gets fixed before Friday.</p>
+    <div class="metarow">
+      <span class="chip"><b>Reading:</b> <i>Modern Game Testing</i> ch. 1&ndash;3 + 4 papers</span>
+      <span class="chip"><b>Assignment:</b> Bug Investigation and Prioritization &middot; 90 pts &middot; due Sep 13</span>
+      <span class="chip"><b>Sessions:</b> 1&ndash;2</span>
+      <span class="chip"><b>Est. time:</b> 110 min + reading</span>
+    </div>
+  </header>
+
+  <div class="goals"><h4>By the end you will be able to</h4><ol>
+    <li>Categorize common types of defects in games, using a taxonomy that a triage lead would recognize.</li>
+    <li>Explain the impact of different bug types on player experience and on the development cycle.</li>
+    <li>Apply techniques for prioritizing defects based on severity, exposure, and impact &mdash; and keep those axes separate.</li>
+    <li>Analyze the key factors that contribute to game quality, including what coverage actually means for an interactive system.</li>
+    <li>Evaluate the importance of maintaining coding standards and ongoing QA practices as <em>defect prevention</em>, not paperwork.</li>
+  </ol></div>
+
+  <h2><span class="num">1</span>A bug is a disagreement, not a crash</h2>
+
+  <p>The intuitive definition &mdash; "a bug is when the game does something wrong" &mdash; falls
+  apart the first time you take it into a triage meeting. Wrong compared to what? A player says
+  the boss is unbeatable. The designer says the boss is <em>supposed</em> to be unbeatable until
+  you find the second sword. The programmer says the second sword spawns fine on her machine. Nobody
+  in that conversation is lying, and there is still something to fix.</p>
+
+  <p>A workable definition: <strong>a defect is an observed behavior that differs from an agreed
+  expected behavior.</strong> Both halves matter. "Observed" means somebody has evidence &mdash; a
+  clip, a log, a save file, a repro. "Agreed expected" means there is an <em>oracle</em>: a written
+  requirement, an acceptance criterion, a platform certification rule, a physical law the game claims
+  to simulate, or at minimum a shared professional judgment that players losing four hours of progress
+  is not the intent. When the oracle is missing, you do not have a bug report. You have a question, and
+  the answer to that question is worth more to the project than the ticket would have been.</p>
+
+  <p>This is why experienced testers file three different kinds of ticket from the same observation:
+  a <strong>defect</strong> (build contradicts a known requirement), a <strong>spec gap</strong>
+  (nothing says what should happen here, and that silence is itself a risk), and a <strong>design
+  change request</strong> (the build matches the spec and the spec is producing a bad outcome).
+  Filing all three as "BUG" is how a backlog becomes a landfill.</p>
+
+  <div class="box why"><div class="lbl">Why this distinction earns its keep</div>
+  <p>Ambiguity is expensive at exactly the wrong moment. Suppose the combat spec says "critical hits
+  double damage." Your code computes <code>(damage - armor) * 2</code>. A teammate's balance
+  spreadsheet assumes <code>(damage * 2) - armor</code>. Against 40 armor and a 50-damage hit, that
+  is 20 versus 60 &mdash; a 3&times; difference in the single number the whole combat economy is
+  tuned around. No test can be written to catch it, because no one has said which is right. The
+  ticket that resolves the ambiguity prevents a defect class; the ticket that reports "crit damage
+  feels low" resolves one instance and comes back next sprint.</p></div>
+
+  <h2><span class="num">2</span>The defect taxonomy</h2>
+
+  <p>Categorization is not filing for its own sake. The category determines who gets the ticket,
+  what evidence is required to make it actionable, and &mdash; critically &mdash; which
+  <em>other</em> bugs you should now go look for. When you classify a defect as a physics bug you
+  have implicitly claimed something about determinism, timestep, and collision configuration, and
+  you have told the reader that a video without a frame counter probably will not be enough.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Category</th><th>What it looks like</th><th>Evidence that makes it actionable</th><th>Usually owned by</th></tr></thead>
+    <tbody>
+      <tr><td><b>Functional</b></td><td>A feature does not do the thing it says: door won't open, save won't load, ability fires twice.</td><td>Repro steps, build ID, expected vs. actual.</td><td>Gameplay engineer</td></tr>
+      <tr><td><b>Graphical / rendering</b></td><td>Z-fighting, missing materials, shadow acne, flickering shader variants, UI clipped by a notch.</td><td>Screenshot <em>and</em> a frame capture (RenderDoc); GPU/driver version.</td><td>Graphics / tech art</td></tr>
+      <tr><td><b>Physics</b></td><td>Clipping through geometry, ragdolls launching, jitter on slopes, tunneling at high speed.</td><td>Video with frame counter, timestep and target FPS, collider setup, velocity at the moment of failure.</td><td>Gameplay / physics</td></tr>
+      <tr><td><b>AI / behavior</b></td><td>Navmesh dead-ends, enemies T-posing at a ledge, aggro never dropping, pathing loops.</td><td>Navmesh visualization, behavior-tree state at failure, seed if AI uses randomness.</td><td>AI engineer</td></tr>
+      <tr><td><b>Audio</b></td><td>Missing SFX, voice lines overlapping, music not ducking, positional audio on the wrong side.</td><td>Recording with visuals, mixer snapshot, platform audio backend.</td><td>Audio programmer</td></tr>
+      <tr><td><b>Network / multiplayer</b></td><td>Desync, rubber-banding, host migration failure, client-authoritative exploits, lost session on suspend.</td><td>Both clients' logs with timestamps, ping/loss, packet capture where lawful, server tick rate.</td><td>Network engineer</td></tr>
+      <tr><td><b>Progression-blocking</b></td><td>Softlock, quest state that cannot advance, unwinnable save, checkpoint written in a broken state.</td><td>The <em>save file</em>. Always the save file.</td><td>Whoever owns the quest system</td></tr>
+      <tr><td><b>Economy / balance exploit</b></td><td>Duplicate loot, infinite currency, a vendor loop that prints money, XP farm 40&times; intended rate.</td><td>Rate measurement: units per minute vs. designed rate. Numbers, not adjectives.</td><td>Design + gameplay</td></tr>
+      <tr><td><b>Localization</b></td><td>Truncated strings, hardcoded English, wrong plural form, right-to-left layout breakage, text overflowing a fixed button.</td><td>Locale, string key, screenshot; pseudo-localization pass results.</td><td>Loc + UI</td></tr>
+      <tr><td><b>Platform / certification</b></td><td>No response to suspend-resume, wrong controller glyphs, missing age-gate, save on a removed storage device, trophy not unlocking.</td><td>The exact TRC/TCR/XR requirement number. Cert failures are quoted, not paraphrased.</td><td>Release engineering</td></tr>
+      <tr><td><b>Performance</b></td><td>Frame-time spikes, long load times, memory growth, thermal throttle after 10 minutes, battery drain.</td><td>A capture, not a feeling: profiler trace, frame-time series, percentiles, device and thermal state.</td><td>Performance / tech</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>Two categories deserve special attention because students under-file both. <strong>Platform
+  certification</strong> defects are the ones that turn a shipping date into a slipped date: they are
+  binary, externally judged, and discovered late because nobody tests suspend-resume during a game
+  jam. <strong>Performance</strong> defects are under-filed because they lack a moment &mdash; there
+  is no frame where the game "breaks," so it feels like a condition rather than a bug. File it as a
+  bug, with a number attached, or it will never be scheduled.</p>
+
+  <div class="box field"><div class="lbl">From the reading</div>
+  <p>Truelove, Santana de Almeida &amp; Ahmed (2021) mined what studios <em>announce</em> fixing in
+  update notes and built a taxonomy from the patches themselves rather than from a QA handbook.
+  Read it with your own bug database open next to it and ask a specific question: which of their
+  categories has your team never once filed a ticket for? A category with zero tickets is almost
+  never a category with zero defects. It is a category you are not looking at.</p></div>
+  <h2><span class="num">3</span>Severity, priority, and repro rate are three different numbers</h2>
+
+  <p>Most bad triage meetings are one argument wearing a disguise: two people using a single word to
+  mean two different things. The tester says "this is critical." The producer hears "this must be
+  fixed now" and pushes back because the milestone is Thursday. The tester digs in, because what
+  they actually meant was "when this happens, the player loses everything." Both are right about
+  different axes, and the meeting burns twenty minutes rediscovering that.</p>
+
+  <div class="axes">
+    <div class="ax"><h5>Severity &mdash; how bad is the outcome?</h5>
+      <p>A property of the bug. Objective, engineering-facing, set by whoever can describe the
+      consequence. Does not change because the ship date moved. Does not change because it's rare.</p></div>
+    <div class="ax a2"><h5>Priority &mdash; when do we fix it?</h5>
+      <p>A property of the <em>schedule</em>. Set by the triage owner, using severity, exposure,
+      fix cost, fix risk, and where you are in the milestone. Changes weekly. Legitimately.</p></div>
+    <div class="ax a3"><h5>Repro rate / exposure &mdash; how often does it actually happen?</h5>
+      <p>Two sub-numbers: how often the bug fires when you follow the steps (repro rate), and what
+      fraction of the player base will ever be in a position to follow them (population exposure).</p></div>
+  </div>
+
+  <div class="box crit"><div class="lbl">The failure mode</div>
+  <p>The moment you let people lower <em>severity</em> to express "we're not fixing this now," you
+  destroy your only durable signal. Six weeks later somebody queries the database for S0 defects to
+  decide whether the build is shippable and gets a clean answer, because the crashes were quietly
+  relabeled S3 during crunch. This is not hypothetical bookkeeping pedantry &mdash; the severity
+  field is the input to release-gate decisions, postmortems, and the escaped-defect rate you will
+  be judged on. Move priority. Never shade severity.</p></div>
+
+  <h3>The S0&ndash;S3 ladder</h3>
+  <p>Ladders vary by studio; the shape does not. Write yours down and put an example next to each
+  rung, because "critical" without an example is a vote, not a definition.</p>
+
+  <div class="ladder">
+    <div class="rung r0"><div class="sv">S0</div><div>
+      <b>Blocker / catastrophic</b>
+      <p>Crash on boot, data loss, save corruption, progression softlock with no recovery, security or
+      privacy exposure, a certification failure. The build cannot ship and often cannot be tested
+      past this point. Example: quicksave during the elevator transition writes a save that loads
+      into the void.</p></div></div>
+    <div class="rung r1"><div class="sv">S1</div><div>
+      <b>Major</b>
+      <p>A core feature is unusable, or there is a workaround that is unreasonable to expect of a
+      player. Economy-breaking exploits live here. Example: co-op session drops on every host
+      migration; players can restart the lobby, but nobody will.</p></div></div>
+    <div class="rung r2"><div class="sv">S2</div><div>
+      <b>Moderate</b>
+      <p>A feature misbehaves but the player can proceed; a visual or audio defect that a player
+      will definitely notice. Example: reload animation plays twice when you swap weapons mid-reload.</p></div></div>
+    <div class="rung r3"><div class="sv">S3</div><div>
+      <b>Minor / cosmetic</b>
+      <p>Polish. A texture seam, one-frame UI pop, an off-by-one in a tooltip. Real defects &mdash;
+      file them &mdash; but they lose every argument against an S1, and they should.</p></div></div>
+  </div>
+
+  <p>Now put the axes together. Priority is a <em>function</em>, and you can write it down. Roughly:
+  expected harm equals severity weight multiplied by the probability a given player encounters the
+  bug, adjusted by how visible it is (a defect on the main menu is seen by 100% of players and by
+  every reviewer), scaled by how late you are in the schedule, and divided by what it costs and
+  risks to fix. Reasonable studios weight those terms differently. Unreasonable studios do not write
+  them down at all and re-litigate the weighting every Tuesday.</p>
+
+  <div class="widget" id="w-triage">
+    <div class="whd"><span class="wt">Triage Matrix</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Set the three axes independently and watch the priority score move. The shaded
+    field is computed live by evaluating the same scoring function across the whole
+    exposure&times;severity plane with your current visibility, stage, and fix-cost settings &mdash;
+    so when you drag "milestone stage," the entire map redraws. Simplified model, honestly labeled:
+    the weights below are a teaching default, not an industry constant.</p>
+
+    <div class="matrixgrid">
+      <div>
+        <div class="ctl"><label>Severity</label>
+          <div class="seg" id="tr-sev">
+            <button data-v="0" class="on">S0</button><button data-v="1">S1</button>
+            <button data-v="2">S2</button><button data-v="3">S3</button>
+          </div><output id="tr-sevo">S0</output></div>
+        <div class="ctl"><label>Repro rate (steps followed)</label>
+          <input type="range" id="tr-repro" min="1" max="100" value="100"><output id="tr-reproo">100%</output></div>
+        <div class="ctl"><label>Players who can reach it</label>
+          <input type="range" id="tr-pop" min="1" max="1000" value="600"><output id="tr-popo">6.0%</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Player visibility (0&ndash;10)</label>
+          <input type="range" id="tr-vis" min="0" max="10" value="5"><output id="tr-viso">5</output></div>
+        <div class="ctl"><label>Fix cost &amp; risk (1&ndash;10)</label>
+          <input type="range" id="tr-cost" min="1" max="10" value="3"><output id="tr-costo">3</output></div>
+        <div class="ctl"><label>Milestone stage</label>
+          <div class="seg" id="tr-stage">
+            <button data-v="0">Preprod</button><button data-v="1">Alpha</button>
+            <button data-v="2" class="on">Beta</button><button data-v="3">Cert</button>
+            <button data-v="4">Live</button>
+          </div><output id="tr-stageo">Beta</output></div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Exposure</div><div class="v" id="tr-exp">6.0%</div></div>
+      <div class="cell"><div class="k">Expected harm</div><div class="v" id="tr-harm">0.0</div></div>
+      <div class="cell"><div class="k">Priority score</div><div class="v" id="tr-score">0</div></div>
+      <div class="cell"><div class="k">Priority band</div><div class="v" id="tr-band">P2</div></div>
+      <div class="cell"><div class="k">Severity (unchanged)</div><div class="v" id="tr-sevcell">S0</div></div>
+    </div>
+
+    <canvas id="tr-canvas" width="900" height="380" aria-label="Priority field plotted over exposure and severity"></canvas>
+    <div class="legend">
+      <span><i style="background:#f85149"></i>P0 &mdash; stop the line</span>
+      <span><i style="background:#d29922"></i>P1 &mdash; this sprint</span>
+      <span><i style="background:#4da3ff"></i>P2 &mdash; this milestone</span>
+      <span><i style="background:#3a4757"></i>P3 &mdash; backlog</span>
+      <span><i style="background:#ffffff"></i>your bug</span>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn ghost" data-preset="boot">Crash on boot, one GPU vendor</button>
+      <button class="btn ghost" data-preset="softlock">Softlock, 30% repro, late chapter</button>
+      <button class="btn ghost" data-preset="dupe">Duplicate-loot exploit, live game</button>
+      <button class="btn ghost" data-preset="typo">Typo on the main menu</button>
+    </div>
+
+    <div class="verdict" id="tr-verdict">Move a slider.</div>
+  </div>
+
+  <p>Run the "crash on boot, one GPU vendor" preset and then drag the population slider. The
+  severity readout never moves &mdash; it is still S0, because when it happens the player cannot
+  play at all &mdash; while the priority score swings across three bands. That is the entire lesson
+  of this section rendered as an interaction. If your triage process cannot express "S0, P2," it
+  will express it anyway, by lying in the severity column.</p>
+
+  <div class="check">
+    <p class="q">A crash-on-launch reproduces 100% of the time, but only on one discontinued GPU
+    that telemetry says 0.3% of your players own. You are two weeks from cert. What do you file?</p>
+    <button class="opt" data-correct="0">S3 / P3 &mdash; almost nobody has that card, and calling it critical will derail the cert push.</button>
+    <button class="opt" data-correct="1">S0 with a lower priority, exposure and fix cost recorded in the ticket.</button>
+    <button class="opt" data-correct="0">S0 / P0 &mdash; a crash is a crash; every crash blocks the build regardless of who hits it.</button>
+    <div class="exp"><b>Why the second option:</b> severity describes the outcome for the player who
+    hits it, and that outcome is "cannot play, ever." Priority describes what the team does about it
+    this week, and 0.3% exposure two weeks from cert is a legitimate reason to schedule it after the
+    cert blockers. Recording exposure and fix cost <em>in the ticket</em> is what makes the decision
+    reviewable later instead of mysterious.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      It produces the outcome you want (nobody panics) with one keystroke. The cost is that your
+      severity data is now fiction, and the next person to ask "do we have any open S0s?" gets a
+      wrong answer at the worst possible moment.</div>
+      <div class="ex"><span class="who">Why the third is tempting</span><br>
+      It sounds principled, and crash-blocks-build is a real policy at many studios. But applied
+      without exposure it means a driver bug on a card nobody owns outranks a save-corruption bug
+      hitting 4% of players. Policy is a shortcut for judgment, not a replacement.</div>
+    </div>
+  </div>
+  <h2><span class="num">4</span>Root cause: the category that actually predicts the next bug</h2>
+
+  <p>Symptom taxonomy tells you who to route the ticket to. Root-cause taxonomy tells you what else
+  is broken. They are different classifications of the same defect and you need both. "Enemy drops
+  loot twice" is a functional/economy symptom; its root cause is a missing state guard, and the
+  moment you name it that way you should immediately go check every other place in the codebase
+  where a one-shot event can fire twice in one frame.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Root cause</th><th>Signature</th><th>The sibling bugs to go hunt</th></tr></thead>
+    <tbody>
+      <tr><td><b>Logic</b></td><td>The code does exactly what it says and what it says is wrong: inverted condition, off-by-one, wrong operator precedence.</td><td>Every other use of the same formula or helper. Copy-paste spreads logic errors.</td></tr>
+      <tr><td><b>State</b></td><td>A transition that was never considered: entering a menu while dying, saving mid-cutscene, re-entering a trigger you never left.</td><td>Anything with an implicit "this only happens once" assumption and no guard.</td></tr>
+      <tr><td><b>Timing / race</b></td><td>Order-dependent between frames, threads, coroutines, or network messages. Fails on a loaded machine, passes on yours.</td><td>All coroutines/latent actions that outlive their owner; all `Start` vs `Awake` ordering assumptions.</td></tr>
+      <tr><td><b>Precision</b></td><td>Float equality, accumulating drift, large world coordinates losing resolution, non-associative float sums differing between platforms.</td><td>Every <code>==</code> on a float; every deterministic system that sums in a non-fixed order.</td></tr>
+      <tr><td><b>Resource / lifetime</b></td><td>Leaks, dangling references, unbalanced subscribe/unsubscribe, handles never released, objects destroyed while in use.</td><td>Every subscription without a matching unsubscribe. Grep for it; you will find more than one.</td></tr>
+      <tr><td><b>Integration</b></td><td>Two correct systems with incompatible assumptions: units, coordinate handedness, ownership, who calls whom first.</td><td>Every boundary crossed by a recent merge. Integration bugs cluster around branch merges.</td></tr>
+      <tr><td><b>Spec ambiguity</b></td><td>Two readings of the same sentence, both implemented somewhere.</td><td>Everything downstream of the ambiguous sentence, including the design spreadsheet.</td></tr>
+      <tr><td><b>Hardware / driver variance</b></td><td>Only on one GPU vendor, one driver version, one OS build, one CPU core count, one screen aspect.</td><td>Anything using a vendor extension, a compute path, or an undocumented behavior that "works."</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box why"><div class="lbl">Why we insist on the hardware category</div>
+  <p>Yee's (2021) study of preserving Taiwanese video games is not, on its face, a testing paper. It
+  is about titles that became unplayable because the hardware, OS, DRM server, or driver they assumed
+  simply stopped existing. Read as a testing document, it makes a point your bug database should
+  encode: <em>"works on my machine" is a claim about one configuration at one moment in time.</em>
+  A defect logged without GPU vendor, driver version, OS build, and CPU/core count is a defect that
+  cannot be reproduced in two years, and increasingly cannot be reproduced in two months. The
+  preservation problem and the reproduction problem are the same problem seen at different time
+  scales, and the fix in both cases is recording the configuration while you still can.</p></div>
+
+  <h3>Four root causes in sixteen lines</h3>
+  <p>Below is a health component of the kind that appears in every student project. It compiles, it
+  passes a happy-path playtest, and it contains at least four distinct root causes. Click the
+  highlighted lines.</p>
+
+  <div class="annot"><div class="rows">
+    <div class="arow"><div class="gut">1</div><div class="ln">public class Health : MonoBehaviour {</div></div>
+    <div class="arow"><div class="gut">2</div><div class="ln">    public float hp = 100f;</div></div>
+    <div class="arow hasnote"><div class="gut">3</div><div class="ln">    void OnEnable()  { DamageBus.OnHit += HandleHit; }</div></div>
+    <div class="note"><b>Resource / lifetime.</b> A subscription with no matching
+      <code>OnDisable() { DamageBus.OnHit -= HandleHit; }</code>. The static event holds a strong
+      reference to this instance forever, so the object is never collected, and &mdash; worse for
+      gameplay &mdash; a corpse keeps receiving hit callbacks. Do not fix only this line: the
+      <b>reasoning</b> is that unbalanced subscribe/unsubscribe is a <i>class</i> of defect, so grep
+      the project for <code>+=</code> on events and audit every one. In our experience that grep is
+      never a single hit.</div>
+    <div class="arow"><div class="gut">4</div><div class="ln">&nbsp;</div></div>
+    <div class="arow hasnote"><div class="gut">5</div><div class="ln">    void HandleHit(float dmg, bool crit) {</div></div>
+    <div class="note"><b>Integration.</b> The handler takes raw <code>dmg</code> with no indication
+      of whether it has already been through resistances, and no source of truth about units. The
+      <b>reasoning</b> for calling this out at triage time: when two systems each apply a modifier
+      "just to be safe," you get double-mitigation, which reads to a designer as "armor is
+      overtuned" and produces a balance ticket instead of a bug ticket. Integration defects usually
+      arrive disguised as balance complaints.</div>
+    <div class="arow hasnote"><div class="gut">6</div><div class="ln">        float armor = GetComponent&lt;Armor&gt;().Value;</div></div>
+    <div class="note"><b>Two problems, one line.</b> A null dereference the first time a hittable
+      object has no <code>Armor</code> component (functional crash, S0 on the platform where it
+      happens to be hit first), and a per-hit <code>GetComponent</code> call that will show up in
+      Topic 4 as a profiler entry. The <b>reasoning</b> for filing the crash and the perf smell
+      separately: they have different owners, different fixes, and different priorities. One ticket
+      with two defects gets half-fixed and closed.</div>
+    <div class="arow hasnote"><div class="gut">7</div><div class="ln">        hp -= (dmg - armor) * (crit ? 2f : 1f);</div></div>
+    <div class="note"><b>Spec ambiguity.</b> "Crits double damage" &mdash; before or after armor?
+      This line doubles the post-armor result. Against 50 damage and 40 armor that is 20; the other
+      reading gives 60. The <b>reasoning</b>: you cannot write a test for this, because a test
+      encodes an expected value and there isn't an agreed one. Escalate to a design decision, get
+      it written into the spec, <em>then</em> write the test. Also note that nothing clamps
+      <code>dmg - armor</code> at zero, so armor above incoming damage heals the target.</div>
+    <div class="arow hasnote"><div class="gut">8</div><div class="ln">        if (hp == 0f) StartCoroutine(Die());</div></div>
+    <div class="note"><b>Precision.</b> Floating-point equality against an accumulated value. With
+      damage values like 12.5 and 7.3, <code>hp</code> will step over zero, not land on it, so this
+      branch essentially never fires. The <b>reasoning</b> to teach yourself here: a condition that
+      is never true is invisible in playtesting and invisible in line coverage tools that only ask
+      whether the <i>line</i> executed. Use <code>hp &lt;= 0f</code> and, if you genuinely need
+      float equality, compare against an epsilon.</div>
+    <div class="arow hasnote"><div class="gut">9</div><div class="ln">        if (hp &lt;  0f) StartCoroutine(Die());</div></div>
+    <div class="note"><b>State.</b> No <code>isDying</code> guard. Two projectiles landing in the
+      same frame each call <code>HandleHit</code>, both see negative hp, and you start
+      <code>Die()</code> twice &mdash; two death animations, and two calls to
+      <code>Inventory.DropAll</code> on line 14. That is duplicated loot, which is an economy defect
+      in a live game and an exploit the moment a player notices it is reproducible. The
+      <b>reasoning</b>: any one-shot transition needs to be idempotent, because "can only happen
+      once" is an assumption about frame scheduling, not a fact.</div>
+    <div class="arow"><div class="gut">10</div><div class="ln">    }</div></div>
+    <div class="arow"><div class="gut">11</div><div class="ln">&nbsp;</div></div>
+    <div class="arow"><div class="gut">12</div><div class="ln">    IEnumerator Die() {</div></div>
+    <div class="arow"><div class="gut">13</div><div class="ln">        anim.SetTrigger("death");</div></div>
+    <div class="arow hasnote"><div class="gut">14</div><div class="ln">        yield return new WaitForSeconds(2.4f);</div></div>
+    <div class="note"><b>Timing / race.</b> 2.4 seconds is an eternity. During it the player can
+      quit to menu, trigger a checkpoint reload, or cross a streaming boundary. The
+      <b>reasoning</b>: any latent action that spans frames must re-validate the world it wakes up
+      into. Also, <code>WaitForSeconds</code> is scaled by <code>Time.timeScale</code>, so pausing
+      the game or entering a slow-motion finisher changes the duration &mdash; a defect that only
+      reproduces for players who use the pause menu, which is to say, a defect that never reproduces
+      in the office.</div>
+    <div class="arow hasnote"><div class="gut">15</div><div class="ln">        Inventory.DropAll(transform.position);</div></div>
+    <div class="note"><b>Compounding.</b> Reached twice (line 9), after an unbounded delay (line 14),
+      using a transform that a ragdoll may have moved 30 metres away or through the floor. The
+      <b>reasoning</b> for root-causing rather than symptom-fixing: a tester will file "loot spawns
+      inside the terrain," an engineer will clamp the spawn position to the navmesh, the ticket
+      closes, and the duplicate-drop economy bug ships. Symptom fixes hide root causes.</div>
+    <div class="arow"><div class="gut">16</div><div class="ln">        Destroy(gameObject);</div></div>
+    <div class="arow"><div class="gut">17</div><div class="ln">    }</div></div>
+    <div class="arow"><div class="gut">18</div><div class="ln">}</div></div>
+  </div><p class="hint">Click any highlighted line to see why it is written that way.</p></div>
+
+  <p>Notice how the assignment writes itself from this exercise. Four defects, four distinct root
+  causes, one of which (the spec ambiguity) is not a code fix at all. That is exactly the shape of
+  analysis the Bug Investigation deliverable asks for.</p>
+
+  <h3>The same class of defect in both engines</h3>
+  <p>Lifetime and one-shot-transition bugs are not a C# problem. They show up in Unreal with
+  different spelling and the same consequences.</p>
+
+  <div class="tabs"><div class="tabhd">
+      <button data-engine="unity" data-tab="u" class="on">Unity</button>
+      <button data-engine="unreal" data-tab="e">Unreal</button>
+    </div><div class="tabbody">
+    <div class="tabpane on" data-pane="u">
+      <p>In Unity the three recurring lifetime traps are static events, coroutines outliving their
+      owner, and <code>DontDestroyOnLoad</code> objects that survive a scene reload with stale
+      state. The guard pattern is symmetric subscription plus an explicit state flag:</p>
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Health.cs &mdash; guarded</div><pre>
+<span class="k">private bool</span> _dying;
+
+<span class="k">void</span> <span class="f">OnEnable</span>()  { DamageBus.OnHit += HandleHit; }
+<span class="k">void</span> <span class="f">OnDisable</span>() { DamageBus.OnHit -= HandleHit; }   <span class="c">// always paired</span>
+
+<span class="k">void</span> <span class="f">HandleHit</span>(<span class="t">float</span> dmg, <span class="t">bool</span> crit) {
+    <span class="k">if</span> (_dying) <span class="k">return</span>;                       <span class="c">// idempotent transition</span>
+    hp -= DamageModel.Resolve(dmg, armor, crit);   <span class="c">// one place, testable</span>
+    <span class="k">if</span> (hp &lt;= <span class="n">0f</span>) { _dying = <span class="k">true</span>; StartCoroutine(Die()); }
+}</pre></div>
+      <p>Because <code>DamageModel.Resolve</code> is now a pure static function with no
+      <code>MonoBehaviour</code> state, it can be called from an EditMode test with no scene loaded
+      &mdash; which is the thread we pick up in Topic 3. Unity's diagnostic tooling for the lifetime
+      half of this is the Memory Profiler package: take a snapshot, reload the scene, take another,
+      and diff for objects that should have died.</p>
+      <p class="small subtle">Console check while playing: <code>Debug.Log</code> the subscriber
+      count, or in the Profiler watch <code>GC.Alloc</code> and the object count climb across
+      repeated scene loads.</p>
+    </div>
+    <div class="tabpane" data-pane="e">
+      <p>Unreal's equivalents are delegates bound in <code>BeginPlay</code> without an
+      <code>EndPlay</code> unbind, latent actions and timers that fire after the actor is gone, and
+      <code>UPROPERTY</code> references that keep a <code>UObject</code> reachable so the garbage
+      collector never touches it. The guard pattern is the same shape:</p>
+      <div class="codeblock"><div class="hd"><span class="dot"></span>HealthComponent.cpp &mdash; guarded</div><pre>
+<span class="k">void</span> UHealthComponent::<span class="f">BeginPlay</span>() {
+    Super::BeginPlay();
+    UDamageBus::Get()-&gt;OnHit.AddUObject(<span class="k">this</span>, &amp;UHealthComponent::HandleHit);
+}
+
+<span class="k">void</span> UHealthComponent::<span class="f">EndPlay</span>(<span class="k">const</span> EEndPlayReason::Type Reason) {
+    UDamageBus::Get()-&gt;OnHit.RemoveAll(<span class="k">this</span>);   <span class="c">// paired unbind</span>
+    GetWorld()-&gt;GetTimerManager().ClearAllTimersForObject(<span class="k">this</span>);
+    Super::EndPlay(Reason);
+}
+
+<span class="k">void</span> UHealthComponent::<span class="f">HandleHit</span>(<span class="t">float</span> Dmg, <span class="t">bool</span> bCrit) {
+    <span class="k">if</span> (bDying || !IsValid(GetOwner())) { <span class="k">return</span>; }
+    HP -= FDamageModel::Resolve(Dmg, Armor, bCrit);
+    <span class="k">if</span> (HP &lt;= <span class="n">0.f</span>) { bDying = <span class="k">true</span>; StartDeath(); }
+}</pre></div>
+      <p><code>AddUObject</code> plus <code>RemoveAll</code> in <code>EndPlay</code> is the
+      idiomatic pairing, and <code>IsValid()</code> is the re-validation that any latent action must
+      perform when it wakes. For the memory half, <code>memreport -full</code> and
+      <code>obj list class=HealthComponent</code> in the console will tell you whether components
+      are surviving a level transition; the Low Level Memory Tracker gives you the same answer with
+      categories attached.</p>
+      <p class="small subtle">Console check while playing: <code>stat game</code> for tick cost,
+      <code>obj gc</code> to force a collection and see whether the count actually drops.</p>
+    </div>
+  </div></div>
+
+  <div class="check">
+    <p class="q">Your game drops loot twice roughly one time in forty kills, and only in busy fights.
+    You have not read the code yet. Which root-cause hypothesis should you test <em>first</em>, and
+    why does the ordering matter?</p>
+    <button class="opt" data-correct="0">Hardware/driver variance &mdash; intermittent behavior in heavy scenes usually means the GPU is dropping work.</button>
+    <button class="opt" data-correct="1">State &mdash; a one-shot transition with no idempotence guard, fired twice when two damage events land in the same frame.</button>
+    <button class="opt" data-correct="0">Precision &mdash; float error in the health subtraction is putting hp at exactly zero occasionally.</button>
+    <div class="exp"><b>Why state:</b> the two clues are "intermittent" and "only in busy fights."
+    Busy fights are the condition under which multiple damage events land in a single frame, which
+    is precisely the trigger for a missing one-shot guard. One-in-forty is what a frame-coincidence
+    bug looks like from the outside. Ordering matters because your first hypothesis determines what
+    evidence you go collect: this one sends you to look at the death path with a log of hit
+    timestamps, which is a ten-minute check.
+      <div class="ex"><span class="who">Why hardware is tempting</span><br>
+      "Intermittent" makes people reach for the environment, and environment hypotheses are
+      expensive to disprove &mdash; you end up borrowing three machines. Reach for environment
+      <em>after</em> you have eliminated the cheap in-code explanations, unless the report already
+      correlates with a specific configuration.</div>
+      <div class="ex"><span class="who">Why precision is tempting</span><br>
+      It is a real defect in the same function, and you would find it while investigating. But
+      float error landing on exactly 0.0 would make death <i>less</i> likely to fire, not twice as
+      likely. Match the hypothesis to the direction of the symptom.</div>
+    </div>
+  </div>
+  <h2><span class="num">5</span>Is this a bug, a design decision, or a spec gap?</h2>
+
+  <p>You will be asked this question more often than any other in your first QA job, usually by
+  someone who wants a one-word answer in under ten seconds. The tree below is the sequence a good
+  triage lead runs mentally. Work through it twice with two real observations from your own project
+  before Session 2 &mdash; you will need exactly this reasoning for the assignment, where you have
+  to justify why each of your four defects is a defect.</p>
+
+  <div class="tree" id="tree1"><p class="path"></p><div class="body"></div></div>
+
+  <div class="box why"><div class="lbl">Why the first question is about the oracle, not the symptom</div>
+  <p>Beginning testers start with "how bad does this look." That produces confident tickets on
+  intended behavior and timid tickets on genuine violations. Starting with "what is this measured
+  against" forces you to name your oracle out loud, and naming it does two things: it makes the
+  ticket arguable on evidence rather than on taste, and when you cannot name one, it surfaces the
+  more valuable finding &mdash; that a whole area of the game has no defined correct behavior.
+  Basit (2024), writing about structuring game-testing services, makes essentially this point at
+  the process level: a testing engagement without agreed acceptance criteria produces opinions and
+  bills for them.</p></div>
+
+  <div class="check">
+    <p class="q">Playtesters report that the stealth takedown works on guards facing away, and also
+    on guards facing you if you are crouched. The design document says only "takedowns require the
+    guard to be unaware." Design intended facing-away only. What is the correct filing?</p>
+    <button class="opt" data-correct="0">A defect &mdash; the code contradicts the designer's stated intent, so it is a straightforward functional bug.</button>
+    <button class="opt" data-correct="1">A spec-ambiguity finding first: "unaware" is undefined, and both the code and the design intent are legitimate readings of it. Get the definition written, then file the defect against it.</button>
+    <button class="opt" data-correct="0">A design change request &mdash; the build works, so any change to it is by definition a design change.</button>
+    <div class="exp"><b>Why the second option:</b> the written oracle admits both behaviors. If you
+    file a plain defect, the fix is one engineer's interpretation of one designer's sentence, and
+    the next system that consumes "unaware" (AI alert states, the tutorial prompt, the achievement)
+    will interpret it differently and you will get the same bug three more times. Defining
+    "unaware" as a concrete state &mdash; alertness below a threshold and no line-of-sight for N
+    seconds &mdash; converts an argument into a testable predicate.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      Intent is real and the designer is right about what they wanted. But "the designer told me in
+      the hallway" is not an oracle a test can reference, and it does not survive that designer
+      changing teams. Convert intent into text, then file.</div>
+      <div class="ex"><span class="who">Why the third is tempting</span><br>
+      It has the right instinct &mdash; do not call intended behavior a bug &mdash; applied to a
+      case where nothing established that this behavior was intended. "The build does it" is
+      evidence about the build, not about the design.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">6</span>What a bug costs depends on when you find it</h2>
+
+  <p>The cost of a defect is not the time to change the line of code. It is that time plus
+  re-verification, plus everything downstream that was built on the broken behavior, plus the cost
+  of the process you have to run to get the fix in front of players. Those downstream terms are
+  small in preproduction and enormous after a certification submission, and the growth is
+  multiplicative rather than additive.</p>
+
+  <p>Work an example by hand before you touch the simulator. A two-hour fix in preproduction is two
+  hours. The same defect found during certification is: the same two hours of code, plus a full
+  regression pass because you touched a shipping build, plus a new submission, plus the calendar
+  days that submission takes, plus whatever the rest of the team does not ship because the branch
+  is frozen. The code change did not get harder. Everything wrapped around it did.</p>
+
+  <div class="widget" id="w-cod">
+    <div class="whd"><span class="wt">Cost of Delay</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Same defect, five discovery points. The stage multipliers are an illustrative
+    model in the tradition of the classic defect-cost-escalation curve &mdash; treat the shape as
+    the lesson and the constants as adjustable. A calendar slip is charged at 35% of team daily
+    burn, on the assumption that only part of the team is genuinely blocked by a frozen branch.
+    Every figure below is computed from your inputs.</p>
+
+    <div class="matrixgrid">
+      <div>
+        <div class="ctl"><label>Engineering hours if caught in preprod</label>
+          <input type="range" id="cd-hours" min="1" max="40" value="6"><output id="cd-hourso">6 h</output></div>
+        <div class="ctl"><label>Blended team rate ($/h)</label>
+          <input type="range" id="cd-rate" min="40" max="180" value="95"><output id="cd-rateo">$95</output></div>
+        <div class="ctl"><label>Team daily burn ($k/day)</label>
+          <input type="range" id="cd-burn" min="2" max="60" value="18"><output id="cd-burno">$18k</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Players affected if it ships</label>
+          <input type="range" id="cd-players" min="1" max="400" value="60"><output id="cd-playerso">60k</output></div>
+        <div class="ctl"><label>Of those, % who contact support</label>
+          <input type="range" id="cd-support" min="1" max="60" value="15"><output id="cd-supporto">1.5%</output></div>
+        <div class="ctl"><label>Discovered at</label>
+          <div class="seg" id="cd-stage">
+            <button data-v="0">Preprod</button><button data-v="1">Alpha</button>
+            <button data-v="2">Beta</button><button data-v="3" class="on">Cert</button>
+            <button data-v="4">Live</button>
+          </div><output id="cd-stageo">Cert</output></div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Eng hours</div><div class="v" id="cd-eh">0</div></div>
+      <div class="cell"><div class="k">QA re-verify</div><div class="v" id="cd-qa">0</div></div>
+      <div class="cell"><div class="k">Schedule slip</div><div class="v" id="cd-slip">0 d</div></div>
+      <div class="cell"><div class="k">Support load</div><div class="v" id="cd-sup">$0</div></div>
+      <div class="cell"><div class="k">Total cost</div><div class="v" id="cd-total">$0</div></div>
+      <div class="cell"><div class="k">vs. preprod</div><div class="v" id="cd-mult">1&times;</div></div>
+    </div>
+
+    <canvas id="cd-canvas" width="900" height="300" aria-label="Total cost of the same defect at five discovery stages"></canvas>
+    <div class="verdict" id="cd-verdict">Pick a stage.</div>
+  </div>
+
+  <p>Push the stage to Live and read the multiplier. Then ask the question the number is designed to
+  provoke: at that multiplier, how many hours of automated testing, code review, or static analysis
+  would have had to run to be worth it? That arithmetic &mdash; not enthusiasm for process &mdash;
+  is the argument for everything in the remaining seven topics of this course. It is also the
+  argument you will make to a producer, and producers respond to it, because it is denominated in
+  the units they already use.</p>
+
+  <div class="box warn"><div class="lbl">Read the model honestly</div>
+  <p>This simulator has no empirical claim behind its multipliers. Cost-escalation curves are
+  contested in the software-engineering literature, and the honest version of the claim is
+  qualitative: <em>later costs more, and the increase is driven by process and coupling rather than
+  by code difficulty</em>. Present it that way in your assignment. If you quote a specific
+  multiplier as fact in a professional setting, someone will ask for the study, and "a course
+  widget" is not an answer.</p></div>
+  <h2><span class="num">7</span>Quality factors and why "80% coverage" means almost nothing here</h2>
+
+  <p>Ask what makes a game high quality and you will get a list of adjectives. Ask what factors you
+  can <em>measure and defend</em>, and the list gets short and useful: functional correctness
+  against a stated oracle; stability (crash-free sessions, mean time between failures); performance
+  against a frame and memory budget; compatibility across the target device matrix; accessibility
+  and compliance conformance; content correctness including localization; and the maintainability of
+  the code that produces all of the above. Every one of those has a metric attached, and this course
+  spends a topic on most of them.</p>
+
+  <p>The one that trips up students transferring habits from a general software-engineering course
+  is coverage. In a web service, line and branch coverage are decent proxies for "did we exercise
+  the logic." In a game, they are close to meaningless on their own. Coppola and colleagues (2024)
+  survey the coverage metrics actually used for games and the picture that emerges is that the
+  interesting coverage dimensions are not in the source file at all:</p>
+
+  <ul>
+    <li><strong>Code coverage</strong> &mdash; lines, branches, functions. Necessary, cheap, and
+    badly misleading in isolation. Every line of <code>HandleHit</code> above can be covered by one
+    test while three of its four defects survive.</li>
+    <li><strong>State coverage</strong> &mdash; which combinations of world flags, quest states,
+    inventory contents, and character conditions have ever been exercised together. This is where
+    softlocks live.</li>
+    <li><strong>Space / navigation coverage</strong> &mdash; which parts of the level geometry a
+    tester or agent has physically occupied. Out-of-bounds and collision defects are found here and
+    nowhere else.</li>
+    <li><strong>Interaction / input coverage</strong> &mdash; which sequences of player actions have
+    been performed, including the illegal-feeling ones (pause during a takedown, quit during
+    autosave).</li>
+    <li><strong>Content coverage</strong> &mdash; which assets, dialogue nodes, item combinations,
+    and locales have been rendered at least once.</li>
+  </ul>
+
+  <p>The next widget makes the scale of the problem concrete. It computes the actual size of a
+  modest state space and compares it against what a scripted test suite can touch, and then it does
+  something more useful: it generates a real pairwise covering array over your flags, so you can see
+  how a tiny number of runs can guarantee every <em>two-flag</em> interaction is exercised. Pairwise
+  is the practical answer to combinatorial explosion, and we return to it properly in Topic 5.</p>
+
+  <div class="widget" id="w-cov">
+    <div class="whd"><span class="wt">State-Space vs. Coverage</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Exact arithmetic on the state space; the covering array is generated live by a
+    greedy algorithm with a fixed seed, so your classmates get the same rows you do.</p>
+
+    <div class="matrixgrid">
+      <div>
+        <div class="ctl"><label>Boolean world flags</label>
+          <input type="range" id="cv-flags" min="2" max="26" value="18"><output id="cv-flagso">18</output></div>
+        <div class="ctl"><label>Discrete regions / levels</label>
+          <input type="range" id="cv-levels" min="1" max="60" value="12"><output id="cv-levelso">12</output></div>
+        <div class="ctl"><label>Reported line coverage</label>
+          <input type="range" id="cv-line" min="0" max="100" value="82"><output id="cv-lineo">82%</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Scripted test runs</label>
+          <input type="range" id="cv-runs" min="10" max="5000" value="400"><output id="cv-runso">400</output></div>
+        <div class="ctl"><label>Distinct states visited per run</label>
+          <input type="range" id="cv-visit" min="1" max="400" value="60"><output id="cv-visito">60</output></div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">State space</div><div class="v" id="cv-space">0</div></div>
+      <div class="cell"><div class="k">States touched</div><div class="v" id="cv-touch">0</div></div>
+      <div class="cell"><div class="k">State coverage</div><div class="v" id="cv-pct">0%</div></div>
+      <div class="cell"><div class="k">Line coverage</div><div class="v" id="cv-lc">0%</div></div>
+      <div class="cell"><div class="k">Flag pairs to cover</div><div class="v" id="cv-pairs">0</div></div>
+      <div class="cell"><div class="k">Pairwise rows needed</div><div class="v" id="cv-rows">0</div></div>
+    </div>
+
+    <div class="verdict" id="cv-verdict">Adjust a slider.</div>
+    <div class="btnrow"><button class="btn ghost" id="cv-show">Show / hide the generated covering array</button></div>
+    <div id="cv-array" style="display:none"></div>
+  </div>
+
+  <p>Two things should stand out. First, exhaustive state coverage is not merely hard, it is
+  arithmetically unavailable &mdash; at 18 flags and 12 regions you are already past three million
+  states, and every flag you add doubles it. Second, the pairwise row count grows roughly logarithmically
+  while the state space grows exponentially, which is why combinatorial test design is the only
+  economically sane way to attack configuration and flag interactions. Reporting "82% line coverage"
+  next to a state coverage figure with a minus sign in the exponent is the most persuasive slide you
+  can put in front of a lead who thinks the test suite is adequate.</p>
+
+  <div class="check">
+    <p class="q">Your CI reports 91% line coverage on the quest system, and last month three
+    progression softlocks shipped. Which reading is right?</p>
+    <button class="opt" data-correct="0">Coverage is being computed wrong; 91% line coverage is inconsistent with three shipped softlocks.</button>
+    <button class="opt" data-correct="0">Coverage needs to go to 100%; the softlocks are in the missing 9%.</button>
+    <button class="opt" data-correct="1">Line coverage and softlock risk measure different things: softlocks are state-combination defects, and you can execute every line while visiting a vanishing fraction of the state space.</button>
+    <div class="exp"><b>Why the third option:</b> a softlock is almost never one uncovered line. It
+    is quest flag A set while region B is unloaded and the player has item C &mdash; a combination
+    in which every individual line has been executed many times, just never together. The
+    remediation is not more line coverage; it is state-combination testing, save-state fuzzing, and
+    reachability analysis on the quest graph.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      It assumes the metric must be wrong because the outcome is bad, which is a healthy instinct
+      applied to the wrong target. The metric is probably accurate. It is simply answering a
+      question you did not ask.</div>
+      <div class="ex"><span class="who">Why the second is tempting</span><br>
+      It is the standard remedy and it feels rigorous. Chasing the last 9% typically means writing
+      tests for error handlers and platform stubs &mdash; real work, near-zero softlock yield, and
+      it consumes the budget you needed for state-combination testing.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">8</span>Coding standards and static analysis as defect prevention</h2>
+
+  <p>Everything so far has been about defects that already exist. The cheapest defect is the one
+  that cannot be written, and that is what coding standards are for. Not tab-versus-space
+  aesthetics &mdash; the subset of rules that map directly onto the root-cause categories in section
+  4. A standard earns its place in your document only if you can name the defect class it prevents.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Rule</th><th>Defect class it prevents</th></tr></thead>
+    <tbody>
+      <tr><td>Never compare floats with <code>==</code>; use <code>&lt;=</code>, <code>&gt;=</code>, or an epsilon.</td><td>Precision (line 8 of the walkthrough).</td></tr>
+      <tr><td>Every event subscription has a paired unsubscribe in the mirrored lifecycle method.</td><td>Resource / lifetime, and the retention leaks in Topic 6.</td></tr>
+      <tr><td>One-shot transitions are guarded and idempotent.</td><td>State &mdash; duplicate loot, double death, double save.</td></tr>
+      <tr><td>Latent actions (coroutines, timers, delays) re-validate their world on resume.</td><td>Timing / race.</td></tr>
+      <tr><td>No <code>GetComponent</code>/<code>FindObjectOfType</code> or equivalent lookups in per-frame paths; cache in <code>Awake</code>.</td><td>Performance, plus the null-deref class.</td></tr>
+      <tr><td>All gameplay randomness draws from an injectable seeded source, never <code>Random</code> directly.</td><td>Non-reproducible defects &mdash; the single biggest cause of "cannot reproduce."</td></tr>
+      <tr><td>Units and coordinate spaces are in the parameter name (<code>speedMetersPerSec</code>, <code>angleDeg</code>).</td><td>Integration.</td></tr>
+      <tr><td>Warnings are errors in CI.</td><td>Everything, slowly. A warning nobody fixes trains the team to ignore the console where the real diagnostic will appear.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box why"><div class="lbl">Why the seeded-RNG rule is worth a whole line in the standard</div>
+  <p>A defect that reproduces once in twenty runs, and that you cannot make reproduce on demand,
+  costs an engineer a day and frequently gets closed as Cannot Reproduce. The same defect with a
+  logged seed costs twenty minutes: paste the seed, run, watch it fail every time. The rule
+  "randomness comes from an injected, logged, seeded source" converts an entire population of
+  intermittent defects into deterministic ones. In this course that pays off again in Topic 2
+  (reproducibility) and Topic 3 (a test that flakes is worse than no test).</p></div>
+
+  <div class="tabs"><div class="tabhd">
+      <button data-engine="unity" data-tab="u" class="on">Unity</button>
+      <button data-engine="unreal" data-tab="e">Unreal</button>
+    </div><div class="tabbody">
+    <div class="tabpane on" data-pane="u">
+      <h4>Enforcing the standard in a Unity project</h4>
+      <ul>
+        <li><b>Roslyn analyzers + <code>.editorconfig</code>.</b> Drop an <code>.editorconfig</code>
+        at the repo root with severities set (<code>dotnet_diagnostic.CA2000.severity = error</code>)
+        and Unity will surface them in the console and in Rider/VS. Add
+        <code>&lt;WarningsAsErrors&gt;</code> via a <code>csc.rsp</code> so CI fails rather than warns.</li>
+        <li><b>Custom analyzers for engine-specific rules.</b> A twenty-line analyzer that flags
+        <code>GetComponent</code> inside <code>Update</code> catches a defect class no generic C#
+        tool knows about. This is the highest-value custom tooling a student team can build.</li>
+        <li><b>Editor validation.</b> An <code>[InitializeOnLoad]</code> script or an
+        <code>IPreprocessBuildWithReport</code> hook that scans scenes for missing references,
+        colliders without rigidbodies, and audio clips set to Decompress On Load will catch content
+        defects that no code analyzer ever sees.</li>
+        <li><b>Review checklist.</b> Pull requests answer three questions: what defect class does
+        this change risk, what test covers it, and what did you unsubscribe.</li>
+      </ul>
+      <p class="small subtle">Pair this with the Unity Test Framework in Topic 3; the analyzer stops
+      the class of defect, the test stops the instance.</p>
+    </div>
+    <div class="tabpane" data-pane="e">
+      <h4>Enforcing the standard in an Unreal project</h4>
+      <ul>
+        <li><b>The Epic coding standard plus <code>clang-tidy</code>.</b> UBT can run static analysis
+        (<code>-StaticAnalyzer=VisualCpp</code> or <code>Clang</code>); wire it into your build
+        machine and treat new diagnostics as build breaks. <code>clang-format</code> with the Epic
+        style removes the whole category of diff-noise arguments.</li>
+        <li><b>Engine-aware checks.</b> <code>check()</code> and <code>ensure()</code> encode
+        invariants that fail loudly in development builds and are compiled out of shipping;
+        <code>IsValid()</code> before every use of a stored <code>UObject*</code> is the
+        lifetime rule made mechanical.</li>
+        <li><b>Blueprint is code and needs the same treatment.</b> Run the Blueprint compiler in
+        strict mode, treat compile notes as errors, and use the Asset Audit and Reference Viewer to
+        find blueprints holding hard references to whole levels &mdash; a memory defect that looks
+        like a loading-time defect.</li>
+        <li><b>Automation as a gate.</b> Functional Tests and Automation Specs run headless via
+        <code>UnrealEditor-Cmd -ExecCmds="Automation RunTests ..."</code> on every merge; Horde or
+        BuildGraph makes that mandatory rather than optional.</li>
+      </ul>
+      <p class="small subtle">Blueprint-only teams: the standard still applies. "Every Bind Event
+      has an Unbind in End Play" is enforceable by review even without a linter.</p>
+    </div>
+  </div></div>
+
+  <p>Ongoing QA practice is the same argument stretched over time. A test suite that ran once at
+  alpha tells you about alpha. Continuous execution &mdash; on every merge, on real target hardware,
+  with results that block a build &mdash; is what converts testing from an event into a property of
+  the project. Finska's opening chapters frame this as the difference between a QA phase and a QA
+  function; the practical marker is simple, and you can apply it to your own team this week: if
+  nobody can name what happened the last time the test suite failed, you do not have one.</p>
+  <h2><span class="num">9</span>The reading, and what to take from each</h2>
+
+  <details class="more"><summary>Reading list with a specific question to answer for each</summary>
+    <ul class="readlist">
+      <li><b>Finska, <i>Modern Game Testing</i>, ch. 1&ndash;3.</b> The base layer: what game QA is,
+      how a studio organizes it, what a defect life cycle looks like. Question to answer: which of
+      the roles described does your student team currently have nobody performing?</li>
+      <li><b>Coppola, Fulcini &amp; Strada (2024), "How To Measure Game Testing: A Survey of
+      Coverage Metrics."</b> Question: for your own project, name one metric from each of the
+      coverage families in section 7 that you could actually instrument this semester.</li>
+      <li><b>Basit (2024), "Crafting A Comprehensive Strategy for Successful Game Testing
+      Services."</b> Written from the vendor side, which is useful precisely because it has to make
+      the value of testing explicit to a buyer. Question: what does it assume the client provides,
+      and what happens when the client does not?</li>
+      <li><b>Yee (2021), "Incompatible: The Challenges in Preserving Taiwanese Video Games."</b>
+      Question: what fields would your bug tracker need for a defect filed today to be reproducible
+      in 2036? List them; several are missing from the default Jira template.</li>
+      <li><b>Truelove, Santana de Almeida &amp; Ahmed (2021), "We'll Fix It in Post: What Do Bug
+      Fixes in Video Game Update Notes Tell Us?"</b> Question: compare their categories to the
+      taxonomy in section 2 &mdash; which categories does a patch note under-report, and why would
+      a studio's public notes and its internal database disagree?</li>
+    </ul>
+  </details>
+
+  <div class="deliver">
+    <h3>Bring to the assignment</h3>
+    <p><b>Bug Investigation and Prioritization</b> &middot; 90 points &middot; due Sep 13 &middot;
+    3&ndash;5 minute video analyzing at least four defects from a past project.</p>
+    <p>Everything in this lesson maps onto a specific part of that deliverable. Arrive with:</p>
+    <ul>
+      <li><b>Four or more real defects</b> from your own past project, each classified twice &mdash;
+      once by symptom category (section 2 table) and once by root cause (section 4 table). Two
+      classifications per defect, stated out loud in the video. Do not pick four functional bugs;
+      spread across categories or you will have nothing to compare.</li>
+      <li><b>A severity value with its justification</b> from the S0&ndash;S3 ladder, phrased as a
+      consequence to the player, not as a feeling. "Save file becomes unloadable" is a
+      justification; "really bad" is not.</li>
+      <li><b>Exposure numbers.</b> Repro rate out of N attempts (run it ten times and count) and an
+      estimate of what fraction of players would reach the trigger, with your reasoning shown. An
+      estimate with visible reasoning beats a precise-sounding number with none.</li>
+      <li><b>A priority ordering with the trade-off named.</b> Use the Triage Matrix to sanity-check
+      your ordering; then justify it in your own words. Where severity and priority diverge for one
+      of your bugs, say so explicitly &mdash; that divergence is the single clearest signal that you
+      understood this topic.</li>
+      <li><b>Root-cause analysis for the top three</b>, each naming one sibling defect you went and
+      looked for as a consequence of the diagnosis, and whether you found it.</li>
+      <li><b>One prevention rule per root cause</b>, written in the form of section 8's table: the
+      rule, and the defect class it prevents. Five lines of a coding standard you would actually
+      adopt is a stronger ending to the video than a summary slide.</li>
+      <li><b>Configuration data</b> for every defect: build ID, platform, GPU/driver, OS, engine
+      version. Yee's argument in one practical habit.</li>
+    </ul>
+    <p class="small subtle">Session 2 is a live triage exercise: you will defend a severity
+    assignment against a classmate acting as producer. Bring the four defects in a form you can put
+    on screen.</p>
+  </div>
+
+  <footer class="lf"><a href="../index.html">&larr; Course hub</a><span>Advanced Game Testing and Debugging</span></footer>
+</div>
+<script id="lesson-kit-js">
+/* ---------- reading progress ---------- */
+(function(){
+  var b=document.createElement('div'); b.className='progressbar';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(b);});
+  addEventListener('scroll',function(){
+    var h=document.documentElement, m=h.scrollHeight-h.clientHeight;
+    b.style.width=(m>0?(h.scrollTop/m*100):0)+'%';
+  },{passive:true});
+})();
+
+/* ---------- engine tabs ---------- */
+function GDTtabs(root){
+  root.querySelectorAll('.tabhd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      root.querySelectorAll('.tabhd button').forEach(function(b){b.classList.remove('on')});
+      root.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('on')});
+      btn.classList.add('on');
+      var pane=root.querySelector('.tabpane[data-pane="'+btn.dataset.tab+'"]');
+      if(pane) pane.classList.add('on');
+    });
+  });
+}
+
+/* ---------- annotated code ---------- */
+function GDTannot(root){
+  root.querySelectorAll('.arow.hasnote').forEach(function(row){
+    row.addEventListener('click',function(){
+      var note=row.nextElementSibling;
+      var open=row.classList.contains('open');
+      row.classList.toggle('open',!open);
+      if(note&&note.classList.contains('note')) note.classList.toggle('open',!open);
+    });
+  });
+}
+
+/* ---------- knowledge check ---------- */
+function GDTcheck(root){
+  var done=false;
+  root.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      if(done) return; done=true;
+      var correct = opt.dataset.correct==='1';
+      root.querySelectorAll('.opt').forEach(function(o){
+        if(o.dataset.correct==='1'){o.classList.add('right');
+          o.insertAdjacentHTML('beforeend','<span class="tag">CORRECT</span>');}
+        else if(o===opt){o.classList.add('wrong');
+          o.insertAdjacentHTML('beforeend','<span class="tag">NOT QUITE</span>');}
+        o.style.cursor='default';
+      });
+      var exp=root.querySelector('.exp'); if(exp) exp.classList.add('on');
+    });
+  });
+}
+
+/* ---------- decision tree ----------
+   Usage: new GDTTree(document.getElementById('t1'), NODES, 'start')
+   NODES = { start:{q:'', hint:'', choices:[{t:'',sub:'',go:'nodeId'}]},
+             leafId:{leaf:true, title:'', body:'<p>…</p>'} }              */
+function GDTTree(root,nodes,startId){
+  var pathEl=root.querySelector('.path'), body=root.querySelector('.body');
+  var trail=[];
+  function render(id){
+    var n=nodes[id]; if(!n) return;
+    pathEl.innerHTML = trail.length? trail.map(function(t){return '<span>'+t+'</span>'}).join(' &rsaquo; ') : '&nbsp;';
+    if(n.leaf){
+      body.innerHTML='<div class="leaf"><h5>'+n.title+'</h5>'+n.body+'</div>'+
+        '<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>';
+    }else{
+      body.innerHTML='<p class="qq">'+n.q+'</p>'+(n.hint?'<p class="qh">'+n.hint+'</p>':'')+
+        '<div class="choices">'+n.choices.map(function(c,i){
+          return '<button data-go="'+c.go+'" data-lbl="'+(c.lbl||c.t).replace(/"/g,'&quot;')+'">'+c.t+
+                 (c.sub?'<span class="sub">'+c.sub+'</span>':'')+'</button>';}).join('')+'</div>'+
+        (trail.length?'<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>':'');
+    }
+    body.querySelectorAll('[data-go]').forEach(function(b){
+      b.addEventListener('click',function(){trail.push(b.dataset.lbl); render(b.dataset.go);});
+    });
+    var rs=body.querySelector('[data-restart]');
+    if(rs) rs.addEventListener('click',function(){trail=[]; render(startId);});
+  }
+  render(startId);
+}
+
+/* ---------- auto-wire everything ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.tabs').forEach(GDTtabs);
+  document.querySelectorAll('.annot').forEach(GDTannot);
+  document.querySelectorAll('.check').forEach(GDTcheck);
+});
+
+/* ---------- small helpers for simulators ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(n,d){return Number(n).toFixed(d===undefined?1:d)}
+function lerp(a,b,t){return a+(b-a)*t}
+/* deterministic pseudo-random so demos are reproducible for a class */
+function rng(seed){var s=seed||1;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296;}}
+</script>
+<script id="lesson-widgets">
+/* ============================================================
+   Advanced Game Testing and Debugging · Topic 1 · lesson-specific widgets
+   All numbers below are computed from the controls. The models
+   are simplified but the arithmetic is real.
+   ============================================================ */
+(function(){
+'use strict';
+
+/* ---------- shared helpers ---------- */
+var BAND_COLORS = ['#f85149','#d29922','#4da3ff','#3a4757'];
+var BAND_NAMES  = ['P0','P1','P2','P3'];
+
+function bandOf(score){
+  if(score >= 60) return 0;
+  if(score >= 38) return 1;
+  if(score >= 18) return 2;
+  return 3;
+}
+function money(v){
+  if(v >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+  if(v >= 1e3) return '$' + (v/1e3).toFixed(1) + 'k';
+  return '$' + Math.round(v);
+}
+function bigint(v){
+  if(v >= 1e7) return v.toExponential(2);
+  return Math.round(v).toLocaleString('en-US');
+}
+function pctTxt(p){
+  if(p === 0) return '0%';
+  if(p < 0.0001) return p.toExponential(2) + '%';
+  if(p < 1) return p.toFixed(4) + '%';
+  return p.toFixed(1) + '%';
+}
+function segment(container, onPick){
+  var btns = $$('button', container);
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){
+      btns.forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      onPick(parseInt(b.dataset.v, 10), b.textContent);
+    });
+  });
+  return function(v){
+    btns.forEach(function(x){ x.classList.toggle('on', parseInt(x.dataset.v,10) === v); });
+  };
+}
+function crispCanvas(cv){
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var cssW = cv.clientWidth || cv.width;
+  var logicalW = cv.width, logicalH = cv.height;
+  if(cv._scaled !== dpr || cv._cssW !== cssW){
+    cv._scaled = dpr; cv._cssW = cssW;
+  }
+  var ctx = cv.getContext('2d');
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,logicalW,logicalH);
+  return ctx;
+}
+
+/* ============================================================
+   WIDGET 1 — Triage Matrix
+   ============================================================ */
+function initTriage(){
+  var root = document.getElementById('w-triage');
+  if(!root) return;
+
+  var SEV_W    = [10, 6, 3, 1];
+  var SEV_NAME = ['S0','S1','S2','S3'];
+  var STAGE_M  = [0.6, 0.9, 1.2, 1.6, 1.9];
+  var STAGE_N  = ['Preproduction','Alpha','Beta','Certification','Live'];
+  var STAGE_S  = ['Preprod','Alpha','Beta','Cert','Live'];
+
+  var st = { sev:0, repro:100, pop:600, vis:5, cost:3, stage:2 };
+
+  var setSev   = segment(document.getElementById('tr-sev'),   function(v){ st.sev = v;   update(); });
+  var setStage = segment(document.getElementById('tr-stage'), function(v){ st.stage = v; update(); });
+
+  ['repro','pop','vis','cost'].forEach(function(k){
+    var el = document.getElementById('tr-' + k);
+    el.addEventListener('input', function(){ st[k] = parseFloat(el.value); update(); });
+  });
+
+  function score(sevIdx, exposure, vis, stage, cost){
+    var sevW    = SEV_W[sevIdx];
+    var visMult = 0.6 + 0.08 * vis;                  /* 0.6 .. 1.4 */
+    var costF   = 1 + 0.11 * (cost - 1);             /* 1.0 .. 1.99 */
+    var harm    = sevW * (0.2 + 0.8 * Math.sqrt(exposure)) * visMult;
+    var s       = harm * STAGE_M[stage] / costF * 8;
+    return { harm: harm, score: clamp(s, 0, 100) };
+  }
+
+  function drawField(exposure, sevIdx, band){
+    var cv = document.getElementById('tr-canvas');
+    var ctx = crispCanvas(cv);
+    var W = cv.width, H = cv.height;
+    var L = 66, R = W - 18, T = 16, B = H - 46;
+    var cols = 82, rowH = (B - T) / 4;
+
+    for(var r = 0; r < 4; r++){
+      for(var c = 0; c < cols; c++){
+        var t  = (c + 0.5) / cols;                      /* 0..1 across log exposure */
+        var ex = Math.pow(10, -3 + 3 * t);              /* 0.1% .. 100% */
+        var sc = score(r, ex, st.vis, st.stage, st.cost).score;
+        ctx.fillStyle = BAND_COLORS[bandOf(sc)];
+        ctx.globalAlpha = 0.55;
+        ctx.fillRect(L + (R - L) * c / cols, T + r * rowH,
+                     (R - L) / cols + 0.6, rowH - 1);
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    /* grid + axis labels */
+    ctx.strokeStyle = '#2a3441'; ctx.lineWidth = 1;
+    ctx.font = '11px ui-monospace,Menlo,Consolas,monospace';
+    ctx.fillStyle = '#9fb0c3'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for(var i = 0; i < 4; i++){
+      ctx.strokeRect(L, T + i * rowH, R - L, rowH);
+      ctx.fillText(SEV_NAME[i], L - 9, T + i * rowH + rowH / 2);
+    }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    var ticks = [0.001, 0.01, 0.1, 1];
+    var lbl   = ['0.1%','1%','10%','100%'];
+    for(var k = 0; k < ticks.length; k++){
+      var xx = L + (R - L) * ((Math.log(ticks[k]) / Math.LN10) + 3) / 3;
+      ctx.strokeStyle = 'rgba(159,176,195,.25)';
+      ctx.beginPath(); ctx.moveTo(xx, T); ctx.lineTo(xx, B); ctx.stroke();
+      ctx.fillStyle = '#6e7f92';
+      ctx.fillText(lbl[k], xx, B + 8);
+    }
+    ctx.fillStyle = '#9fb0c3';
+    ctx.fillText('exposure  =  repro rate  ×  share of players who can reach it',
+                 (L + R) / 2, B + 26);
+
+    /* the bug */
+    var ex2 = Math.max(exposure, 0.001);
+    var px = L + (R - L) * ((Math.log(ex2) / Math.LN10) + 3) / 3;
+    var py = T + sevIdx * rowH + rowH / 2;
+    ctx.beginPath(); ctx.arc(px, py, 11, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fill();
+    ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = BAND_COLORS[band]; ctx.stroke();
+  }
+
+  function update(){
+    var repro = st.repro / 100;
+    var pop   = st.pop / 1000;
+    var exposure = repro * pop;
+    var res = score(st.sev, exposure, st.vis, st.stage, st.cost);
+    var band = bandOf(res.score);
+
+    $('#tr-sevo').textContent   = SEV_NAME[st.sev];
+    $('#tr-reproo').textContent = st.repro + '%';
+    $('#tr-popo').textContent   = (st.pop / 10).toFixed(1) + '%';
+    $('#tr-viso').textContent   = st.vis;
+    $('#tr-costo').textContent  = st.cost;
+    $('#tr-stageo').textContent = STAGE_S[st.stage];
+
+    $('#tr-exp').textContent  = pctTxt(exposure * 100);
+    $('#tr-harm').textContent = fmt(res.harm, 2);
+    $('#tr-score').textContent = Math.round(res.score);
+    $('#tr-band').textContent  = BAND_NAMES[band];
+    $('#tr-sevcell').textContent = SEV_NAME[st.sev];
+
+    var cls = ['crit','warn','','ok'][band];
+    ['tr-score','tr-band'].forEach(function(id){
+      var el = document.getElementById(id);
+      el.className = 'v' + (cls ? ' ' + cls : '');
+    });
+    document.getElementById('tr-sevcell').className =
+      'v ' + ['crit','warn','','ok'][st.sev] ;
+
+    var v = $('#tr-verdict');
+    var perThousand = Math.round(exposure * 1000);
+    var txt = '<b>' + SEV_NAME[st.sev] + ' / ' + BAND_NAMES[band] + '.</b> ' +
+      'Roughly ' + perThousand + ' in every 1,000 players who own the game will hit this ' +
+      '(' + pctTxt(exposure * 100) + ' exposure) at ' + STAGE_N[st.stage].toLowerCase() + '. ';
+    if(band === 0){
+      txt += 'Stop the line: this outranks feature work today, and a build containing it should ' +
+             'not go to the wider test pool.';
+      v.className = 'verdict crit';
+    } else if(band === 1){
+      txt += 'Schedule it inside the current sprint with a named owner and a re-verification step. ' +
+             'It is not a build-stopper, but it will be one if the exposure estimate is wrong.';
+      v.className = 'verdict warn';
+    } else if(band === 2){
+      txt += 'Milestone backlog. Re-triage if exposure data changes or the stage advances — ' +
+             'note that moving the stage slider alone can push this into P1 without the bug changing at all.';
+      v.className = 'verdict';
+    } else {
+      txt += 'Backlog. Keep the ticket: low priority is a scheduling decision, not a reason to delete evidence.';
+      v.className = 'verdict ok';
+    }
+    if(st.sev <= 1 && band >= 2){
+      txt += ' <b>Note the split:</b> severity stays ' + SEV_NAME[st.sev] +
+             ' because the outcome for an affected player has not improved. Only the schedule changed.';
+    }
+    v.innerHTML = txt;
+
+    drawField(exposure, st.sev, band);
+  }
+
+  var PRESETS = {
+    boot:     { sev:0, repro:100, pop:3,    vis:10, cost:5, stage:3 },
+    softlock: { sev:0, repro:30,  pop:120,  vis:6,  cost:4, stage:2 },
+    dupe:     { sev:1, repro:90,  pop:350,  vis:8,  cost:6, stage:4 },
+    typo:     { sev:3, repro:100, pop:1000, vis:9,  cost:1, stage:2 }
+  };
+  $$('[data-preset]', root).forEach(function(b){
+    b.addEventListener('click', function(){
+      var p = PRESETS[b.dataset.preset];
+      Object.keys(p).forEach(function(k){ st[k] = p[k]; });
+      ['repro','pop','vis','cost'].forEach(function(k){
+        document.getElementById('tr-' + k).value = st[k];
+      });
+      setSev(st.sev); setStage(st.stage);
+      update();
+    });
+  });
+
+  update();
+  addEventListener('resize', update, { passive:true });
+}
+
+/* ============================================================
+   WIDGET 2 — Cost of Delay
+   ============================================================ */
+function initCod(){
+  var root = document.getElementById('w-cod');
+  if(!root) return;
+
+  var STAGE_N = ['Preproduction','Alpha','Beta','Certification','Live'];
+  var STAGE_S = ['Preprod','Alpha','Beta','Cert','Live'];
+  var MULT    = [1, 2.8, 6, 13, 26];      /* engineering-hour multiplier   */
+  var QA      = [0.2, 0.35, 0.5, 0.9, 1.1]; /* QA re-verify hours per eng hr */
+  var SLIP    = [0, 0, 0.5, 5, 3];        /* calendar days lost            */
+
+  var st = { hours:6, rate:95, burn:18, players:60, support:15, stage:3 };
+
+  var setStage = segment(document.getElementById('cd-stage'), function(v){ st.stage = v; update(); });
+  ['hours','rate','burn','players','support'].forEach(function(k){
+    var el = document.getElementById('cd-' + k);
+    el.addEventListener('input', function(){ st[k] = parseFloat(el.value); update(); });
+  });
+
+  function modelAt(s){
+    var eh    = st.hours * MULT[s];
+    var qaH   = eh * QA[s];
+    var slip  = SLIP[s];
+    var direct = (eh + qaH) * st.rate;
+    var slipCost = slip * st.burn * 1000 * 0.35;   /* only ~35% of the team is actually blocked */
+    /* support load only exists once players have the build */
+    var support = (s === 4)
+      ? (st.players * 1000) * (st.support / 1000) * 12   /* $12 per contact */
+      : 0;
+    return { eh:eh, qaH:qaH, slip:slip, direct:direct, slipCost:slipCost,
+             support:support, total: direct + slipCost + support };
+  }
+
+  function draw(cur){
+    var cv = document.getElementById('cd-canvas');
+    var ctx = crispCanvas(cv);
+    var W = cv.width, H = cv.height;
+    var L = 74, R = W - 18, T = 18, B = H - 40;
+    var totals = [0,1,2,3,4].map(function(s){ return modelAt(s).total; });
+    var max = Math.max.apply(null, totals) * 1.14 || 1;
+    var bw = (R - L) / 5;
+
+    ctx.strokeStyle = 'rgba(159,176,195,.18)';
+    ctx.font = '11px ui-monospace,Menlo,Consolas,monospace';
+    ctx.fillStyle = '#6e7f92'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for(var g = 0; g <= 4; g++){
+      var y = B - (B - T) * g / 4;
+      ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(R, y); ctx.stroke();
+      ctx.fillText(money(max * g / 4), L - 8, y);
+    }
+
+    for(var s = 0; s < 5; s++){
+      var h = (B - T) * (totals[s] / max);
+      var x = L + s * bw + bw * 0.18;
+      var w = bw * 0.64;
+      ctx.fillStyle = (s === cur) ? '#4da3ff' : '#2f3f52';
+      ctx.fillRect(x, B - h, w, h);
+      if(s === cur){
+        ctx.strokeStyle = '#bfe3ff'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(x, B - h, w, h);
+      }
+      ctx.textAlign = 'center';
+      ctx.fillStyle = (s === cur) ? '#e6edf3' : '#9fb0c3';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(money(totals[s]), x + w / 2, B - h - 5);
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = (s === cur) ? '#e6edf3' : '#6e7f92';
+      ctx.fillText(STAGE_N[s], x + w / 2, B + 8);
+    }
+  }
+
+  function update(){
+    $('#cd-hourso').textContent   = st.hours + ' h';
+    $('#cd-rateo').textContent    = '$' + st.rate;
+    $('#cd-burno').textContent    = '$' + st.burn + 'k';
+    $('#cd-playerso').textContent = st.players + 'k';
+    $('#cd-supporto').textContent = (st.support / 10).toFixed(1) + '%';
+    $('#cd-stageo').textContent   = STAGE_S[st.stage];
+
+    var m  = modelAt(st.stage);
+    var m0 = modelAt(0);
+    var mult = m.total / (m0.total || 1);
+
+    $('#cd-eh').textContent    = fmt(m.eh, 1) + ' h';
+    $('#cd-qa').textContent    = fmt(m.qaH, 1) + ' h';
+    $('#cd-slip').textContent  = fmt(m.slip, 1) + ' d';
+    $('#cd-sup').textContent   = money(m.support);
+    $('#cd-total').textContent = money(m.total);
+    $('#cd-mult').textContent  = fmt(mult, 1) + '×';
+
+    var el = document.getElementById('cd-mult');
+    el.className = 'v ' + (mult >= 10 ? 'crit' : mult >= 4 ? 'warn' : 'ok');
+    document.getElementById('cd-total').className =
+      'v ' + (m.total >= 100000 ? 'crit' : m.total >= 20000 ? 'warn' : 'ok');
+
+    var payback = (m.total - m0.total) / st.rate;
+    var v = $('#cd-verdict');
+    var txt = '<b>' + money(m.total) + ' at ' + STAGE_N[st.stage].toLowerCase() +
+      ' versus ' + money(m0.total) + ' in preproduction — a ' + fmt(mult,1) +
+      '× difference for an identical code change.</b> ';
+    if(st.stage === 0){
+      txt += 'This is the cheap end of the curve. Everything the rest of this course teaches ' +
+             'is an attempt to move discovery to this bar.';
+      v.className = 'verdict ok';
+    } else {
+      txt += 'The gap of ' + money(m.total - m0.total) + ' would pay for about ' +
+             Math.round(payback) + ' engineer-hours of prevention — code review, a static ' +
+             'analysis rule, or the automated test suite you will build in Topic 3. ';
+      if(st.stage === 3){
+        txt += 'Note that the dominant term is not engineering: it is the ' + fmt(m.slip,1) +
+               '-day submission slip, which no amount of coding speed recovers.';
+      } else if(st.stage === 4){
+        txt += 'Note that support contacts alone account for ' + money(m.support) +
+               ', a cost that lands on a department with no say in the triage decision.';
+      } else {
+        txt += 'Still recoverable, but the re-verification tail is already larger than the fix.';
+      }
+      v.className = 'verdict ' + (mult >= 10 ? 'crit' : 'warn');
+    }
+    v.innerHTML = txt;
+    draw(st.stage);
+  }
+
+  update();
+  addEventListener('resize', update, { passive:true });
+}
+
+/* ============================================================
+   WIDGET 3 — State space vs. coverage (+ real pairwise array)
+   ============================================================ */
+function initCoverage(){
+  var root = document.getElementById('w-cov');
+  if(!root) return;
+
+  var st = { flags:18, levels:12, line:82, runs:400, visit:60 };
+  var lastArray = [];
+
+  ['flags','levels','line','runs','visit'].forEach(function(k){
+    var el = document.getElementById('cv-' + k);
+    el.addEventListener('input', function(){ st[k] = parseFloat(el.value); update(); });
+  });
+
+  /* Greedy pairwise covering array over k binary parameters.
+     Deterministic: the RNG is seeded, so every student sees the same rows. */
+  function pairwise(k){
+    var rand = rng(20260908);
+    var need = {};                       /* key "i,j,vi,vj" -> true */
+    var total = 0;
+    for(var i = 0; i < k; i++)
+      for(var j = i + 1; j < k; j++)
+        for(var a = 0; a < 2; a++)
+          for(var b = 0; b < 2; b++){ need[i+','+j+','+a+','+b] = true; total++; }
+
+    var rows = [], guard = 0;
+    function gain(row){
+      var g = 0;
+      for(var i = 0; i < k; i++)
+        for(var j = i + 1; j < k; j++)
+          if(need[i+','+j+','+row[i]+','+row[j]]) g++;
+      return g;
+    }
+    var remaining = total;
+    while(remaining > 0 && guard++ < 400){
+      var best = null, bestG = -1;
+      for(var c = 0; c < 48; c++){
+        var row = [];
+        for(var p = 0; p < k; p++) row.push(rand() < 0.5 ? 0 : 1);
+        var g = gain(row);
+        if(g > bestG){ bestG = g; best = row; }
+      }
+      if(bestG <= 0) break;
+      for(var i2 = 0; i2 < k; i2++)
+        for(var j2 = i2 + 1; j2 < k; j2++){
+          var key = i2+','+j2+','+best[i2]+','+best[j2];
+          if(need[key]){ delete need[key]; remaining--; }
+        }
+      rows.push(best);
+    }
+    return { rows: rows, total: total, covered: total - remaining };
+  }
+
+  function renderArray(rows, k){
+    var host = document.getElementById('cv-array');
+    var h = '<div class="tblwrap"><table><thead><tr><th>Run</th>';
+    for(var p = 0; p < k; p++) h += '<th>F' + (p + 1) + '</th>';
+    h += '</tr></thead><tbody>';
+    for(var r = 0; r < rows.length; r++){
+      h += '<tr><td><b>' + (r + 1) + '</b></td>';
+      for(var c = 0; c < k; c++){
+        h += '<td style="text-align:center;color:' +
+             (rows[r][c] ? '#3fb950' : '#6e7f92') + '">' + rows[r][c] + '</td>';
+      }
+      h += '</tr>';
+    }
+    h += '</tbody></table></div><p class="small subtle">Each row is one test run: set the flags ' +
+         'to these values and play the scenario. Every pair of flags takes every pair of values ' +
+         'somewhere in this table.</p>';
+    host.innerHTML = h;
+  }
+
+  function update(){
+    var k = st.flags;
+    $('#cv-flagso').textContent  = k;
+    $('#cv-levelso').textContent = st.levels;
+    $('#cv-lineo').textContent   = st.line + '%';
+    $('#cv-runso').textContent   = st.runs;
+    $('#cv-visito').textContent  = st.visit;
+
+    var space  = Math.pow(2, k) * st.levels;
+    var touch  = Math.min(st.runs * st.visit, space);
+    var pct    = touch / space * 100;
+    var pairs  = 4 * (k * (k - 1) / 2);
+    var pw     = pairwise(k);
+    lastArray  = pw.rows;
+
+    $('#cv-space').textContent = bigint(space);
+    $('#cv-touch').textContent = bigint(touch);
+    $('#cv-pct').textContent   = pctTxt(pct);
+    $('#cv-lc').textContent    = st.line + '%';
+    $('#cv-pairs').textContent = pairs;
+    $('#cv-rows').textContent  = pw.rows.length;
+
+    document.getElementById('cv-pct').className =
+      'v ' + (pct >= 5 ? 'ok' : pct >= 0.01 ? 'warn' : 'crit');
+    document.getElementById('cv-lc').className =
+      'v ' + (st.line >= 80 ? 'ok' : st.line >= 50 ? 'warn' : 'crit');
+
+    var ratio = space / Math.max(pw.rows.length, 1);
+    var v = $('#cv-verdict');
+    v.innerHTML = '<b>' + st.line + '% line coverage sits next to ' + pctTxt(pct) +
+      ' state coverage.</b> ' + st.runs + ' runs × ' + st.visit +
+      ' distinct states each is ' + bigint(touch) + ' of ' + bigint(space) +
+      ' reachable states. Exhaustive testing is not expensive here — it is arithmetically ' +
+      'unavailable. Meanwhile ' + pw.rows.length + ' runs from the generated covering array ' +
+      'exercise 100% of the ' + pairs + ' two-flag combinations, a factor of ' +
+      bigint(ratio) + ' fewer runs than the full space. Two-way interactions are where a ' +
+      'disproportionate share of real defects live, which is why pairwise is the default ' +
+      'answer to combinatorial explosion (Topic 5 goes further).';
+    v.className = 'verdict ' + (pct >= 1 ? 'warn' : 'crit');
+
+    var host = document.getElementById('cv-array');
+    if(host.style.display !== 'none') renderArray(lastArray, k);
+  }
+
+  document.getElementById('cv-show').addEventListener('click', function(){
+    var host = document.getElementById('cv-array');
+    var showing = host.style.display !== 'none';
+    host.style.display = showing ? 'none' : 'block';
+    if(!showing) renderArray(lastArray, st.flags);
+  });
+
+  update();
+}
+
+/* ============================================================
+   DECISION TREE — bug, design decision, or spec gap?
+   ============================================================ */
+var TREE_NODES = {
+  start: {
+    q: 'You have observed behavior you believe is wrong. Is the correct behavior written down anywhere?',
+    hint: 'Design doc, ticket acceptance criteria, GDD section, platform TRC/TCR/XR requirement, or an existing test case. "The designer said so in standup" does not count yet.',
+    choices: [
+      { t: 'Yes — and the build contradicts it', lbl: 'Written, contradicted',
+        sub: 'You can quote a sentence the build violates.', go: 'defect' },
+      { t: 'Yes — and the build matches it, but the outcome is bad', lbl: 'Written, matched',
+        sub: 'The spec got what it asked for and it is not good.', go: 'qDesign' },
+      { t: 'Yes — but it can honestly be read two ways', lbl: 'Written, ambiguous',
+        sub: 'Two engineers would implement it differently.', go: 'ambiguous' },
+      { t: 'No — nothing covers this area', lbl: 'Unwritten',
+        sub: 'There is no oracle to point at.', go: 'qHarm' }
+    ]
+  },
+  qDesign: {
+    q: 'The specified behavior is being produced faithfully. Who is harmed by it, and how badly?',
+    hint: 'This determines whether it is an urgent design escalation or a normal backlog item — not whether it is a bug.',
+    choices: [
+      { t: 'Players lose progress, money, access, or safety', lbl: 'Player harm',
+        sub: 'The spec itself is dangerous.', go: 'designBlocker' },
+      { t: 'It is a balance, pacing, or aesthetic complaint', lbl: 'Taste/balance',
+        sub: 'Nobody is losing anything they cannot recover.', go: 'designRequest' }
+    ]
+  },
+  qHarm: {
+    q: 'With no written oracle, what evidence do you actually have?',
+    hint: 'Absence of a spec does not mean absence of a standard. Several oracles exist outside your design doc.',
+    choices: [
+      { t: 'It violates a platform cert requirement or a store policy', lbl: 'Cert oracle',
+        sub: 'TRC/TCR/XR, age rating, or storefront rule.', go: 'cert' },
+      { t: 'It crashes, corrupts a save, or blocks progression', lbl: 'Implicit oracle',
+        sub: 'No document needed; no game intends this.', go: 'implicitOracle' },
+      { t: 'It only happens on one GPU, driver, OS build, or device', lbl: 'Config-specific',
+        sub: 'Your machine is fine; theirs is not.', go: 'hardware' },
+      { t: 'It just feels wrong to me', lbl: 'Feels wrong',
+        sub: 'No consequence you can point at yet.', go: 'charter' }
+    ]
+  },
+
+  defect: { leaf:true, title:'File a defect — and quote the oracle in the ticket',
+    body: '<p>This is the clean case. The ticket cites the requirement, states expected versus ' +
+      'actual, and carries repro steps plus configuration. Set severity from the consequence and ' +
+      'priority from exposure and stage — separately.</p>' +
+      '<p class="tool">Ticket must contain: requirement reference · build ID · platform + GPU/driver + OS · repro rate out of N · evidence</p>' +
+      '<p>Then do the root-cause step: name the category from section 4 and go look for one sibling ' +
+      'defect of the same cause. That second bug is free, and finding it is what separates a tester ' +
+      'from a bug-reporting service.</p>' },
+
+  designBlocker: { leaf:true, title:'Design escalation, treated with defect urgency',
+    body: '<p>The implementation is correct and the specification is the defect. File it against ' +
+      'the design artifact, not the engineer, and escalate on the same clock you would use for an ' +
+      'S1: a spec that costs players their progress ships that outcome to everyone, every time, ' +
+      'with 100% repro.</p>' +
+      '<p>Bring the consequence in player-facing units — hours of progress lost, currency ' +
+      'destroyed, sessions ended — not "this design is bad." Designers respond to consequences ' +
+      'and dismiss opinions, which is the correct response to both.</p>' },
+
+  designRequest: { leaf:true, title:'Design change request — real, but not a bug',
+    body: '<p>File it in the design backlog with your evidence attached (playtest clips, time-to-' +
+      'complete data, the rate measurement). Do not file it as a defect: mixing change requests ' +
+      'into the bug database inflates your open-defect count, which corrupts the release-readiness ' +
+      'signal everyone downstream depends on.</p>' +
+      '<p>If you are convinced it matters, the persuasive form is data, not volume. "Nine of ten ' +
+      'playtesters retried this jump more than five times" moves a designer. "The jump is unfair" ' +
+      'does not.</p>' },
+
+  ambiguous: { leaf:true, title:'Spec gap — the most valuable ticket you can write today',
+    body: '<p>Write the finding as: the sentence, reading A, reading B, and what each implies ' +
+      'numerically or behaviorally. Route it to whoever owns the spec, and ask for a decision, not ' +
+      'an opinion.</p>' +
+      '<p>Why this outranks the individual defect: the ambiguity has almost certainly been resolved ' +
+      'differently in more than one place — code, balance spreadsheet, tutorial text, ' +
+      'achievement condition. Fixing the sentence fixes a family. Fixing one call site fixes one ' +
+      'call site and leaves the family intact.</p>' +
+      '<p class="tool">After the decision lands: write the test first, then file defects against the now-explicit criterion.</p>' },
+
+  cert: { leaf:true, title:'Certification blocker — quote the requirement number',
+    body: '<p>Platform requirements are an external oracle you do not get to negotiate with, so ' +
+      'this is a defect even with no internal spec. Quote the requirement identifier verbatim in ' +
+      'the ticket; paraphrasing a TRC is how a fix ends up not satisfying it.</p>' +
+      '<p>Severity is effectively S0 near submission because the consequence is not "a player is ' +
+      'annoyed" but "the build is rejected and the date moves." Run the Cost of Delay simulator with ' +
+      'the stage set to Certification to see why release engineering reacts the way it does.</p>' },
+
+  implicitOracle: { leaf:true, title:'Defect against an implicit oracle — file it, then fix the spec gap too',
+    body: '<p>No document says "the game should not corrupt saves," and no document needs to. File ' +
+      'the defect with full evidence and the save file attached.</p>' +
+      '<p>Then file the second, quieter ticket: the area has no written acceptance criteria, which ' +
+      'is why nobody tested it. The defect gets you this instance; the spec gap gets you the next ' +
+      'five.</p>' },
+
+  hardware: { leaf:true, title:'Configuration-specific defect — record the machine, then narrow it',
+    body: '<p>Capture GPU vendor and model, driver version, OS build, CPU core count, RAM, resolution, ' +
+      'and the graphics API in use. Then narrow: does it survive an API switch, a driver rollback, a ' +
+      'different quality preset? Each answer removes a whole branch of the search.</p>' +
+      '<p>Severity is set by the outcome for the affected player — often S0 — while priority ' +
+      'is set by how many players own that configuration. This is the exact split the Triage Matrix ' +
+      'is built to make visible.</p>' +
+      '<p>Yee&rsquo;s preservation work is the long-run version of this problem: an unrecorded ' +
+      'configuration is an unreproducible defect, and eventually an unplayable game.</p>' },
+
+  charter: { leaf:true, title:'Not a ticket yet — write an exploratory charter instead',
+    body: '<p>"Feels wrong" is a legitimate signal and an illegitimate ticket. Convert it into a ' +
+      'time-boxed investigation: <i>Explore [area] with [resources] to discover [information]</i>, ' +
+      '30 minutes, and write down what you observe with numbers attached.</p>' +
+      '<p>One of three things happens. You find a consequence, and now you have a defect. You find ' +
+      'no written expectation, and now you have a spec gap. Or you find the behavior is intended and ' +
+      'you have learned the system — which is not a wasted half hour. Session-based exploratory ' +
+      'testing gets a full treatment in Topic 7.</p>' }
+};
+
+/* ---------- boot ---------- */
+document.addEventListener('DOMContentLoaded', function(){
+  initTriage();
+  initCod();
+  initCoverage();
+  var t = document.getElementById('tree1');
+  if(t) new GDTTree(t, TREE_NODES, 'start');
+});
+
+})();
+</script>
+</body></html>

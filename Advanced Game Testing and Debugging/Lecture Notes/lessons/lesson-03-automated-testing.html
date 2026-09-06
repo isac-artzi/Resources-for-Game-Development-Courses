@@ -1,0 +1,2624 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Topic 3 · Automated Testing Strategies and Methods — Advanced Game Testing and Debugging</title>
+<style id="lesson-kit">
+:root{
+  --bg:#0e1116; --bg2:#161b22; --bg3:#1c232d; --line:#2a3441; --line2:#3a4757;
+  --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#4da3ff; --acc2:#1f6feb;
+  --ok:#3fb950; --warn:#d29922; --crit:#f85149; --info:#a371f7; --teal:#39c5bb;
+  --unity:#5ec8f2; --unreal:#f0a44a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --sh:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 120px}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .crumb{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.topbar .spacer{flex:1}
+.topbar a{color:var(--tx2);text-decoration:none;font-size:13.5px;padding:5px 10px;
+  border-radius:7px;border:1px solid transparent}
+.topbar a:hover{color:var(--tx);background:var(--bg3);border-color:var(--line)}
+.progressbar{position:fixed;top:0;left:0;height:3px;background:var(--acc);
+  width:0;z-index:60;transition:width .12s linear}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero .kicker{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.14;margin:0 0 14px;
+  letter-spacing:-.02em;font-weight:800}
+.hero .lede{font-size:19px;color:var(--tx2);max-width:70ch;margin:0}
+.metarow{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:12.5px;color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+
+/* ---------- typography ---------- */
+h2{font-size:27px;margin:56px 0 6px;letter-spacing:-.015em;font-weight:750;
+  scroll-margin-top:80px}
+h2 .num{color:var(--acc);font-family:var(--mono);font-size:16px;
+  margin-right:11px;font-weight:600}
+h3{font-size:20px;margin:34px 0 6px;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16.5px;margin:24px 0 4px;font-weight:700;color:var(--tx)}
+p{margin:13px 0}
+a{color:var(--acc)}
+ul,ol{margin:13px 0;padding-left:24px}
+li{margin:7px 0}
+li::marker{color:var(--tx3)}
+strong{color:#fff;font-weight:650}
+em{color:var(--tx)}
+code{font-family:var(--mono);font-size:.885em;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;padding:1.5px 6px;color:#bfe3ff}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.subtle{color:var(--tx2)}
+.small{font-size:14px}
+
+/* ---------- callouts ---------- */
+.box{border:1px solid var(--line);border-left:3px solid var(--acc);
+  background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin:22px 0}
+.box .lbl{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:800;color:var(--acc);margin-bottom:7px}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.why{border-left-color:var(--info)}   .box.why .lbl{color:var(--info)}
+.box.warn{border-left-color:var(--warn)}  .box.warn .lbl{color:var(--warn)}
+.box.crit{border-left-color:var(--crit)}  .box.crit .lbl{color:var(--crit)}
+.box.ok{border-left-color:var(--ok)}      .box.ok .lbl{color:var(--ok)}
+.box.field{border-left-color:var(--teal)} .box.field .lbl{color:var(--teal)}
+
+/* ---------- objectives / goals ---------- */
+.goals{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;margin:26px 0}
+.goals h4{margin:0 0 10px;font-size:12px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx3)}
+.goals ol{margin:0;padding-left:20px}
+
+/* ---------- code ---------- */
+.codeblock{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  margin:20px 0;overflow:hidden}
+.codeblock .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);font-size:12.5px;
+  color:var(--tx2);font-family:var(--mono)}
+.codeblock .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);
+  font-size:13.4px;line-height:1.62;color:#d5e2f0}
+.codeblock pre .c{color:#6a7d91;font-style:italic}   /* comment */
+.codeblock pre .k{color:#ff7b9c}                     /* keyword */
+.codeblock pre .t{color:#7ee0c6}                     /* type    */
+.codeblock pre .s{color:#ffcf8f}                     /* string  */
+.codeblock pre .n{color:#c3a6ff}                     /* number  */
+.codeblock pre .f{color:#82c8ff}                     /* func    */
+
+/* annotated code: clickable gutter markers */
+.annot{display:grid;grid-template-columns:1fr;gap:0;margin:22px 0}
+.annot .rows{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.annot .arow{display:grid;grid-template-columns:34px 1fr;align-items:stretch;
+  border-bottom:1px solid rgba(42,52,65,.55)}
+.annot .arow:last-child{border-bottom:0}
+.annot .arow.hasnote{cursor:pointer}
+.annot .arow.hasnote:hover{background:rgba(77,163,255,.07)}
+.annot .gut{display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--tx3);font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--line);user-select:none}
+.annot .arow.hasnote .gut{color:#fff;background:var(--acc2);font-weight:700}
+.annot .arow.open .gut{background:var(--acc)}
+.annot .ln{font-family:var(--mono);font-size:13.3px;line-height:1.65;padding:2px 14px;
+  white-space:pre;overflow-x:auto;color:#d5e2f0}
+.annot .note{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--line);
+  padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease;
+  font-size:14.6px;color:var(--tx2)}
+.annot .arow.open + .note,.annot .note.open{max-height:600px;padding:13px 18px}
+.annot .note b{color:var(--tx)}
+.annot .hint{font-size:12.5px;color:var(--tx3);margin:8px 2px 0}
+
+/* ---------- engine tabs (Unity / Unreal) ---------- */
+.tabs{margin:24px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tabs .tabhd{display:flex;background:var(--bg3);border-bottom:1px solid var(--line)}
+.tabs .tabhd button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:14px;font-weight:650;padding:11px 20px;cursor:pointer}
+.tabs .tabhd button:hover{color:var(--tx2)}
+.tabs .tabhd button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tabs .tabhd button[data-engine="unity"].on{border-bottom-color:var(--unity);color:var(--unity)}
+.tabs .tabhd button[data-engine="unreal"].on{border-bottom-color:var(--unreal);color:var(--unreal)}
+.tabs .tabbody{padding:4px 20px 16px;background:var(--bg2)}
+.tabs .tabpane{display:none}.tabs .tabpane.on{display:block}
+.tabs .tabbody .codeblock{margin:16px -6px}
+
+/* ---------- quiz / check ---------- */
+.check{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin:26px 0}
+.check .q{font-weight:650;margin:0 0 14px}
+.check .opt{display:block;width:100%;text-align:left;background:var(--bg3);
+  border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin:8px 0;
+  color:var(--tx);font:inherit;font-size:15.2px;cursor:pointer;transition:.12s}
+.check .opt:hover{border-color:var(--line2);background:#222b36}
+.check .opt.right{border-color:var(--ok);background:rgba(63,185,80,.11)}
+.check .opt.wrong{border-color:var(--crit);background:rgba(248,81,73,.11)}
+.check .opt .tag{float:right;font-size:12px;font-weight:700;letter-spacing:.06em}
+.check .opt.right .tag{color:var(--ok)}.check .opt.wrong .tag{color:var(--crit)}
+.check .exp{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--tx2)}
+.check .exp.on{display:block}
+.check .exp b{color:var(--tx)}
+.check .exp .ex{margin:9px 0}
+.check .exp .ex .who{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em}
+
+/* ---------- widgets / simulators ---------- */
+.widget{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.widget > .whd{display:flex;align-items:baseline;gap:10px;margin:-2px 0 4px}
+.widget > .whd .wt{font-weight:750;font-size:17px}
+.widget > .whd .wk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--teal);font-weight:800;border:1px solid rgba(57,197,187,.35);
+  border-radius:5px;padding:2px 7px}
+.widget > .wsub{color:var(--tx2);font-size:14.5px;margin:4px 0 16px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;align-items:center;
+  gap:12px;margin:11px 0}
+.ctl label{font-size:14px;color:var(--tx2)}
+.ctl output{font-family:var(--mono);font-size:13.5px;color:var(--acc);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:22px}
+.btn{background:var(--acc2);border:1px solid var(--acc);color:#fff;font:inherit;
+  font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--acc)}
+.btn.ghost{background:var(--bg3);border-color:var(--line2);color:var(--tx2)}
+.btn.ghost:hover{background:#242e3a;color:var(--tx)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:10px;margin:16px 0 0}
+.readout .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px}
+.readout .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.readout .cell .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.readout .cell .v.ok{color:var(--ok)}.readout .cell .v.warn{color:var(--warn)}
+.readout .cell .v.crit{color:var(--crit)}
+.verdict{margin:16px 0 0;padding:13px 16px;border-radius:9px;font-size:14.8px;
+  background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--acc)}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict.crit{border-left-color:var(--crit)}
+canvas{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:9px;margin:16px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;
+  color:var(--tx2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px}
+
+/* ---------- decision tree ---------- */
+.tree{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.tree .path{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  margin:0 0 14px;min-height:17px}
+.tree .path span{color:var(--acc)}
+.tree .qq{font-size:17.5px;font-weight:700;margin:0 0 6px}
+.tree .qh{color:var(--tx2);font-size:14.5px;margin:0 0 14px}
+.tree .choices{display:grid;gap:9px}
+.tree .choices button{text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:12px 15px;color:var(--tx);font:inherit;font-size:15px;
+  cursor:pointer;transition:.12s}
+.tree .choices button:hover{border-color:var(--acc);background:#222c38}
+.tree .choices button .sub{display:block;color:var(--tx3);font-size:13px;margin-top:3px}
+.tree .leaf{border-left:3px solid var(--ok);background:var(--bg3);border-radius:9px;
+  padding:15px 18px}
+.tree .leaf h5{margin:0 0 8px;font-size:16.5px;color:var(--ok)}
+.tree .leaf p{margin:9px 0;font-size:15px}
+.tree .leaf .tool{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:14.6px}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+th{background:var(--bg3);font-weight:700;font-size:13px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--tx2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.017)}
+td code{font-size:.85em}
+
+/* ---------- misc ---------- */
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2.5px 9px;border-radius:999px;vertical-align:1px}
+.pill.s0{background:rgba(248,81,73,.16);color:var(--crit);border:1px solid rgba(248,81,73,.4)}
+.pill.s1{background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pill.s2{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pill.s3{background:rgba(159,176,195,.13);color:var(--tx2);border:1px solid var(--line2)}
+.pill.unity{background:rgba(94,200,242,.14);color:var(--unity);border:1px solid rgba(94,200,242,.4)}
+.pill.unreal{background:rgba(240,164,74,.14);color:var(--unreal);border:1px solid rgba(240,164,74,.4)}
+
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);
+  padding:0 18px;margin:20px 0}
+details.more > summary{cursor:pointer;padding:13px 0;font-weight:650;font-size:15.5px;
+  list-style:none;color:var(--tx)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"▸ ";color:var(--acc);font-weight:800}
+details.more[open] > summary::before{content:"▾ "}
+details.more[open]{padding-bottom:14px}
+details.more > summary:hover{color:var(--acc)}
+
+.deliver{background:linear-gradient(180deg,rgba(77,163,255,.07),transparent);
+  border:1px solid var(--acc2);border-radius:12px;padding:20px 24px;margin:40px 0 0}
+.deliver h3{margin-top:0;color:var(--acc)}
+
+footer.lf{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:13.5px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap}
+footer.lf a{color:var(--tx2);text-decoration:none}
+footer.lf a:hover{color:var(--acc)}
+
+@media (max-width:720px){
+  body{font-size:16px}
+  .ctl{grid-template-columns:1fr;gap:4px}
+  .ctl output{text-align:left}
+  .hero{padding:34px 0 24px}
+}
+@media print{
+  .topbar,.progressbar{display:none}
+  body{background:#fff;color:#111}
+  .widget,.tree,.check,.box,.goals{break-inside:avoid}
+}
+</style>
+<style id="lesson-local">
+.pyr{display:grid;gap:8px;margin:22px 0}
+.pyr .lvl{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:start;
+  background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:12px 15px}
+.pyr .lvl .tag{font-family:var(--mono);font-size:12px;font-weight:800;text-align:center;
+  border-radius:6px;padding:5px 4px;letter-spacing:.05em}
+.pyr .l1 .tag{background:rgba(63,185,80,.15);color:var(--ok);border:1px solid rgba(63,185,80,.4)}
+.pyr .l2 .tag{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pyr .l3 .tag{background:rgba(210,153,34,.15);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pyr .l4 .tag{background:rgba(163,113,247,.15);color:var(--info);border:1px solid rgba(163,113,247,.4)}
+.pyr .lvl b{display:block;color:#fff}
+.pyr .lvl p{margin:4px 0 0;font-size:14.4px;color:var(--tx2)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button:hover{border-color:var(--line2);color:var(--tx)}
+.seg button.on{background:var(--acc2);border-color:var(--acc);color:#fff;font-weight:650}
+.trigbank{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:12px;margin:16px 0 0}
+.trigcard{background:var(--bg3);border:1px solid var(--line);border-top:3px solid var(--line2);
+  border-radius:10px;padding:13px 15px}
+.trigcard h5{margin:0 0 3px;font-size:15.5px}
+.trigcard .df{margin:0 0 9px;font-size:13.2px;color:var(--tx3);min-height:34px}
+.trigcard select{width:100%;background:var(--bg2);color:var(--tx);border:1px solid var(--line);
+  border-radius:7px;padding:7px 9px;font:inherit;font-size:13.4px}
+.trigcard .fb{margin:9px 0 0;font-size:13px;min-height:34px;color:var(--tx2)}
+.trigcard.good{border-top-color:var(--ok)} .trigcard.part{border-top-color:var(--warn)}
+.trigcard.bad{border-top-color:var(--crit)} .trigcard.none{border-top-color:var(--line2)}
+.gauge{height:15px;border-radius:99px;background:var(--bg3);border:1px solid var(--line);
+  overflow:hidden;margin:16px 0 0}
+.gauge > i{display:block;height:100%;background:linear-gradient(90deg,#d29922,#3fb950);
+  width:0;transition:width .25s ease}
+.stagelist{display:grid;gap:7px;margin:14px 0 0}
+.stagerow{display:grid;grid-template-columns:26px 1fr 92px 82px 66px;gap:10px;align-items:center;
+  background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:14px}
+.stagerow .ix{font-family:var(--mono);color:var(--tx3);font-size:12px}
+.stagerow .mn,.stagerow .ct{font-family:var(--mono);font-size:13px;color:var(--tx2);text-align:right}
+.stagerow .mv{display:flex;gap:4px}
+.stagerow .mv button{background:var(--bg2);border:1px solid var(--line);color:var(--tx2);
+  border-radius:6px;width:28px;height:26px;cursor:pointer;font:inherit;line-height:1}
+.stagerow .mv button:hover{border-color:var(--acc);color:var(--tx)}
+.stagerow.flag{border-color:rgba(210,153,34,.55);background:rgba(210,153,34,.07)}
+.runstrip{display:flex;flex-wrap:wrap;gap:3px;margin:16px 0 0}
+.runstrip i{width:12px;height:12px;border-radius:3px;display:block}
+.readlist{font-size:14.6px;color:var(--tx2)}
+.readlist li b{color:var(--tx)}
+.tblwrap table td small{color:var(--tx3)}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <span class="crumb">Advanced Game Testing and Debugging &middot; Topic 3</span><span class="spacer"></span>
+  <a href="../index.html">Course hub</a>
+  <a href="lesson-02-test-design-diagramming.html">&larr; Prev</a>
+  <a href="lesson-04-performance-profiling.html">Next &rarr;</a>
+</div></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Topic 3 &middot; Sep 28 &ndash; Oct 11 &middot; Weeks 4&ndash;5 &middot; Sessions 7&ndash;10</div>
+    <h1>Automated Testing Strategies and Methods</h1>
+    <p class="lede">Manual testing tells you the build works today. Automated testing tells you it
+    still works after the commit that lands at 11:40 p.m. two days before cert. This lesson is about
+    writing tests a machine can run, in code that was never designed to be tested, and wiring them to
+    a pipeline that fails loudly enough to matter.</p>
+    <div class="metarow">
+      <span class="chip"><b>Reading:</b> <i>Modern Game Testing</i> ch. 4, 5, 13 + 6 papers</span>
+      <span class="chip"><b>Assignment:</b> Benchmark &mdash; Unit Testing and Defect Trigger Coverage &middot; 100 pts &middot; due Oct 11</span>
+      <span class="chip"><b>Competency:</b> 1.1 &mdash; proficiency with game-dev programming languages</span>
+      <span class="chip"><b>Sessions:</b> 7&ndash;10</span>
+      <span class="chip"><b>Est. time:</b> 190 min + reading</span>
+    </div>
+  </header>
+
+  <div class="goals"><h4>By the end you will be able to</h4><ol>
+    <li>Explain the role of automated testing in a game project, and say honestly what it cannot do.</li>
+    <li>Implement and maintain automated test scripts in the Unity Test Framework and the Unreal Automation system.</li>
+    <li>Apply automated testing to ensure stability and prevent crashes, covering all six defect triggers.</li>
+    <li>Integrate an automated test suite into a CI pipeline that runs headless on a machine that is not yours.</li>
+    <li>Demonstrate proficiency with the programming languages used in game development &mdash; C# and C++ &mdash; in test code, which is production code.</li>
+    <li>Demonstrate proficiency with object-oriented design by building the seams that make untestable code testable.</li>
+  </ol></div>
+
+  <h2><span class="num">1</span>What automation is actually for</h2>
+
+  <p>The common student objection is reasonable: "a test suite cannot tell me whether the game is
+  fun, and fun is the thing that matters." Correct. Automated testing is not a fun oracle, a taste
+  oracle, or a substitute for playing your game. It has one job, and the job is narrow: <strong>to
+  detect that behavior which used to be correct has stopped being correct, faster and cheaper than a
+  human can, on every change, forever.</strong> Everything else automation gets credit for is a
+  side effect of that.</p>
+
+  <p>Put numbers on it, because the numbers are what win the argument. A modest student project has
+  perhaps 40 gameplay behaviors worth checking: the double jump, the checkpoint write, the vendor
+  price formula, the save round-trip, the pause-during-cutscene guard. Verifying those by hand takes
+  a careful person maybe 35 minutes. Your team pushes twelve times a day. Twelve full manual
+  regression passes per day is seven hours of human attention, which is why nobody does it, which is
+  why the checkpoint write silently breaks on Tuesday and gets discovered on Friday by a
+  playtester who has lost an hour of progress. The same 40 behaviors as unit tests run in under
+  four seconds and cost nothing per run after they are written. That is the whole economic
+  argument. The tests are not smarter than your testers; they are <em>tireless</em>, and tirelessness
+  is the property that manual QA cannot supply.</p>
+
+  <p>The second job, which matters more than students expect, is that automation changes what
+  <em>can</em> be changed. A codebase with no test suite develops a fear gradient: modules nobody
+  will touch because the blast radius is unknown. That fear is why the damage formula in a
+  ten-week project ends up with four special cases nobody dares to merge. A test suite is not
+  primarily a defect-detector; it is a <em>permission slip to refactor</em>. Coppola, Fulcini and
+  Strada's "Know Your Bugs" makes the related point from the other direction: knowing the shape of
+  the defects your project actually produces is what tells you which tests are worth writing at all.
+  Test everything and you will maintain a suite that costs more than it saves.</p>
+
+  <div class="box why"><div class="lbl">Why "it works on my machine" is a technical claim, and a false one</div>
+  <p>Your editor has the asset database warm, a debugger attached, vsync on, a 144 Hz display, your
+  local <code>ProjectSettings</code> deltas, and yesterday's cached shader variants. A build machine
+  has none of that. It runs headless at whatever frame rate a software rasterizer manages, with a
+  clean import, in a locale that might be <code>de-DE</code>. Roughly a third of the "unreproducible"
+  bugs a student team files are configuration differences between two machines that nobody wrote
+  down. The single most valuable property of a CI-run test is not that it is automatic. It is that
+  it runs somewhere that is <em>not your machine</em>, so a pass means something.</p></div>
+
+  <h3>What automation is bad at, stated plainly</h3>
+  <p>Be honest about this in your assignment video; graders notice the difference between a student
+  who has read about automation and one who has fought with it. Automated tests are poor at:
+  emergent and aesthetic judgments; anything requiring a human to say "that felt wrong"; visual
+  correctness beyond crude pixel or structural checks; and <em>novel</em> defects in code paths
+  nobody thought to write a test for. Albaghajati and Ahmed's survey of video-game automated testing
+  approaches is worth reading precisely for its inventory of what remains unsolved. Automation is a
+  regression net, not a discovery engine. Discovery is still exploratory testing done by a person
+  with a charter and a stopwatch &mdash; which is Topic 7.</p>
+
+  <h2><span class="num">2</span>The test pyramid, and how games bend it</h2>
+
+  <p>The classic pyramid says: many fast unit tests at the base, fewer integration tests above,
+  a thin cap of slow end-to-end tests. It assumes most of your logic is deterministic, callable
+  without a running world, and free of a 30-second startup cost. A game violates all three
+  assumptions. Physics is a stateful simulation, gameplay lives inside a frame loop, and half of
+  what breaks is an interaction between systems rather than a function returning the wrong number.
+  So the pyramid does not disappear &mdash; it gets a fatter middle and a mandatory extra layer.</p>
+
+  <div class="pyr">
+    <div class="lvl l1"><div class="tag">UNIT<br>1&ndash;40 ms</div><div>
+      <b>Pure logic, no engine</b>
+      <p>Damage formulas, stamina drain, inventory stacking, save serialization, state machines,
+      cooldown arithmetic, loot-table probability. Runs in EditMode / an editor-context Automation
+      Spec with no world loaded. Hundreds of these; they must total a few seconds or people stop
+      running them.</p></div></div>
+    <div class="lvl l2"><div class="tag">INTEGRATION<br>0.1&ndash;5 s</div><div>
+      <b>Two or more systems in a real world</b>
+      <p>Does the pickup actually register on the inventory when the trigger fires? Does the
+      checkpoint component write the state the save system reads? Unity PlayMode tests and Unreal
+      Functional Tests live here. Slower, so budget them: this layer is where a games pyramid is
+      wider than a web-app pyramid, and that is correct, not a smell.</p></div></div>
+    <div class="lvl l3"><div class="tag">SMOKE / SOAK<br>1&ndash;60 min</div><div>
+      <b>A real build, launched, driven</b>
+      <p>Boot the packaged build, load each level, walk a scripted route, leave a bot running for
+      thirty minutes, assert no crash, no assertion, no leak, no fatal log line. Gauntlet in Unreal;
+      a headless PlayMode harness or a device-farm script in Unity. This layer catches the class of
+      failure that unit tests structurally cannot: cook errors, missing references in a packaged
+      build, streaming, and slow leaks.</p></div></div>
+    <div class="lvl l4"><div class="tag">PLAYTEST<br>humans</div><div>
+      <b>Judgment, not assertion</b>
+      <p>Feel, difficulty, comprehension, accessibility, aesthetics, emergent exploits. Not
+      automatable and should not be. The purpose of the three layers below is to make sure your
+      humans never spend their session re-finding a regression a machine could have caught.</p></div></div>
+  </div>
+
+  <div class="box warn"><div class="lbl">The inversion trap</div>
+  <p>The most common failure in student projects is not "too few tests." It is a suite made almost
+  entirely of PlayMode tests, because PlayMode is where the game lives and it feels natural to test
+  there. Sixty PlayMode tests at 1.5 seconds each plus a 25-second domain reload is a 2&frac12;-minute
+  suite; at twelve pushes a day that is 30 minutes of pipeline time, and worse, it is slow enough
+  that nobody runs it locally before pushing. Every test you can push down a layer buys you back
+  attention. Ask of each PlayMode test: <em>what specifically about this needs a frame?</em> If the
+  answer is "nothing, I just wrote it in a MonoBehaviour," it is a unit test wearing a costume.</p></div>
+
+  <h2><span class="num">3</span>Seams: making game code testable at all</h2>
+
+  <p>Here is the practical wall you will hit in the first ten minutes of the assignment. Your
+  stamina system is a <code>MonoBehaviour</code>. It reads <code>Time.deltaTime</code>, it calls
+  <code>Input.GetKey</code>, it calls <code>UnityEngine.Random.value</code>, it grabs a
+  <code>UIBar</code> with <code>GetComponent</code> in <code>Start</code>, and it writes to a static
+  <code>GameManager.Instance</code>. There is no way to test any of its arithmetic without booting a
+  scene, faking input, and waiting real seconds. The code is not untestable because tests are hard.
+  It is untestable because it has no <strong>seams</strong> &mdash; no place where you can substitute
+  a controlled input for an uncontrolled one.</p>
+
+  <p>A seam is created by the Dependency Inversion Principle, the D in SOLID, and this is the
+  clearest payoff for OOP that this course will show you. Depend on an interface you own, not on a
+  static the engine owns. Three interfaces cover most game code:</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Uncontrolled dependency</th><th>Inject instead</th><th>What the fake lets you do in a test</th></tr></thead>
+    <tbody>
+      <tr><td><code>Time.deltaTime</code>, <code>FApp::GetDeltaTime()</code></td><td><code>IClock</code> / <code>IClockProvider</code></td><td>Advance exactly 1.000 s in one call. Simulate a 200 ms hitch. Simulate <code>dt = 0</code> on the pause frame. No waiting.</td></tr>
+      <tr><td><code>Input.GetKey</code>, <code>PlayerController</code></td><td><code>IInputSource</code></td><td>Hold sprint for exactly 47 frames, then release on the frame the stamina hits zero.</td></tr>
+      <tr><td><code>Random.value</code>, <code>FMath::RandRange</code></td><td><code>IRandom</code> with an explicit seed</td><td>Make a failing loot-table test reproduce. An unseeded RNG turns a real defect into "sometimes red."</td></tr>
+      <tr><td>Singletons: <code>GameManager.Instance</code></td><td>Constructor parameter or an <code>IGameState</code></td><td>Run tests in any order without leaking state between them.</td></tr>
+      <tr><td>File I/O, <code>Application.persistentDataPath</code></td><td><code>ISaveStore</code></td><td>Feed a truncated or corrupt byte array without touching a disk you then have to clean up.</td></tr>
+      <tr><td>Network, HTTP telemetry</td><td><code>ITelemetrySink</code></td><td>Assert an event fired, offline, in 2 ms, in CI, with no server.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The refactor pattern is always the same: pull the decision logic out of the
+  <code>MonoBehaviour</code> or <code>AActor</code> into a plain class that takes its inputs as
+  parameters, and leave the engine object as a thin adapter that owns the wiring. The engine object
+  keeps the <code>Update</code>; the plain class keeps the rules. Read the walkthrough below with
+  that split in mind &mdash; every annotated line is a decision, not a syntax note.</p>
+
+  <div class="annot"><div class="rows">
+    <div class="arow"><div class="gut">1</div><div class="ln"><span class="c">// SprintRules.cs &mdash; no UnityEngine reference anywhere in this file.</span></div></div>
+    <div class="arow hasnote"><div class="gut">2</div><div class="ln">public interface IClock { float DeltaTime { get; } }</div></div>
+    <div class="note"><b>Own the interface, not the engine's type.</b> <code>IClock</code> is three
+    tokens wide and it is the entire reason this system can be tested in microseconds instead of
+    seconds. In production the adapter returns <code>Time.deltaTime</code>; in a test a
+    <code>FakeClock</code> returns whatever you set. Note that we expose only what the rules need
+    &mdash; not <code>time</code>, not <code>frameCount</code>. A narrow interface is a cheap fake.</div>
+    <div class="arow"><div class="gut">3</div><div class="ln">public interface IStaminaListener { void OnExhausted(); void OnRecovered(); }</div></div>
+    <div class="arow"><div class="gut">4</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">5</div><div class="ln">public sealed class SprintConfig {</div></div>
+    <div class="note"><b>Configuration is data, and data is a defect trigger.</b> Pulling max
+    stamina, drain rate and regen delay out of hardcoded literals and into a config object is what
+    makes the <em>Configuration</em> trigger testable at all: a test can construct a hostile config
+    (drain 0, max negative, regen faster than drain) and assert the system rejects or survives it.
+    If these numbers live as magic constants inside <code>Update</code>, that whole trigger is
+    unreachable from a test.</div>
+    <div class="arow"><div class="gut">6</div><div class="ln">  public float Max = 100f, DrainPerSec = 20f, RegenPerSec = 12f, RegenDelaySec = 1.5f;</div></div>
+    <div class="arow hasnote"><div class="gut">7</div><div class="ln">  public void Validate() {</div></div>
+    <div class="note"><b>Fail at construction, not at frame 4000.</b> A designer typing
+    <code>-5</code> into <code>Max</code> in the inspector should produce a loud, immediate,
+    named error, not a stamina bar that renders inverted forty minutes into a playtest. Validation
+    at the boundary converts a whole family of hard-to-reproduce Configuration defects into one
+    exception with a message. It also gives you something concrete to assert on.</div>
+    <div class="arow"><div class="gut">8</div><div class="ln">    if (Max &lt;= 0f) throw new ArgumentOutOfRangeException(nameof(Max), "Max must be &gt; 0.");</div></div>
+    <div class="arow"><div class="gut">9</div><div class="ln">    if (DrainPerSec &lt;= 0f) throw new ArgumentOutOfRangeException(nameof(DrainPerSec));</div></div>
+    <div class="arow"><div class="gut">10</div><div class="ln">    if (RegenDelaySec &lt; 0f) throw new ArgumentOutOfRangeException(nameof(RegenDelaySec));</div></div>
+    <div class="arow"><div class="gut">11</div><div class="ln">  }</div></div>
+    <div class="arow"><div class="gut">12</div><div class="ln">}</div></div>
+    <div class="arow"><div class="gut">13</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">14</div><div class="ln">public sealed class SprintRules {</div></div>
+    <div class="note"><b>A plain class, not a <code>MonoBehaviour</code>.</b> No
+    <code>[SerializeField]</code>, no lifecycle methods, no scene. This is the object under test.
+    It can be constructed in a test in one line, exercised a million times in a loop, and thrown
+    away. Everything that is genuinely a <em>rule</em> of the sprint feature lives here; everything
+    that is <em>plumbing</em> lives in the adapter below.</div>
+    <div class="arow"><div class="gut">15</div><div class="ln">  private readonly SprintConfig _cfg; private readonly IClock _clock;</div></div>
+    <div class="arow"><div class="gut">16</div><div class="ln">  private readonly IStaminaListener _listener;</div></div>
+    <div class="arow"><div class="gut">17</div><div class="ln">  private float _stamina, _regenCooldown;</div></div>
+    <div class="arow"><div class="gut">18</div><div class="ln">  public float Stamina =&gt; _stamina;</div></div>
+    <div class="arow"><div class="gut">19</div><div class="ln">  public bool Exhausted { get; private set; }</div></div>
+    <div class="arow"><div class="gut">20</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">21</div><div class="ln">  public SprintRules(SprintConfig cfg, IClock clock, IStaminaListener listener = null) {</div></div>
+    <div class="note"><b>Constructor injection, with the listener optional.</b> Required
+    collaborators are required parameters &mdash; you cannot construct a <code>SprintRules</code>
+    in an invalid state, which removes an entire class of Startup defects. The listener is optional
+    because a rules object with no observer is still meaningful; making it required would force
+    every test to supply a stub it does not care about, and tests that are annoying to write do not
+    get written.</div>
+    <div class="arow"><div class="gut">22</div><div class="ln">    _cfg = cfg ?? throw new ArgumentNullException(nameof(cfg));</div></div>
+    <div class="arow"><div class="gut">23</div><div class="ln">    _clock = clock ?? throw new ArgumentNullException(nameof(clock));</div></div>
+    <div class="arow"><div class="gut">24</div><div class="ln">    _cfg.Validate(); _listener = listener; _stamina = _cfg.Max;</div></div>
+    <div class="arow"><div class="gut">25</div><div class="ln">  }</div></div>
+    <div class="arow"><div class="gut">26</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">27</div><div class="ln">  public void Tick(bool sprintHeld) {</div></div>
+    <div class="note"><b><code>Tick</code> takes intent, not input.</b> The parameter is
+    <code>sprintHeld</code> &mdash; a decision already made &mdash; not a <code>KeyCode</code> and
+    not an <code>InputAction</code>. The rules do not care whether sprint came from a keyboard, a
+    gamepad, a replay file, an accessibility toggle, or a test bot. That indifference is what lets
+    the same class be driven by an automated agent later without modification.</div>
+    <div class="arow hasnote"><div class="gut">28</div><div class="ln">    float dt = _clock.DeltaTime;</div></div>
+    <div class="note"><b>Read the clock exactly once per tick.</b> Calling
+    <code>Time.deltaTime</code> in four places inside one update is a real source of subtle
+    inconsistency, and it makes the fake harder to reason about. One read, one local, used
+    everywhere below.</div>
+    <div class="arow hasnote"><div class="gut">29</div><div class="ln">    if (!(dt &gt; 0f) || dt &gt; 0.5f) return;   <span class="c">// pause frame, NaN, or a load hitch</span></div></div>
+    <div class="note"><b>This one line is an Exception-trigger test waiting to be written.</b>
+    <code>!(dt &gt; 0f)</code> rather than <code>dt &lt;= 0f</code> because <code>NaN</code> compares
+    false to everything &mdash; the negated form catches it, the direct form does not. The
+    0.5 s ceiling discards the giant delta produced by a level load or a breakpoint, which would
+    otherwise drain a full stamina bar in one frame. Both branches are cheap to assert and both
+    represent bugs that are miserable to reproduce by hand.</div>
+    <div class="arow"><div class="gut">30</div><div class="ln">    bool wasExhausted = Exhausted;</div></div>
+    <div class="arow"><div class="gut">31</div><div class="ln">    if (sprintHeld &amp;&amp; !Exhausted) {</div></div>
+    <div class="arow"><div class="gut">32</div><div class="ln">      _stamina -= _cfg.DrainPerSec * dt;  _regenCooldown = _cfg.RegenDelaySec;</div></div>
+    <div class="arow"><div class="gut">33</div><div class="ln">    } else if (_regenCooldown &gt; 0f) { _regenCooldown -= dt; }</div></div>
+    <div class="arow"><div class="gut">34</div><div class="ln">    else { _stamina += _cfg.RegenPerSec * dt; }</div></div>
+    <div class="arow hasnote"><div class="gut">35</div><div class="ln">    _stamina = Math.Min(Math.Max(_stamina, 0f), _cfg.Max);</div></div>
+    <div class="note"><b>Clamp inside the rules, not in the UI.</b> If clamping lives in the health
+    bar's draw call, then the save system, the achievement check and the analytics event all see
+    stamina values of &minus;3.7 and 104.2. Invariants belong to the object that owns the state.
+    "Stamina is always within [0, Max]" is now a property you can assert after a fuzz loop of ten
+    thousand random ticks &mdash; which is exactly the Stress-trigger test in section 5.</div>
+    <div class="arow"><div class="gut">36</div><div class="ln">    Exhausted = _stamina &lt;= 0f ? true : (_stamina &gt;= _cfg.Max * 0.25f ? false : Exhausted);</div></div>
+    <div class="arow hasnote"><div class="gut">37</div><div class="ln">    if (Exhausted != wasExhausted) { if (Exhausted) _listener?.OnExhausted(); else _listener?.OnRecovered(); }</div></div>
+    <div class="note"><b>Edge-triggered, not level-triggered.</b> Firing <code>OnExhausted</code>
+    every frame while stamina sits at zero is the classic "sound effect machine-guns" bug and the
+    classic "loot dropped 60 times" bug: the same defect wearing different clothes. Comparing
+    against <code>wasExhausted</code> makes the event fire once per transition, and a test can now
+    assert <em>exactly one</em> callback across 300 ticks. Counting callbacks is a far stronger
+    assertion than checking a boolean.</div>
+    <div class="arow"><div class="gut">38</div><div class="ln">  }</div></div>
+    <div class="arow"><div class="gut">39</div><div class="ln">}</div></div>
+  </div><p class="hint">Click any highlighted line to see the reasoning behind the decision.</p></div>
+
+  <p>The adapter that remains is deliberately boring, and boring is the point &mdash; there is
+  nothing left in it worth testing:</p>
+
+  <div class="codeblock"><div class="hd"><span class="dot"></span>SprintBehaviour.cs &middot; the thin adapter</div><pre>
+<span class="c">// The only job of this MonoBehaviour is wiring. No rules live here.</span>
+public sealed class SprintBehaviour : MonoBehaviour, IStaminaListener
+{
+    [SerializeField] private SprintConfigAsset configAsset;   <span class="c">// ScriptableObject</span>
+    [SerializeField] private AudioSource gaspSfx;
+
+    private sealed class UnityClock : IClock { public float DeltaTime =&gt; Time.deltaTime; }
+
+    private SprintRules _rules;
+
+    private void Awake()
+    {
+        _rules = new SprintRules(configAsset.ToConfig(), new UnityClock(), this);
+    }
+
+    private void Update()
+    {
+        _rules.Tick(Input.GetKey(KeyCode.LeftShift));
+    }
+
+    public void OnExhausted() { if (gaspSfx != null) gaspSfx.Play(); }
+    public void OnRecovered() { }
+}
+</pre></div>
+
+  <div class="check">
+    <p class="q">You inject an <code>IClock</code> so your test can call
+    <code>clock.DeltaTime = 0.25f</code> and tick four times to simulate one second. A teammate says
+    this is pointless &mdash; a PlayMode test could just <code>yield return new WaitForSeconds(1f)</code>
+    and get the real thing. What is the strongest argument against the teammate?</p>
+    <button class="opt" data-correct="0">Interfaces are faster at runtime than reading <code>Time.deltaTime</code>, so the game performs better.</button>
+    <button class="opt" data-correct="1">The fake clock makes the test deterministic and roughly a thousand times faster, and it can produce deltas &mdash; 0, NaN, 0.9 s &mdash; that real time will not hand you on demand.</button>
+    <button class="opt" data-correct="0">PlayMode tests cannot use <code>WaitForSeconds</code>, so the injected clock is the only option available.</button>
+    <div class="exp"><b>Why the second option:</b> three separate wins stack. Determinism &mdash;
+    the same input produces the same result on every machine, so a failure is a real failure rather
+    than a timing coincidence. Speed &mdash; four method calls instead of one wall-clock second, and
+    across a 200-test suite that is the difference between 3 seconds and 3 minutes. Reachability
+    &mdash; you cannot ask real time for a NaN delta or an exact 0.5000 s frame, and those are
+    precisely the inputs where the Exception-trigger bugs live.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      It sounds like a performance argument and performance arguments feel rigorous. It is also
+      backwards: an interface call adds a virtual dispatch. The justification for the seam is
+      testability, and you should defend it on those grounds rather than inventing a perf story
+      that a profiler will contradict in Topic 4.</div>
+      <div class="ex"><span class="who">Why the third is tempting</span><br>
+      It is simply false &mdash; <code>WaitForSeconds</code> works fine in a <code>[UnityTest]</code>.
+      The reason to avoid it is not that it is unavailable, it is that a suite built on real waits
+      grows linearly in wall-clock time and eventually stops being run.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">4</span>Anatomy of a test in both engines</h2>
+
+  <p>A test has three parts and a name, and all four are load-bearing.
+  <strong>Arrange</strong> builds the world the test needs, and nothing else. <strong>Act</strong> is
+  one call &mdash; if you have two acts you have two tests. <strong>Assert</strong> checks one
+  behavior, with a message a stranger can read at 2 a.m. The <strong>name</strong> is documentation:
+  <code>Tick_WhileSprinting_DrainsAtConfiguredRatePerSecond</code> tells a reader what the system is
+  supposed to do without opening the body. <code>TestStamina2</code> tells them nothing and will be
+  deleted by someone in six months who cannot tell whether it still matters.</p>
+
+  <p>Setup and teardown exist for <em>isolation</em>, which is the property that a test's result does
+  not depend on which other tests ran first. This matters more in games than almost anywhere else,
+  because engines are full of global state: static singletons, the loaded scene, time scale, quality
+  settings, physics settings, the object pool, the audio mixer. A test that sets
+  <code>Time.timeScale = 0.1f</code> and does not restore it does not fail. It makes some
+  <em>other</em> test fail, later, in an order-dependent way, and you will spend an afternoon on it.
+  Restore everything you touch, in teardown, unconditionally.</p>
+
+  <div class="box why"><div class="lbl">Why isolation is worth the teardown boilerplate</div>
+  <p>Order dependence turns a linear debugging problem into a combinatorial one. With 40 tests, a
+  failure caused by one specific predecessor is one of 40 candidates; with a shared static that three
+  tests write to, you are looking at pairs, and NUnit and Unreal both reserve the right to run tests
+  in an order you did not choose &mdash; alphabetical, parallel, or sharded across agents. The
+  observable symptom is always the same and always misleading: <em>the suite passes locally and fails
+  in CI</em>, so the team concludes the build machine is broken and starts adding retries. Cost of
+  prevention: four lines of teardown per fixture. Cost of the cure: an afternoon, per occurrence,
+  forever. Prove isolation rather than assuming it &mdash; run the suite with a shuffled order once a
+  night and treat a failure there as a real defect.</p></div>
+
+  <div class="tabs"><div class="tabhd">
+    <button data-engine="unity" data-tab="u" class="on">Unity</button>
+    <button data-engine="unreal" data-tab="e">Unreal</button>
+  </div><div class="tabbody">
+    <div class="tabpane on" data-pane="u">
+      <p><b>Unity Test Framework</b> is NUnit 3 with two run modes. An <span class="pill unity">EditMode</span>
+      test runs in the editor process with no scene playing &mdash; use it for anything that does not
+      need a frame. A <span class="pill unity">PlayMode</span> test enters play mode, so
+      <code>Awake</code>/<code>Start</code>/<code>Update</code>/physics all run; it is the only place
+      coroutines and <code>FixedUpdate</code> behave for real. The two live in separate assembly
+      definitions: <code>Tests/EditMode/EditModeTests.asmdef</code> with
+      <code>"includePlatforms": ["Editor"]</code>, and <code>Tests/PlayMode/PlayModeTests.asmdef</code>
+      with no platform restriction. Both need <code>"UnityEngine.TestRunner"</code> and
+      <code>"UnityEditor.TestRunner"</code> in <code>precompiledReferences</code> plus
+      <code>"nunit.framework.dll"</code>.</p>
+
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Tests/EditMode/SprintRulesTests.cs</div><pre>
+using System;
+using NUnit.Framework;
+
+[TestFixture]
+public class SprintRulesTests
+{
+    <span class="c">// A hand-rolled fake beats a mocking framework here: it is 4 lines,</span>
+    <span class="c">// it has no NuGet dependency, and CI will never fail importing it.</span>
+    private sealed class FakeClock : IClock
+    {
+        public float DeltaTime { get; set; }
+    }
+
+    private sealed class CountingListener : IStaminaListener
+    {
+        public int Exhausted, Recovered;
+        public void OnExhausted() =&gt; Exhausted++;
+        public void OnRecovered() =&gt; Recovered++;
+    }
+
+    private FakeClock _clock;
+    private CountingListener _listener;
+    private SprintConfig _cfg;
+    private SprintRules _sut;          <span class="c">// "system under test" — a naming convention worth adopting</span>
+
+    [SetUp]
+    public void SetUp()
+    {
+        _clock    = new FakeClock { DeltaTime = 1f / 60f };
+        _listener = new CountingListener();
+        _cfg      = new SprintConfig { Max = 100f, DrainPerSec = 20f,
+                                       RegenPerSec = 12f, RegenDelaySec = 1.5f };
+        _sut      = new SprintRules(_cfg, _clock, _listener);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _sut = null; _clock = null; _listener = null;   <span class="c">// no shared state survives a test</span>
+    }
+
+    <span class="c">// Method_Condition_ExpectedResult. The name is the spec.</span>
+    [Test]
+    public void Tick_WhileSprintingForOneSecond_DrainsExactlyDrainPerSec()
+    {
+        <span class="c">// Arrange: 60 ticks of 1/60 s == 1.000 s of simulated time.</span>
+        for (int i = 0; i &lt; 60; i++) _sut.Tick(sprintHeld: true);   <span class="c">// Act</span>
+
+        <span class="c">// Assert with a tolerance: float accumulation over 60 adds will not be exact.</span>
+        Assert.That(_sut.Stamina, Is.EqualTo(80f).Within(0.01f),
+            "1 s of sprint at 20/s from 100 should leave 80.");
+    }
+
+    [TestCase(0.0f)]
+    [TestCase(-0.016f)]
+    [TestCase(float.NaN)]
+    [TestCase(1.5f)]
+    public void Tick_WithPathologicalDeltaTime_LeavesStaminaUnchanged(float dt)
+    {
+        _clock.DeltaTime = dt;
+        float before = _sut.Stamina;
+
+        _sut.Tick(sprintHeld: true);
+
+        Assert.That(_sut.Stamina, Is.EqualTo(before),
+            $"dt={dt} must be rejected, not integrated.");
+    }
+}
+</pre></div>
+
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Tests/PlayMode/SprintIntegrationTests.cs &middot; when you genuinely need frames</div><pre>
+using System.Collections;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+using UnityEngine.SceneManagement;
+
+public class SprintIntegrationTests
+{
+    private float _savedTimeScale;
+    private GameObject _player;
+
+    [UnitySetUp]
+    public IEnumerator UnitySetUp()
+    {
+        _savedTimeScale = Time.timeScale;                 <span class="c">// remember global state…</span>
+        yield return SceneManager.LoadSceneAsync("TestBed_Sprint", LoadSceneMode.Single);
+        _player = GameObject.FindWithTag("Player");
+        Assert.That(_player, Is.Not.Null, "TestBed_Sprint must contain a tagged Player.");
+    }
+
+    [UnityTearDown]
+    public IEnumerator UnityTearDown()
+    {
+        Time.timeScale = _savedTimeScale;                 <span class="c">// …and put it back, always</span>
+        if (_player != null) Object.Destroy(_player);
+        yield return null;
+    }
+
+    [UnityTest]
+    public IEnumerator Sprinting_ThroughRealUpdateLoop_FiresExhaustedExactlyOnce()
+    {
+        var probe = _player.AddComponent&lt;ExhaustProbe&gt;();
+        var input = _player.GetComponent&lt;ScriptedInput&gt;();
+        input.HoldSprint = true;
+
+        <span class="c">// yield return null advances exactly one rendered frame.</span>
+        <span class="c">// Never use WaitForSeconds when a frame count will do: frame counts are</span>
+        <span class="c">// deterministic on a loaded build machine, wall-clock seconds are not.</span>
+        for (int frame = 0; frame &lt; 600; frame++) yield return null;
+
+        Assert.That(probe.ExhaustedCount, Is.EqualTo(1));
+    }
+
+    [UnityTest]
+    public IEnumerator LoadingTheHubScene_LogsNoErrors()
+    {
+        LogAssert.NoUnexpectedReceived();                 <span class="c">// any Debug.LogError fails the test</span>
+        yield return SceneManager.LoadSceneAsync("Hub", LoadSceneMode.Single);
+        yield return null;
+    }
+}
+</pre></div>
+      <p class="small subtle">Two Unity-specific traps worth knowing before CI bites you.
+      <b>Domain reload</b> between EditMode runs resets statics &mdash; locally. In a batchmode run
+      the whole process is fresh, so a test that accidentally depended on a warm static passes on
+      your machine and fails in CI. <b><code>LogAssert</code></b> is the mechanism that turns stray
+      <code>Debug.LogError</code> calls into test failures; without it a scene can throw a hundred
+      null-reference errors and still "pass."</p>
+    </div>
+
+    <div class="tabpane" data-pane="e">
+      <p><b>Unreal's Automation system</b> gives you three tools at three levels. The
+      <span class="pill unreal">Automation Spec</span> (<code>DEFINE_SPEC</code> /
+      <code>Describe</code> / <code>It</code>) is the BDD-style form and the one to reach for first
+      &mdash; it gives you nesting, <code>BeforeEach</code>/<code>AfterEach</code>, and readable test
+      names in the Session Frontend. <code>IMPLEMENT_SIMPLE_AUTOMATION_TEST</code> is the flat form,
+      fine for a single check. <span class="pill unreal">Functional Tests</span> are level-based:
+      you place an <code>AFunctionalTest</code> actor in a test map and it runs in a real world with
+      real ticks. <span class="pill unreal">Gauntlet</span> drives a packaged build from outside the
+      engine, which is the smoke/soak layer.</p>
+
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Source/SprintTests/Private/SprintRulesSpec.cpp</div><pre>
+#include "Misc/AutomationTest.h"
+#include "SprintRules.h"
+
+<span class="c">// The macro pair declares a class; members between them are the fixture,</span>
+<span class="c">// reachable from every lambda via [this]. This is the Unreal equivalent</span>
+<span class="c">// of NUnit's [SetUp] fields.</span>
+BEGIN_DEFINE_SPEC(FSprintRulesSpec, "Sprint.Rules",
+    EAutomationTestFlags::EditorContext |
+    EAutomationTestFlags::EngineFilter)
+
+    TUniquePtr&lt;FSprintRules&gt; Sut;
+    TSharedPtr&lt;FFakeClock&gt;   Clock;
+    FSprintConfig            Config;
+    int32                    ExhaustedCount = 0;
+
+END_DEFINE_SPEC(FSprintRulesSpec)
+
+void FSprintRulesSpec::Define()
+{
+    BeforeEach([this]()
+    {
+        Clock = MakeShared&lt;FFakeClock&gt;();
+        Clock-&gt;DeltaSeconds = 1.0f / 60.0f;
+        Config = FSprintConfig();                 <span class="c">// defaults: 100 / 20 / 12 / 1.5</span>
+        ExhaustedCount = 0;
+        Sut = MakeUnique&lt;FSprintRules&gt;(Config, Clock.ToSharedRef());
+        Sut-&gt;OnExhausted.BindLambda([this]() { ++ExhaustedCount; });
+    });
+
+    Describe("Normal operation", [this]()
+    {
+        It("drains exactly DrainPerSec over one simulated second", [this]()
+        {
+            for (int32 i = 0; i &lt; 60; ++i) { Sut-&gt;Tick(/*bSprintHeld=*/true); }
+
+            TestEqual(TEXT("Stamina after 1 s of sprint"), Sut-&gt;GetStamina(), 80.0f,
+                      /*Tolerance=*/0.01f);
+        });
+
+        It("fires OnExhausted exactly once while held at zero", [this]()
+        {
+            for (int32 i = 0; i &lt; 600; ++i) { Sut-&gt;Tick(true); }
+
+            TestEqual(TEXT("Edge-triggered exhaustion callback"), ExhaustedCount, 1);
+        });
+    });
+
+    Describe("Pathological delta time", [this]()
+    {
+        <span class="c">// A data-driven loop inside Define() generates one It() per case,</span>
+        <span class="c">// so a failure names the exact delta rather than "the loop failed".</span>
+        const TArray&lt;float&gt; BadDeltas = { 0.0f, -0.016f, 1.5f,
+                                          std::numeric_limits&lt;float&gt;::quiet_NaN() };
+        for (float Dt : BadDeltas)
+        {
+            It(FString::Printf(TEXT("ignores dt=%f"), Dt), [this, Dt]()
+            {
+                Clock-&gt;DeltaSeconds = Dt;
+                const float Before = Sut-&gt;GetStamina();
+
+                Sut-&gt;Tick(true);
+
+                TestEqual(TEXT("Stamina unchanged"), Sut-&gt;GetStamina(), Before);
+            });
+        }
+    });
+
+    AfterEach([this]()
+    {
+        Sut.Reset();                              <span class="c">// no state leaks into the next It()</span>
+        Clock.Reset();
+    });
+}
+</pre></div>
+
+      <div class="codeblock"><div class="hd"><span class="dot"></span>The flat form, for a single assertion</div><pre>
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSprintConfigRejectsNegativeMaxTest,
+    "Sprint.Config.RejectsNegativeMax",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FSprintConfigRejectsNegativeMaxTest::RunTest(const FString&amp; Parameters)
+{
+    FSprintConfig Bad;
+    Bad.Max = -5.0f;
+
+    <span class="c">// AddExpectedError tells the framework "this Error is the point of the test",</span>
+    <span class="c">// so the logged error does not itself fail the run.</span>
+    AddExpectedError(TEXT("SprintConfig.Max must be positive"),
+                     EAutomationExpectedErrorFlags::Contains, 1);
+
+    const bool bValid = Bad.Validate();
+
+    TestFalse(TEXT("Negative Max must not validate"), bValid);
+    return true;
+}
+</pre></div>
+      <p class="small subtle">Two Unreal notes. Your test <code>.cpp</code> files belong in a module
+      that is only built for editor/program targets, or in a <code>.Build.cs</code> guarded by
+      <code>Target.bBuildDeveloperTools</code>, so test code never ships in a Shipping build.
+      And as of UE&nbsp;5.4 the flag enum was reworked &mdash; if
+      <code>EAutomationTestFlags::EditorContext</code> no longer compiles, you are on a version that
+      wants <code>EAutomationTestFlags_ApplicationContextMask</code>. Check your engine version
+      before assuming a tutorial is wrong.</p>
+    </div>
+  </div></div>
+  <h2><span class="num">5</span>The six defect triggers</h2>
+
+  <p>A <em>defect trigger</em> is the condition that has to be present for a latent fault to become
+  an observed failure. The vocabulary comes out of Orthogonal Defect Classification and it is the
+  organizing principle of your benchmark assignment, because it answers the question students find
+  hardest: <em>what tests should I write?</em> "Write tests for the stamina system" produces four
+  tests of the happy path. "Write a test for each of the six triggers against the stamina system"
+  produces a suite that finds things.</p>
+
+  <p>The reason this framing works is that engineers naturally test in <b>Normal</b> mode &mdash; the
+  path they were thinking about while writing the code &mdash; and defects overwhelmingly hide in the
+  other five. Read the table, then use the board below to staff each trigger for your own feature.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Trigger</th><th>The condition</th><th>A stamina-system example</th><th>What it catches that Normal does not</th></tr></thead>
+    <tbody>
+      <tr><td><b>Configuration</b></td><td>Behavior depends on settings, platform, hardware, locale, quality preset, or an optional package being absent.</td><td>Difficulty preset sets <code>DrainPerSec = 0</code>; a designer types a negative <code>Max</code>; a 30 Hz console cap vs a 144 Hz PC.</td><td>Values that are legal in the inspector but illegal in the math. Most "only on Switch" bugs.</td></tr>
+      <tr><td><b>Startup</b></td><td>First initialization: construction, load order, asset resolution, first-run with no saved data.</td><td>Rules constructed before the config asset finished loading; stamina initialized to 0 instead of <code>Max</code> on a fresh profile.</td><td>Null and ordering faults that never recur once the game is warm. Invisible to anyone who tests by pressing Play twice.</td></tr>
+      <tr><td><b>Exception</b></td><td>An error path: corrupt data, missing file, denied permission, network drop, division by zero, NaN, out-of-range index.</td><td>A truncated save blob; <code>dt = NaN</code> after an alt-tab; a listener that throws inside <code>OnExhausted</code>.</td><td>Handlers that were written but never executed. The single most under-tested code in student projects.</td></tr>
+      <tr><td><b>Stress</b></td><td>Volume, duration, or resource pressure: many entities, long sessions, low memory, high tick rate.</td><td>500 AI actors each running rules for 100,000 ticks; float drift; an event list that grows without bound.</td><td>Accumulation faults, leaks, precision drift, quadratic algorithms. These are invisible at N = 1.</td></tr>
+      <tr><td><b>Normal</b></td><td>Routine operation with expected inputs inside expected ranges.</td><td>Sprint 1 s from full &rarr; 80. Release &rarr; regen begins after 1.5 s.</td><td>The baseline. Necessary, insufficient, and where 90% of student suites stop.</td></tr>
+      <tr><td><b>Restart</b></td><td>State across a lifecycle boundary: relaunch, scene reload, respawn, suspend/resume, returning to menu and back in.</td><td>Reload the level and stamina is still 12 from the last run; the exhausted flag survives a respawn; a static event handler is subscribed twice after the second load.</td><td>Residual and double-subscription faults. On console, suspend/resume is a certification requirement, so these are ship-blockers.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box why"><div class="lbl">Why the Restart trigger deserves its own row</div>
+  <p>Consider one concrete defect that a student team will hit this semester. A
+  <code>MonoBehaviour</code> subscribes to a static event in <code>OnEnable</code> and forgets to
+  unsubscribe in <code>OnDisable</code>. Play the level once: one handler, everything correct. Die
+  and reload: two handlers. Die again: three. By the fifth attempt the pickup sound plays five times
+  and the player gets five times the loot, and the only reproduction step anybody ever writes down is
+  "sometimes loot duplicates." Every Normal-trigger test in your suite passes throughout, because
+  each of them starts from a clean fixture. The Restart trigger exists to force the question
+  <em>what survives that should not?</em>, and a single test that loads a scene twice and asserts one
+  handler catches an entire family of these.</p></div>
+
+  <div class="widget" id="w-triggers">
+    <div class="whd"><span class="wt">Defect Trigger Coverage Board</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Staff each of the six triggers with a test scenario for the sprint/stamina
+    feature. Some of the offered scenarios genuinely exercise the trigger, some only partly, and some
+    are a different trigger in disguise &mdash; the board tells you which and why. Coverage is scored
+    as earned points over 12 (2 for a genuine test, 1 for a partial); a mis-filed scenario earns
+    nothing and raises a warning, because a suite that <em>believes</em> it covers Exception is more
+    dangerous than one that knows it does not.</p>
+
+    <div class="trigbank" id="tb-cards"></div>
+
+    <div class="gauge"><i id="tb-bar"></i></div>
+    <div class="readout">
+      <div class="cell"><div class="k">Coverage</div><div class="v" id="tb-pct">0%</div></div>
+      <div class="cell"><div class="k">Points</div><div class="v" id="tb-pts">0 / 12</div></div>
+      <div class="cell"><div class="k">Genuine tests</div><div class="v" id="tb-good">0</div></div>
+      <div class="cell"><div class="k">Mis-filed</div><div class="v" id="tb-bad">0</div></div>
+      <div class="cell"><div class="k">Unstaffed triggers</div><div class="v" id="tb-empty">6</div></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn ghost" data-tbpreset="typical">Typical student suite</button>
+      <button class="btn ghost" data-tbpreset="best">Full coverage</button>
+      <button class="btn ghost" data-tbpreset="clear">Clear</button>
+    </div>
+    <div class="verdict" id="tb-verdict">Pick a scenario for any trigger to begin.</div>
+  </div>
+
+  <h3>One worked test per trigger</h3>
+  <p>Below is the complete set, in both engines, against the same feature. This is the shape the
+  benchmark expects: six tests, each with a name that says which trigger it covers, each with a
+  single clear assertion, each runnable headless.</p>
+
+  <div class="tabs"><div class="tabhd">
+    <button data-engine="unity" data-tab="u" class="on">Unity</button>
+    <button data-engine="unreal" data-tab="e">Unreal</button>
+  </div><div class="tabbody">
+    <div class="tabpane on" data-pane="u">
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Tests/EditMode/SprintTriggerTests.cs &middot; six triggers</div><pre>
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+using UnityEngine.SceneManagement;
+
+[TestFixture]
+[Category("TriggerCoverage")]
+public class SprintTriggerTests
+{
+    private FakeClock _clock;
+    private SprintConfig _cfg;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _clock = new FakeClock { DeltaTime = 1f / 60f };
+        _cfg   = new SprintConfig { Max = 100f, DrainPerSec = 20f,
+                                    RegenPerSec = 12f, RegenDelaySec = 1.5f };
+        TestLog.Begin(TestContext.CurrentContext.Test.Name);   <span class="c">// structured log, see §8</span>
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        TestLog.End(TestContext.CurrentContext.Result.Outcome.Status);
+    }
+
+    <span class="c">// ---------- 1. NORMAL ------------------------------------------------</span>
+    [Test]
+    public void Normal_SprintOneSecondThenRelease_RegensAfterDelay()
+    {
+        var sut = new SprintRules(_cfg, _clock);
+
+        for (int i = 0; i &lt; 60; i++) sut.Tick(true);      <span class="c">// 1.0 s sprint -&gt; 80</span>
+        for (int i = 0; i &lt; 90; i++) sut.Tick(false);     <span class="c">// 1.5 s cooldown, no regen</span>
+        Assert.That(sut.Stamina, Is.EqualTo(80f).Within(0.05f), "regen must not start early");
+
+        for (int i = 0; i &lt; 60; i++) sut.Tick(false);     <span class="c">// 1.0 s regen at 12/s</span>
+        Assert.That(sut.Stamina, Is.EqualTo(92f).Within(0.05f));
+    }
+
+    <span class="c">// ---------- 2. CONFIGURATION -----------------------------------------</span>
+    <span class="c">// Every shipped difficulty preset must produce a system that is legal AND</span>
+    <span class="c">// finishable: you can always drain the bar, and you can always refill it.</span>
+    [TestCase("Story",    200f,  8f, 20f, 0.5f)]
+    [TestCase("Normal",   100f, 20f, 12f, 1.5f)]
+    [TestCase("Hardcore",  60f, 34f,  6f, 3.0f)]
+    public void Configuration_ShippedPresets_AreDrainableAndRecoverable(
+        string preset, float max, float drain, float regen, float delay)
+    {
+        var cfg = new SprintConfig { Max = max, DrainPerSec = drain,
+                                     RegenPerSec = regen, RegenDelaySec = delay };
+        Assert.DoesNotThrow(() =&gt; cfg.Validate(), $"preset '{preset}' is invalid");
+
+        var sut = new SprintRules(cfg, _clock);
+        int drainFrames = (int)(max / drain * 60f) + 2;
+        for (int i = 0; i &lt; drainFrames; i++) sut.Tick(true);
+        Assert.That(sut.Exhausted, Is.True, $"'{preset}': bar never empties");
+
+        int refillFrames = (int)((delay + max / regen) * 60f) + 2;
+        for (int i = 0; i &lt; refillFrames; i++) sut.Tick(false);
+        Assert.That(sut.Stamina, Is.EqualTo(max).Within(0.5f), $"'{preset}': bar never refills");
+    }
+
+    <span class="c">// ---------- 3. STARTUP -----------------------------------------------</span>
+    [Test]
+    public void Startup_FreshProfileWithNoSaveData_BeginsAtFullStamina()
+    {
+        var store = new InMemorySaveStore();              <span class="c">// deliberately empty</span>
+        var sut   = SprintRules.Restore(_cfg, _clock, store.LoadOrDefault("sprint"));
+
+        Assert.That(sut.Stamina, Is.EqualTo(_cfg.Max),
+            "a first-run player must not start exhausted");
+        Assert.That(sut.Exhausted, Is.False);
+    }
+
+    [Test]
+    public void Startup_NullClock_ThrowsImmediatelyRatherThanOnFirstTick()
+    {
+        Assert.Throws&lt;ArgumentNullException&gt;(() =&gt; new SprintRules(_cfg, null));
+    }
+
+    <span class="c">// ---------- 4. EXCEPTION ---------------------------------------------</span>
+    [Test]
+    public void Exception_TruncatedSaveBlob_FallsBackToDefaultsAndLogsOnce()
+    {
+        var corrupt = new byte[] { 0x53, 0x50, 0x52 };    <span class="c">// 3 bytes of a 24-byte record</span>
+        LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex(
+            "sprint save.*discarded"));
+
+        var sut = SprintRules.Restore(_cfg, _clock, corrupt);
+
+        Assert.That(sut.Stamina, Is.EqualTo(_cfg.Max),
+            "corrupt data must degrade to defaults, never to an unplayable state");
+    }
+
+    [Test]
+    public void Exception_ListenerThrows_DoesNotCorruptStaminaState()
+    {
+        var sut = new SprintRules(_cfg, _clock, new ThrowingListener());
+
+        <span class="c">// A third-party listener throwing must not leave the rules half-updated.</span>
+        Assert.DoesNotThrow(() =&gt; { for (int i = 0; i &lt; 400; i++) sut.Tick(true); });
+        Assert.That(sut.Stamina, Is.EqualTo(0f));
+        Assert.That(sut.Exhausted, Is.True);
+    }
+
+    <span class="c">// ---------- 5. STRESS ------------------------------------------------</span>
+    [Test]
+    public void Stress_HundredThousandRandomTicks_NeverLeavesLegalRange()
+    {
+        <span class="c">// Seeded on purpose: a failure here must reproduce on the build machine.</span>
+        var rnd = new System.Random(20260928);
+        var sut = new SprintRules(_cfg, _clock);
+
+        for (int i = 0; i &lt; 100_000; i++)
+        {
+            _clock.DeltaTime = (float)(rnd.NextDouble() * 0.05);   <span class="c">// 20–1000 fps</span>
+            sut.Tick(rnd.NextDouble() &lt; 0.5);
+            if (sut.Stamina &lt; 0f || sut.Stamina &gt; _cfg.Max || float.IsNaN(sut.Stamina))
+                Assert.Fail($"iteration {i}: stamina escaped range at {sut.Stamina}");
+        }
+    }
+
+    [Test, Timeout(4000)]
+    public void Stress_FiveHundredActorsForOneMinuteOfSimTime_StaysWithinTimeBudget()
+    {
+        var all = new List&lt;SprintRules&gt;(500);
+        for (int i = 0; i &lt; 500; i++) all.Add(new SprintRules(_cfg, _clock));
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        for (int frame = 0; frame &lt; 3600; frame++)
+            for (int a = 0; a &lt; all.Count; a++) all[a].Tick(a % 2 == 0);
+        sw.Stop();
+
+        <span class="c">// 1.8M ticks. A generous ceiling: this asserts "no accidental O(n^2)",</span>
+        <span class="c">// not a hardware benchmark — CI machines are slower and shared.</span>
+        Assert.That(sw.ElapsedMilliseconds, Is.LessThan(1500),
+            $"1.8M ticks took {sw.ElapsedMilliseconds} ms — check for per-tick allocation");
+    }
+
+    <span class="c">// ---------- 6. RESTART -----------------------------------------------</span>
+    [Test]
+    public void Restart_RestoringAnExhaustedSave_ResumesExhaustedNotFull()
+    {
+        var sut = new SprintRules(_cfg, _clock);
+        for (int i = 0; i &lt; 400; i++) sut.Tick(true);
+        byte[] blob = sut.Serialize();
+
+        var reloaded = SprintRules.Restore(_cfg, _clock, blob);
+
+        Assert.That(reloaded.Stamina, Is.EqualTo(0f).Within(0.001f));
+        Assert.That(reloaded.Exhausted, Is.True, "exhaustion must survive a reload");
+    }
+}
+</pre></div>
+
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Tests/PlayMode/SprintRestartTests.cs &middot; the Restart trigger needs a real reload</div><pre>
+[UnityTest]
+public IEnumerator Restart_ReloadingTheLevelTwice_LeavesExactlyOneEventSubscriber()
+{
+    <span class="c">// This is the double-subscription defect from the callout, as a test.</span>
+    yield return SceneManager.LoadSceneAsync("TestBed_Sprint", LoadSceneMode.Single);
+    yield return null;
+    yield return SceneManager.LoadSceneAsync("TestBed_Sprint", LoadSceneMode.Single);
+    yield return null;
+
+    <span class="c">// GetInvocationList() is the assertion that actually catches it. Counting</span>
+    <span class="c">// GameObjects would not: there is only ever one player.</span>
+    int subscribers = StaminaEvents.Exhausted == null
+        ? 0 : StaminaEvents.Exhausted.GetInvocationList().Length;
+
+    Assert.That(subscribers, Is.EqualTo(1),
+        "OnEnable subscribed without a matching OnDisable unsubscribe");
+}
+</pre></div>
+    </div>
+
+    <div class="tabpane" data-pane="e">
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Source/SprintTests/Private/SprintTriggerSpec.cpp &middot; six triggers</div><pre>
+#include "Misc/AutomationTest.h"
+#include "SprintRules.h"
+
+BEGIN_DEFINE_SPEC(FSprintTriggerSpec, "Sprint.Triggers",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+    TUniquePtr&lt;FSprintRules&gt; Sut;
+    TSharedPtr&lt;FFakeClock&gt;   Clock;
+    FSprintConfig            Config;
+
+END_DEFINE_SPEC(FSprintTriggerSpec)
+
+void FSprintTriggerSpec::Define()
+{
+    BeforeEach([this]()
+    {
+        Clock = MakeShared&lt;FFakeClock&gt;();
+        Clock-&gt;DeltaSeconds = 1.0f / 60.0f;
+        Config = FSprintConfig();
+        Sut = MakeUnique&lt;FSprintRules&gt;(Config, Clock.ToSharedRef());
+    });
+
+    <span class="c">// ---------- 1. NORMAL ----------------------------------------------</span>
+    Describe("Normal", [this]()
+    {
+        It("regenerates only after the cooldown elapses", [this]()
+        {
+            for (int32 i = 0; i &lt; 60; ++i) { Sut-&gt;Tick(true); }
+            for (int32 i = 0; i &lt; 90; ++i) { Sut-&gt;Tick(false); }
+            TestEqual(TEXT("no early regen"), Sut-&gt;GetStamina(), 80.0f, 0.05f);
+
+            for (int32 i = 0; i &lt; 60; ++i) { Sut-&gt;Tick(false); }
+            TestEqual(TEXT("regen at 12/s"), Sut-&gt;GetStamina(), 92.0f, 0.05f);
+        });
+    });
+
+    <span class="c">// ---------- 2. CONFIGURATION ---------------------------------------</span>
+    Describe("Configuration", [this]()
+    {
+        struct FPreset { const TCHAR* Name; float Max, Drain, Regen, Delay; };
+        static const FPreset Presets[] = {
+            { TEXT("Story"),    200.f,  8.f, 20.f, 0.5f },
+            { TEXT("Normal"),   100.f, 20.f, 12.f, 1.5f },
+            { TEXT("Hardcore"),  60.f, 34.f,  6.f, 3.0f },
+        };
+
+        for (const FPreset&amp; P : Presets)
+        {
+            It(FString::Printf(TEXT("preset %s is drainable and recoverable"), P.Name),
+               [this, P]()
+            {
+                FSprintConfig Cfg; Cfg.Max = P.Max; Cfg.DrainPerSec = P.Drain;
+                Cfg.RegenPerSec = P.Regen; Cfg.RegenDelaySec = P.Delay;
+                TestTrue(TEXT("preset validates"), Cfg.Validate());
+
+                FSprintRules Rules(Cfg, Clock.ToSharedRef());
+                const int32 DrainFrames = FMath::CeilToInt(P.Max / P.Drain * 60.f) + 2;
+                for (int32 i = 0; i &lt; DrainFrames; ++i) { Rules.Tick(true); }
+                TestTrue(TEXT("bar empties"), Rules.IsExhausted());
+            });
+        }
+    });
+
+    <span class="c">// ---------- 3. STARTUP ----------------------------------------------</span>
+    Describe("Startup", [this]()
+    {
+        It("starts a fresh profile at full stamina", [this]()
+        {
+            FSprintSaveRecord Empty;                       <span class="c">// default-constructed</span>
+            FSprintRules Fresh(Config, Clock.ToSharedRef(), Empty);
+            TestEqual(TEXT("full on first run"), Fresh.GetStamina(), Config.Max);
+        });
+
+        It("reports an invalid config instead of ticking with it", [this]()
+        {
+            FSprintConfig Bad; Bad.DrainPerSec = 0.0f;
+            AddExpectedError(TEXT("DrainPerSec"), EAutomationExpectedErrorFlags::Contains, 1);
+            TestFalse(TEXT("zero drain rejected"), Bad.Validate());
+        });
+    });
+
+    <span class="c">// ---------- 4. EXCEPTION ---------------------------------------------</span>
+    Describe("Exception", [this]()
+    {
+        It("discards a truncated save record and falls back to defaults", [this]()
+        {
+            TArray&lt;uint8&gt; Corrupt = { 0x53, 0x50, 0x52 };  <span class="c">// 3 of 24 bytes</span>
+            AddExpectedError(TEXT("sprint save.*discarded"),
+                             EAutomationExpectedErrorFlags::Contains, 1);
+
+            FSprintRules Restored = FSprintRules::Restore(Config, Clock.ToSharedRef(), Corrupt);
+            TestEqual(TEXT("defaults on corrupt data"), Restored.GetStamina(), Config.Max);
+        });
+
+        It("ignores a NaN delta rather than propagating it", [this]()
+        {
+            Clock-&gt;DeltaSeconds = std::numeric_limits&lt;float&gt;::quiet_NaN();
+            Sut-&gt;Tick(true);
+            TestFalse(TEXT("stamina is finite"), FMath::IsNaN(Sut-&gt;GetStamina()));
+        });
+    });
+
+    <span class="c">// ---------- 5. STRESS -------------------------------------------------</span>
+    Describe("Stress", [this]()
+    {
+        It("survives 100k seeded random ticks inside the legal range", [this]()
+        {
+            FRandomStream Stream(20260928);                <span class="c">// seeded: failures reproduce</span>
+            for (int32 i = 0; i &lt; 100000; ++i)
+            {
+                Clock-&gt;DeltaSeconds = Stream.FRandRange(0.0f, 0.05f);
+                Sut-&gt;Tick(Stream.FRand() &lt; 0.5f);
+                if (Sut-&gt;GetStamina() &lt; 0.f || Sut-&gt;GetStamina() &gt; Config.Max)
+                {
+                    AddError(FString::Printf(TEXT("iteration %d escaped range: %f"),
+                                             i, Sut-&gt;GetStamina()));
+                    return;                                <span class="c">// fail fast, one error, not 100k</span>
+                }
+            }
+        });
+    });
+
+    <span class="c">// ---------- 6. RESTART ------------------------------------------------</span>
+    Describe("Restart", [this]()
+    {
+        It("resumes exhausted after serialise/restore", [this]()
+        {
+            for (int32 i = 0; i &lt; 400; ++i) { Sut-&gt;Tick(true); }
+            const FSprintSaveRecord Rec = Sut-&gt;Serialize();
+
+            FSprintRules Reloaded(Config, Clock.ToSharedRef(), Rec);
+            TestTrue(TEXT("exhaustion survives reload"), Reloaded.IsExhausted());
+        });
+    });
+
+    AfterEach([this]() { Sut.Reset(); Clock.Reset(); });
+}
+</pre></div>
+
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Functional test &middot; the Restart trigger in a real world</div><pre>
+<span class="c">// Place ASprintRestartFunctionalTest in /Game/Tests/FT_SprintRestart.umap.</span>
+<span class="c">// Functional tests tick in a real UWorld, which is the only way to catch</span>
+<span class="c">// lifecycle defects that live in BeginPlay/EndPlay rather than in the rules.</span>
+void ASprintRestartFunctionalTest::PrepareTest()
+{
+    Super::PrepareTest();
+    BaselineDelegateCount = USprintSubsystem::Get(GetWorld())-&gt;OnExhausted.GetAllObjects().Num();
+}
+
+void ASprintRestartFunctionalTest::StartTest()
+{
+    <span class="c">// Seamless-travel back into the same map: the cheapest available</span>
+    <span class="c">// approximation of "player died and the level reloaded".</span>
+    GetWorld()-&gt;ServerTravel(TEXT("?restart"), /*bAbsolute=*/false);
+    SetTimerForNextStep(1.0f);
+}
+
+void ASprintRestartFunctionalTest::VerifyAfterTravel()
+{
+    const int32 Now = USprintSubsystem::Get(GetWorld())-&gt;OnExhausted.GetAllObjects().Num();
+    if (Now != BaselineDelegateCount)
+    {
+        FinishTest(EFunctionalTestResult::Failed,
+            FString::Printf(TEXT("Delegate count %d -&gt; %d after reload; missing EndPlay unbind."),
+                            BaselineDelegateCount, Now));
+        return;
+    }
+    FinishTest(EFunctionalTestResult::Succeeded, TEXT("No duplicate subscriptions after reload."));
+}
+</pre></div>
+    </div>
+  </div></div>
+
+  <div class="check">
+    <p class="q">Your team writes a test that spawns 500 enemies, runs 3,600 simulated frames, and
+    asserts that no enemy's position becomes NaN. Which trigger does it primarily cover, and what is
+    the most important implementation detail?</p>
+    <button class="opt" data-correct="0">Normal &mdash; 500 enemies is what the level actually contains, so this is the expected case; the important detail is using the real level.</button>
+    <button class="opt" data-correct="1">Stress &mdash; and the important detail is that any randomness is explicitly seeded so a failure reproduces on the build machine.</button>
+    <button class="opt" data-correct="0">Exception &mdash; NaN is an error condition; the important detail is wrapping the loop in a try/catch so the suite does not abort.</button>
+    <div class="exp"><b>Why the second option:</b> the test's power comes from volume and duration,
+    which is the definition of the Stress trigger &mdash; it is looking for accumulation faults that
+    do not exist at N = 1 or at frame 10. And the detail that decides whether the test is useful or
+    infuriating is the seed. An unseeded stress test that fails once in twenty runs is
+    indistinguishable from flakiness; nobody will chase it, and it will be disabled within a month.
+    Seeded, the failure is a permanent, replayable artifact: you paste the seed into the ticket and
+    the fix can be verified.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      "The level really has 500 enemies" is true and irrelevant. Trigger classification is about
+      the <em>condition that exposes the fault</em>, not about whether the scenario is realistic. A
+      realistic scenario at high volume is still a stress test, and calling it Normal means your
+      board shows Stress as covered when it is not.</div>
+      <div class="ex"><span class="who">Why the third is tempting</span><br>
+      NaN does feel like an exception, and Exception coverage matters. But NaN here is the
+      <em>symptom</em>, not the trigger &mdash; nothing threw. Worse, the suggested fix is actively
+      harmful: a try/catch around the loop converts a hard failure into a swallowed one, which is
+      how a test ends up passing while the game is broken.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">6</span>Which layer does this test belong in?</h2>
+
+  <p>The judgment you will make hundreds of times, and the one that decides whether your suite is a
+  four-second asset or a four-minute tax. Work the tree with a real check from your own project in
+  mind &mdash; not a hypothetical one.</p>
+
+  <div class="tree" id="tree3"><p class="path"></p><div class="body"></div></div>
+
+  <h2><span class="num">7</span>Flaky tests are defects, and deleting them is a cover-up</h2>
+
+  <p>A flaky test passes and fails without a code change. In games they are endemic, because the
+  sources of nondeterminism are everywhere: unseeded RNG, frame-rate-dependent logic, real
+  <code>WaitForSeconds</code> timeouts on a loaded machine, async loads racing an assertion, physics
+  solver iteration order, floating-point differences between machines, and tests that share
+  global state and run in a different order on the build agent than in your editor.</p>
+
+  <p>The instinct is to delete the test or mark it ignored, and that instinct is wrong for a specific
+  reason: <strong>a flaky test is usually telling the truth about a real race in your game, and only
+  incidentally telling it at an inconvenient time.</strong> The test that fails one run in twenty
+  because an async load sometimes completes after the assertion is describing a load-order race that
+  a player on a slower drive will hit far more often than one run in twenty. Delete the test and you
+  have deleted the only detector for a shipping bug.</p>
+
+  <p>The professional handling is <em>quarantine</em>, which is a process, not a mood:</p>
+  <ol>
+    <li><b>Detect it, don't guess.</b> Track pass/fail history per test. Any test whose outcome
+    changes without a corresponding code change is flaky by definition. Ten reruns of the suite on
+    an unchanged commit, nightly, will find them.</li>
+    <li><b>Move it, don't delete it.</b> Tag it &mdash; <code>[Category("Flaky")]</code> in NUnit,
+    a filter or <code>EAutomationTestFlags::Disabled</code> in Unreal &mdash; and exclude that
+    category from the gating job while still <em>running</em> it in a non-gating nightly job whose
+    results are visible.</li>
+    <li><b>File it as a bug against the product, with an owner and a date.</b> Not "fix flaky test"
+    &mdash; the ticket says what race is suspected and what evidence exists. A quarantine with no
+    expiry is a graveyard.</li>
+    <li><b>Fix the nondeterminism, not the symptom.</b> Adding <code>WaitForSeconds(2f)</code> to
+    make it pass is not a fix; it makes the suite slower and the race still ships. Replace the wait
+    with a condition (<code>WaitUntil</code>), seed the RNG, inject the clock, or make the loading
+    completion observable.</li>
+  </ol>
+
+  <div class="box why"><div class="lbl">Why quarantine beats both alternatives</div>
+  <p>Work the arithmetic on a suite with six flaky tests, each failing 2% of the time. The chance a
+  run goes red from flake alone is 1 &minus; 0.98<sup>6</sup> = 11.4%. At 14 runs a day that is
+  roughly eleven false alarms a week against maybe three real regressions &mdash; so about
+  <b>one red build in five is telling the truth</b>. The rational individual response to those odds
+  is to press rerun, and once the team learns that reflex, the real regressions get rerun too. The
+  suite has not merely stopped helping; it now supplies false assurance, which is worse than no
+  suite, because "CI is green" appears in your release checklist. Quarantine restores the signal
+  immediately without destroying the detector, and it keeps the debt visible on a list with names and
+  dates against it. Move the sliders below to those numbers and watch the grey squares appear.</p></div>
+
+  <div class="widget" id="w-flaky">
+    <div class="whd"><span class="wt">Flaky Test Simulator</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Model: each of the flaky tests fails independently with probability <i>p</i> per
+    attempt; with <i>r</i> automatic retries a test only reports failure if all <i>r</i>+1 attempts
+    fail. A run goes red if any flaky test reports failure, or if a genuine regression landed. The
+    trust model &mdash; developers investigate a red build with probability equal to the current
+    signal ratio &mdash; is a deliberate simplification, but the direction it moves in is real.</p>
+
+    <div class="ctl"><label>Flaky tests in the suite</label>
+      <input type="range" id="fl-n" min="0" max="40" value="6"><output id="fl-no">6</output></div>
+    <div class="ctl"><label>Per-attempt failure chance <i>p</i></label>
+      <input type="range" id="fl-p" min="1" max="300" value="20"><output id="fl-po">2.0%</output></div>
+    <div class="ctl"><label>Automatic retries <i>r</i></label>
+      <input type="range" id="fl-r" min="0" max="3" value="0"><output id="fl-ro">0</output></div>
+    <div class="ctl"><label>CI runs per day</label>
+      <input type="range" id="fl-runs" min="1" max="60" value="14"><output id="fl-runso">14</output></div>
+    <div class="ctl"><label>Real regressions per week</label>
+      <input type="range" id="fl-reg" min="0" max="20" value="3"><output id="fl-rego">3</output></div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">P(false red) / run</div><div class="v" id="fl-pfalse">0%</div></div>
+      <div class="cell"><div class="k">False reds / week</div><div class="v" id="fl-fweek">0</div></div>
+      <div class="cell"><div class="k">Real reds / week</div><div class="v" id="fl-rweek">0</div></div>
+      <div class="cell"><div class="k">Signal ratio</div><div class="v" id="fl-sig">0%</div></div>
+      <div class="cell"><div class="k">Regressions ignored / yr</div><div class="v" id="fl-ignored">0</div></div>
+      <div class="cell"><div class="k">Extra CI minutes / wk</div><div class="v" id="fl-mins">0</div></div>
+    </div>
+
+    <div class="runstrip" id="fl-strip"></div>
+    <div class="legend">
+      <span><i style="background:#3fb950"></i>green</span>
+      <span><i style="background:#d29922"></i>red &mdash; flake only</span>
+      <span><i style="background:#f85149"></i>red &mdash; real regression present</span>
+      <span><i style="background:#6e7f92"></i>red &mdash; real regression, ignored as "probably flaky"</span>
+    </div>
+    <p class="small subtle" style="margin-top:10px">Two weeks of runs, drawn with a fixed seed so
+    the class sees the same picture. Grey squares are the number that matters.</p>
+    <div class="btnrow">
+      <button class="btn ghost" data-flpreset="healthy">Healthy suite</button>
+      <button class="btn ghost" data-flpreset="typical">Typical student project</button>
+      <button class="btn ghost" data-flpreset="rot">Rotted suite</button>
+      <button class="btn ghost" data-flpreset="retryband">Retries as a band-aid</button>
+    </div>
+    <div class="verdict" id="fl-verdict">Move a slider.</div>
+  </div>
+
+  <p>Run the "retries as a band-aid" preset. Three retries take a 6% per-run false-red rate down to
+  something negligible, the signal ratio goes green, and it looks like the problem is solved. Watch
+  the CI-minutes figure while you do it, and remember what the retries are actually hiding: the
+  underlying race is still in the game, it just no longer has a detector. Retries are a legitimate
+  tool for buying a week of sanity while you fix the cause. They are not a fix, and a team that
+  ships with <code>retries: 3</code> permanently in its config has quietly decided that a class of
+  race conditions is acceptable in production.</p>
+
+  <div class="check">
+    <p class="q">A PlayMode test fails roughly one run in fifteen on the build agent and never on
+    your laptop. Investigation shows the test asserts on a value that an async asset load populates,
+    and the agent's disk is slower. What is the correct action?</p>
+    <button class="opt" data-correct="0">Add <code>yield return new WaitForSeconds(3f)</code> before the assertion; the agent is just slow, and three seconds is plenty of margin.</button>
+    <button class="opt" data-correct="0">Delete the test. It has never found a real bug and it is costing the team a rerun every other day.</button>
+    <button class="opt" data-correct="1">Replace the wait with <code>yield return new WaitUntil(() =&gt; loader.IsComplete)</code> plus a bounded timeout that fails with a clear message &mdash; and file a bug asking whether the game itself assumes that load completed.</button>
+    <div class="exp"><b>Why the third option:</b> it fixes the test's nondeterminism by waiting on
+    the actual condition rather than on a guess about wall-clock time, keeps a real failure mode
+    (the timeout) detectable, and &mdash; the part students skip &mdash; it treats the flake as
+    evidence about the product. If the test raced the loader, gameplay code may race it too, on a
+    player's slower drive, where nobody is watching.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      It works, today. Then the agent gets busier, or somebody adds a bigger asset, and three
+      seconds is not enough; meanwhile every run pays three seconds whether or not it needs them.
+      Fixed sleeps are how a suite grows from 40 seconds to 11 minutes without anyone deciding to
+      let it.</div>
+      <div class="ex"><span class="who">Why the second is tempting</span><br>
+      "It never found a real bug" is exactly what a flaky test looks like from the outside &mdash;
+      and in this case it just did find one. Deleting a test is a legitimate decision, but it needs
+      the same justification as deleting a feature: a written reason and someone's name on it, not
+      a frustrated afternoon.</div>
+    </div>
+  </div>
+  <h2><span class="num">8</span>Continuous integration: making the tests matter</h2>
+
+  <p>A test suite that only runs when someone remembers is a suite that runs during the calm weeks
+  and not during the crunch weeks, which is exactly backwards. CI's contribution is not automation
+  &mdash; you already automated the tests. CI contributes three things: it runs them on
+  <em>every</em> change, on a machine that is not yours, and it makes the result <em>visible</em>
+  and <em>blocking</em>. Remove any one of the three and the value collapses. A pipeline whose red
+  status nobody is required to act on is a very expensive log file.</p>
+
+  <h3>What "headless" and "batchmode" actually mean, and why they bite</h3>
+  <p>A build agent has no logged-in desktop session, often no GPU, and no human to click "OK" on a
+  dialog. Both engines have a mode for this, and both modes change behavior in ways that will
+  surprise you:</p>
+  <ul>
+    <li><b>Unity <code>-batchmode</code></b> suppresses all dialogs and runs without an editor
+    window. Combined with <code>-nographics</code> it also skips GPU device initialization &mdash;
+    which makes EditMode tests fast and reliable, and makes any PlayMode test that touches
+    rendering, cameras, or <code>RenderTexture</code> either fail or silently pass for the wrong
+    reason. The standard fix on Linux agents is to run under <code>xvfb</code> so a virtual display
+    exists, and drop <code>-nographics</code> for the PlayMode job only.</li>
+    <li><b>Unreal <code>-nullrhi -unattended -nopause</code></b> is the equivalent: no rendering
+    hardware interface, no modal dialogs, no "press any key" at exit. Add
+    <code>-testexit="Automation Test Queue Empty"</code> or the process will sit there forever and
+    your job will hit its timeout instead of reporting a result.</li>
+    <li><b>Exit codes are the contract.</b> Whatever you run, the job must fail when tests fail. A
+    surprising number of student pipelines pipe test output into a log, exit 0 unconditionally, and
+    display a green check over a broken build for three weeks.</li>
+  </ul>
+
+  <div class="box crit"><div class="lbl">The four things a CI job must produce</div>
+  <p><b>1. A correct exit code</b> &mdash; nonzero on any test failure. <b>2. A machine-readable
+  result file</b> &mdash; NUnit XML from Unity, the JSON/HTML report from Unreal's
+  <code>-ReportExportPath</code> &mdash; uploaded as an artifact even when the job fails
+  (<code>if: always()</code>; this is the line everyone forgets, and it is the difference between
+  debugging a failure and re-running it blind). <b>3. Retained logs</b> with the build number,
+  commit SHA, engine version and platform in them, because in four weeks the only evidence that a
+  regression existed will be this file. <b>4. A notification</b> that reaches a human who is
+  responsible &mdash; a PR status check that blocks merge is better than an email nobody reads.</p></div>
+
+  <h3>A real Unity workflow, annotated</h3>
+
+  <div class="annot"><div class="rows">
+    <div class="arow"><div class="gut">1</div><div class="ln"><span class="c"># .github/workflows/tests.yml</span></div></div>
+    <div class="arow"><div class="gut">2</div><div class="ln">name: tests</div></div>
+    <div class="arow hasnote"><div class="gut">3</div><div class="ln">on:</div></div>
+    <div class="note"><b>What triggers a run is a policy decision, not a default.</b> Running on
+    <code>pull_request</code> is what makes the suite <em>blocking</em>; running on
+    <code>push</code> to <code>main</code> catches anything merged around the gate. The nightly
+    <code>schedule</code> is where the slow jobs live &mdash; soak tests, quarantined flaky tests,
+    the full device matrix &mdash; because those must not sit between a developer and a merge.</div>
+    <div class="arow"><div class="gut">4</div><div class="ln">  pull_request:</div></div>
+    <div class="arow"><div class="gut">5</div><div class="ln">  push:</div></div>
+    <div class="arow"><div class="gut">6</div><div class="ln">    branches: [ main ]</div></div>
+    <div class="arow"><div class="gut">7</div><div class="ln">  schedule:</div></div>
+    <div class="arow"><div class="gut">8</div><div class="ln">    - cron: "0 6 * * *"       <span class="c"># nightly soak + quarantine, 06:00 UTC</span></div></div>
+    <div class="arow"><div class="gut">9</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">10</div><div class="ln">concurrency:</div></div>
+    <div class="note"><b>Cancel superseded runs.</b> Without this, pushing three fixes in ten
+    minutes queues three full pipelines and you wait for results about code that no longer exists.
+    On a shared runner pool that is also how one team starves everyone else.</div>
+    <div class="arow"><div class="gut">11</div><div class="ln">  group: tests-${{ github.ref }}</div></div>
+    <div class="arow"><div class="gut">12</div><div class="ln">  cancel-in-progress: true</div></div>
+    <div class="arow"><div class="gut">13</div><div class="ln"></div></div>
+    <div class="arow"><div class="gut">14</div><div class="ln">jobs:</div></div>
+    <div class="arow hasnote"><div class="gut">15</div><div class="ln">  editmode:</div></div>
+    <div class="note"><b>Two jobs, cheapest first, and they run in parallel.</b> EditMode finishes
+    in about two minutes; PlayMode needs a virtual display and takes ten. Splitting them means a
+    compile error or a broken damage formula reports in two minutes instead of twelve. The
+    ordering principle from the pipeline builder below, expressed in YAML.</div>
+    <div class="arow"><div class="gut">16</div><div class="ln">    name: EditMode tests</div></div>
+    <div class="arow"><div class="gut">17</div><div class="ln">    runs-on: ubuntu-latest</div></div>
+    <div class="arow"><div class="gut">18</div><div class="ln">    timeout-minutes: 25</div></div>
+    <div class="arow"><div class="gut">19</div><div class="ln">    steps:</div></div>
+    <div class="arow hasnote"><div class="gut">20</div><div class="ln">      - uses: actions/checkout@v4</div></div>
+    <div class="note"><b><code>lfs: true</code> is not optional for a game repo.</b> Without it your
+    textures, meshes and audio check out as 130-byte pointer files. The build "succeeds," the scene
+    loads with pink materials, and a rendering test fails for a reason that has nothing to do with
+    rendering. <code>fetch-depth: 0</code> matters only if a step needs history, e.g. to diff which
+    assets changed.</div>
+    <div class="arow"><div class="gut">21</div><div class="ln">        with:</div></div>
+    <div class="arow"><div class="gut">22</div><div class="ln">          lfs: true</div></div>
+    <div class="arow"><div class="gut">23</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">24</div><div class="ln">      - uses: actions/cache@v4</div></div>
+    <div class="note"><b>Cache <code>Library/</code> or pay 8&ndash;20 minutes of reimport on every
+    run.</b> The key is hashed over the inputs that invalidate the import result. Note the
+    <code>restore-keys</code> fallback: on a miss you still get yesterday's cache and reimport only
+    what changed, which is the difference between a 3-minute job and a 20-minute one. Never cache
+    <code>Library/</code> across Unity versions &mdash; put the version in the key.</div>
+    <div class="arow"><div class="gut">25</div><div class="ln">        with:</div></div>
+    <div class="arow"><div class="gut">26</div><div class="ln">          path: Library</div></div>
+    <div class="arow"><div class="gut">27</div><div class="ln">          key: Lib-2022.3.44f1-${{ hashFiles('Assets/**','Packages/**','ProjectSettings/**') }}</div></div>
+    <div class="arow"><div class="gut">28</div><div class="ln">          restore-keys: Lib-2022.3.44f1-</div></div>
+    <div class="arow"><div class="gut">29</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">30</div><div class="ln">      - uses: game-ci/unity-test-runner@v4</div></div>
+    <div class="note"><b>The action is a wrapper; know the command underneath.</b> It ultimately
+    runs <code>Unity -batchmode -runTests -projectPath . -testPlatform EditMode -testResults
+    results.xml -logFile -</code> inside a licensed container. Knowing that is what lets you
+    reproduce a CI failure locally instead of pushing seventeen commits named "fix ci".</div>
+    <div class="arow"><div class="gut">31</div><div class="ln">        id: em</div></div>
+    <div class="arow"><div class="gut">32</div><div class="ln">        env:</div></div>
+    <div class="arow hasnote"><div class="gut">33</div><div class="ln">          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}</div></div>
+    <div class="note"><b>Secrets, never literals.</b> A licence file, a signing key or an API token
+    committed to a public repo is a security incident, and git history means deleting it later does
+    not remove it. This also comes back in Topic 7: build systems are one of the places student
+    projects most often leak credentials and player data.</div>
+    <div class="arow"><div class="gut">34</div><div class="ln">        with:</div></div>
+    <div class="arow"><div class="gut">35</div><div class="ln">          unityVersion: 2022.3.44f1</div></div>
+    <div class="arow"><div class="gut">36</div><div class="ln">          testMode: editmode</div></div>
+    <div class="arow hasnote"><div class="gut">37</div><div class="ln">          customParameters: -testCategory "!Flaky" -stackTraceLogType Full</div></div>
+    <div class="note"><b>This is the quarantine mechanism from section 7, in one flag.</b>
+    <code>!Flaky</code> excludes the quarantined category from the gating job. The nightly job runs
+    the <em>same suite</em> with <code>-testCategory "Flaky"</code> and does not block anyone, so
+    the quarantine stays visible instead of becoming a landfill.</div>
+    <div class="arow"><div class="gut">38</div><div class="ln">          artifactsPath: artifacts/editmode</div></div>
+    <div class="arow"><div class="gut">39</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">40</div><div class="ln">      - uses: actions/upload-artifact@v4</div></div>
+    <div class="note"><b><code>if: always()</code> is the most important line in this file.</b>
+    Without it, artifacts upload only when the job succeeds &mdash; so the one run whose NUnit XML
+    and log you actually need, the failing one, uploads nothing. Retention is a real cost, so set it
+    deliberately: 14 days for PR runs, longer for tagged builds.</div>
+    <div class="arow"><div class="gut">41</div><div class="ln">        if: always()</div></div>
+    <div class="arow"><div class="gut">42</div><div class="ln">        with:</div></div>
+    <div class="arow"><div class="gut">43</div><div class="ln">          name: editmode-results-${{ github.run_number }}</div></div>
+    <div class="arow"><div class="gut">44</div><div class="ln">          path: artifacts/editmode</div></div>
+    <div class="arow"><div class="gut">45</div><div class="ln">          retention-days: 14</div></div>
+    <div class="arow"><div class="gut">46</div><div class="ln"></div></div>
+    <div class="arow"><div class="gut">47</div><div class="ln">  playmode:</div></div>
+    <div class="arow"><div class="gut">48</div><div class="ln">    name: PlayMode tests</div></div>
+    <div class="arow"><div class="gut">49</div><div class="ln">    runs-on: ubuntu-latest</div></div>
+    <div class="arow"><div class="gut">50</div><div class="ln">    timeout-minutes: 45</div></div>
+    <div class="arow"><div class="gut">51</div><div class="ln">    steps:</div></div>
+    <div class="arow"><div class="gut">52</div><div class="ln">      - uses: actions/checkout@v4</div></div>
+    <div class="arow"><div class="gut">53</div><div class="ln">        with: { lfs: true }</div></div>
+    <div class="arow hasnote"><div class="gut">54</div><div class="ln">      - name: PlayMode under a virtual display</div></div>
+    <div class="note"><b>Why PlayMode gets its own treatment.</b> <code>xvfb-run</code> gives the
+    process a virtual X display so cameras, render textures and UI raycasts behave. Note the absence
+    of <code>-nographics</code> here and its presence in the EditMode job &mdash; using the same
+    flags for both is the single most common reason a student's PlayMode tests "pass" in CI while
+    testing nothing.</div>
+    <div class="arow"><div class="gut">55</div><div class="ln">        run: |</div></div>
+    <div class="arow"><div class="gut">56</div><div class="ln">          xvfb-run --auto-servernum \</div></div>
+    <div class="arow"><div class="gut">57</div><div class="ln">            /opt/unity/Editor/Unity -batchmode -runTests \</div></div>
+    <div class="arow"><div class="gut">58</div><div class="ln">              -projectPath "$GITHUB_WORKSPACE" \</div></div>
+    <div class="arow"><div class="gut">59</div><div class="ln">              -testPlatform PlayMode \</div></div>
+    <div class="arow"><div class="gut">60</div><div class="ln">              -testResults artifacts/playmode/results.xml \</div></div>
+    <div class="arow hasnote"><div class="gut">61</div><div class="ln">              -logFile - -stackTraceLogType Full</div></div>
+    <div class="note"><b><code>-logFile -</code> streams the editor log to stdout.</b> Without it the
+    log goes to a path inside the container that you will never see, and a crash during startup
+    looks like "the job timed out." Streaming means the failure appears in the run's console output
+    where a human will actually read it.</div>
+    <div class="arow"><div class="gut">62</div><div class="ln">      - uses: actions/upload-artifact@v4</div></div>
+    <div class="arow"><div class="gut">63</div><div class="ln">        if: always()</div></div>
+    <div class="arow"><div class="gut">64</div><div class="ln">        with: { name: playmode-results, path: artifacts/playmode }</div></div>
+  </div><p class="hint">Click any highlighted line to see why it is there.</p></div>
+
+  <div class="tabs"><div class="tabhd">
+    <button data-engine="unity" data-tab="u" class="on">Unity &mdash; raw command</button>
+    <button data-engine="unreal" data-tab="e">Unreal &mdash; UAT and BuildGraph</button>
+  </div><div class="tabbody">
+    <div class="tabpane on" data-pane="u">
+      <p>Run this locally before you ever push a workflow file. If it does not work on your machine
+      from a terminal, it will not work in a container, and debugging it through a 6-minute CI
+      round-trip is a bad way to spend an evening.</p>
+      <div class="codeblock"><div class="hd"><span class="dot"></span>terminal &middot; the command the action wraps</div><pre>
+<span class="c"># EditMode: no display needed, so -nographics is safe and faster.</span>
+"C:\Program Files\Unity\Hub\Editor\2022.3.44f1\Editor\Unity.exe" ^
+  -batchmode -nographics -runTests ^
+  -projectPath "C:\dev\SprintGame" ^
+  -testPlatform EditMode ^
+  -testCategory "!Flaky" ^
+  -testResults "C:\dev\SprintGame\artifacts\editmode.xml" ^
+  -logFile - -stackTraceLogType Full
+<span class="c"># Exit code 0 = all passed, 2 = tests failed, 3 = run could not start.</span>
+<span class="c"># Check it. Do not assume it.</span>
+echo %ERRORLEVEL%
+</pre></div>
+      <p class="small subtle">For a nightly soak on a packaged player, build with
+      <code>-executeMethod BuildScript.BuildLinuxServer</code> and drive the resulting binary with a
+      scripted-input harness; Unity Cloud Build or a self-hosted runner with a real GPU is the
+      practical option once your PlayMode suite starts needing real rendering.</p>
+    </div>
+    <div class="tabpane" data-pane="e">
+      <div class="codeblock"><div class="hd"><span class="dot"></span>terminal &middot; run the Automation suite headless</div><pre>
+<span class="c">:: Editor-context automation: specs and functional tests, no rendering hardware.</span>
+"%UE_ROOT%\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" ^
+  "%CD%\SprintGame.uproject" ^
+  -ExecCmds="Automation RunTests Sprint.Triggers+Sprint.Rules; Quit" ^
+  -TestExit="Automation Test Queue Empty" ^
+  -ReportExportPath="%CD%\Saved\TestReports" ^
+  -unattended -nopause -nosplash -nullrhi -stdout -FullStdOutLogOutput ^
+  -log -abslog="%CD%\Saved\Logs\Automation.log"
+
+<span class="c">:: UnrealEditor-Cmd returns nonzero when a test fails, but wrap it anyway —</span>
+<span class="c">:: some failure modes exit 0 with an "Automation Test Failed" line in the log.</span>
+if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
+findstr /C:"Automation Test Failed" "%CD%\Saved\Logs\Automation.log" &amp;&amp; exit /b 1
+</pre></div>
+
+      <div class="codeblock"><div class="hd"><span class="dot"></span>terminal &middot; Gauntlet, for the smoke/soak layer</div><pre>
+<span class="c">:: Gauntlet builds (or takes) a packaged build and drives it from outside</span>
+<span class="c">:: the engine — this is the only layer that can catch cook and packaging bugs.</span>
+"%UE_ROOT%\Engine\Build\BatchFiles\RunUAT.bat" RunUnreal ^
+  -project="%CD%\SprintGame.uproject" ^
+  -platform=Win64 -configuration=Development ^
+  -build=local ^
+  -test=SprintGame.SoakTest ^
+  -maxduration=1800 ^
+  -tempdir="%CD%\Saved\Gauntlet" ^
+  -logdir="%CD%\Saved\GauntletLogs" ^
+  -nullrhi=false
+</pre></div>
+
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Build/Graph/Tests.xml &middot; BuildGraph, for a real pipeline</div><pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;BuildGraph xmlns="http://www.epicgames.com/BuildGraph"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;Option Name="ProjectPath" Restrict=".+" DefaultValue="SprintGame/SprintGame.uproject"
+          Description="Path to the .uproject"/&gt;
+
+  &lt;Agent Name="Test Agent" Type="Win64"&gt;
+
+    <span class="c">&lt;!-- Cheap gate first: if the editor will not compile, nothing else matters. --&gt;</span>
+    &lt;Node Name="Compile Editor"&gt;
+      &lt;Compile Target="SprintGameEditor" Platform="Win64" Configuration="Development"/&gt;
+    &lt;/Node&gt;
+
+    <span class="c">&lt;!-- Unit-equivalent layer: specs only, seconds, blocks the merge. --&gt;</span>
+    &lt;Node Name="Automation Specs" Requires="Compile Editor"&gt;
+      &lt;Command Name="RunUnreal" Arguments="-project=$(ProjectPath)
+        -platform=Win64 -configuration=Development -build=editor
+        -test=UE.EditorAutomation -RunTest=&amp;quot;Sprint.Rules+Sprint.Triggers&amp;quot;"/&gt;
+    &lt;/Node&gt;
+
+    <span class="c">&lt;!-- Expensive layer: package, then drive the packaged build. Nightly. --&gt;</span>
+    &lt;Node Name="Package And Soak" Requires="Automation Specs"&gt;
+      &lt;Command Name="BuildCookRun" Arguments="-project=$(ProjectPath)
+        -platform=Win64 -clientconfig=Development -cook -build -stage -pak -nop4"/&gt;
+      &lt;Command Name="RunUnreal" Arguments="-project=$(ProjectPath)
+        -platform=Win64 -build=local -test=SprintGame.SoakTest -maxduration=1800"/&gt;
+    &lt;/Node&gt;
+
+  &lt;/Agent&gt;
+
+  &lt;Aggregate Name="PR Gate"  Requires="Automation Specs"/&gt;
+  &lt;Aggregate Name="Nightly"  Requires="Package And Soak"/&gt;
+&lt;/BuildGraph&gt;
+</pre></div>
+      <p class="small subtle">Invoke a graph with
+      <code>RunUAT.bat BuildGraph -Script=Build/Graph/Tests.xml -Target="PR Gate"</code>. The two
+      aggregates at the bottom encode the whole strategy of this section: one cheap set of nodes
+      gates every pull request, one expensive set runs overnight.</p>
+    </div>
+  </div></div>
+
+  <div class="widget" id="w-pipe">
+    <div class="whd"><span class="wt">CI Pipeline Builder</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Reorder the stages and watch feedback latency change. Each stage has a duration
+    and a catch rate &mdash; the probability it detects a given defect that reached it. The tool
+    computes the probability a defect is first caught at each stage, the expected wall-clock minutes
+    before a developer sees red, the escape probability, and the daily agent-minutes burned. It
+    flags any stage that is slower <em>and</em> weaker than a stage placed after it, because that
+    ordering costs you feedback time for nothing.</p>
+
+    <div class="stagelist" id="pp-list"></div>
+
+    <div class="ctl" style="margin-top:16px"><label>Pushes per day</label>
+      <input type="range" id="pp-push" min="1" max="60" value="14"><output id="pp-pusho">14</output></div>
+    <div class="ctl"><label>Stages that run on every push</label>
+      <input type="range" id="pp-gate" min="1" max="6" value="6"><output id="pp-gateo">6</output></div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Expected time to red</div><div class="v" id="pp-ttr">0 min</div></div>
+      <div class="cell"><div class="k">Full pipeline</div><div class="v" id="pp-total">0 min</div></div>
+      <div class="cell"><div class="k">Caught by gate</div><div class="v" id="pp-caught">0%</div></div>
+      <div class="cell"><div class="k">Escapes the gate</div><div class="v" id="pp-escape">0%</div></div>
+      <div class="cell"><div class="k">Agent-min / day</div><div class="v" id="pp-cost">0</div></div>
+    </div>
+    <div class="verdict" id="pp-verdict">Reorder a stage.</div>
+    <p class="small subtle">Catch rates are illustrative teaching values, not measurements from your
+    project. The arithmetic on top of them is real: <i>P</i>(first caught at stage <i>i</i>) =
+    <i>c<sub>i</sub></i> &times; &prod;<sub><i>j</i>&lt;<i>i</i></sub>(1 &minus; <i>c<sub>j</sub></i>).</p>
+  </div>
+
+  <div class="check">
+    <p class="q">Your pipeline runs one job: build the packaged Windows player, then run the whole
+    test suite against it. It takes 34 minutes and it is green. A reviewer says this is a weak
+    pipeline. What is the strongest version of their argument?</p>
+    <button class="opt" data-correct="0">Packaged-build testing is unreliable, so the suite should run in the editor instead.</button>
+    <button class="opt" data-correct="1">A 34-minute round trip means developers push and move on, so failures are found after context has been lost; the same defects would mostly be caught by a 2-minute EditMode job placed first, at a fraction of the cost.</button>
+    <button class="opt" data-correct="0">34 minutes exceeds the free-tier minute allowance, so the pipeline is too expensive to sustain.</button>
+    <div class="exp"><b>Why the second option:</b> feedback latency is the metric that decides
+    whether CI changes behavior. Under about five minutes, a developer waits and fixes it while the
+    change is still in their head. Past twenty, they context-switch, and the fix arrives the next
+    day on top of three more commits, which is also when bisecting gets expensive. Putting the
+    cheap, high-catch-rate stage first costs nothing and converts most failures into two-minute
+    failures. Run the pipeline builder and move "Build player" to the front to see the number move.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      Packaged builds <em>are</em> harder to test, but they also catch cook failures, missing
+      references and platform defines that the editor never will. The answer is not to drop that
+      layer, it is to stop putting it in front of the cheap layers.</div>
+      <div class="ex"><span class="who">Why the third is tempting</span><br>
+      Cost is a genuine constraint and worth tracking &mdash; the builder reports agent-minutes for
+      that reason. But it is a secondary argument: a pipeline that gave useful feedback in 34
+      minutes would be worth paying for. The problem is that it does not.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">9</span>The frontier: agents, computer vision, and honest limits</h2>
+
+  <p>Everything so far assumes a human wrote an assertion. The research frontier asks whether an
+  agent can find defects nobody anticipated. Three of your assigned papers map the territory, and
+  they are worth reading together because they disagree usefully.</p>
+
+  <p>Ariyurek, Betin-Can and Surer's work on <em>synthetic and humanlike agents</em> trains
+  reinforcement-learning agents to explore a game and shows that agent behavior matters: an agent
+  optimizing purely for coverage explores differently &mdash; and finds different bugs &mdash; from
+  one shaped to behave like a human player. That distinction is the practical takeaway. A curiosity-
+  driven bot is excellent at finding geometry you can fall through and states no designer imagined;
+  it is useless for judging whether the tutorial teaches anything. Paduraru and colleagues take the
+  computer-vision route, treating the rendered frame as the observation and looking for visual
+  anomalies, which reaches defects that have no code-level assertion &mdash; a missing texture, a
+  character rendered inside a wall. Wilkins and Stathis's <em>World of Bugs</em> contributes what
+  the field most lacked: a labelled dataset of actual game bugs to train and evaluate such detectors
+  against, because "we found some bugs in our own demo" is not evidence.</p>
+
+  <p>Where this honestly fails today, and you should say so if you cite it: the <b>oracle problem</b>
+  does not go away. An agent can detect that something looks unusual; deciding whether unusual is
+  <em>wrong</em> still needs a specification or a human. False-positive rates on visual detectors
+  are high enough that triage cost can exceed the value of the findings. Training an agent for a
+  specific game is real engineering effort that competes with just writing the tests. And every
+  agent needs a hook into your build &mdash; scripted input, a headless mode, a state dump &mdash;
+  which is the same seam work as section 3. That is the encouraging part: the deterministic
+  interfaces you build for unit tests are exactly the interfaces an agent needs later. Politowski
+  and Guéhéneuc's "still a long way to go" title, which you will meet again in Topic 4, is a fair
+  summary of the state of the art.</p>
+
+  <div class="box field"><div class="lbl">What to do with this in a student project</div>
+  <p>Do not attempt an RL agent for the benchmark. Do build the cheap 80% version: a scripted
+  "monkey" that drives your <code>IInputSource</code> with seeded random input for ten minutes while
+  a watchdog asserts no exception, no error log, no NaN transform, and no memory growth beyond a
+  threshold. That is roughly forty lines on top of the seams you already built, it runs in the
+  nightly job, and in a student project it will find something within a week. Log the seed on
+  failure, and you have a reproducible bug report instead of an anecdote.</p></div>
+
+  <h2><span class="num">10</span>The reading, and what to take from each</h2>
+
+  <details class="more"><summary>Reading list with a specific question to answer for each</summary>
+    <ul class="readlist">
+      <li><b>Finska, <i>Modern Game Testing</i>, ch. 4, 5, 13.</b> The practitioner framing for test
+      levels and automation strategy. Question: which of the automation layers described does your
+      current project have literally zero of, and what would the first test in that layer assert?</li>
+      <li><b>Chopra (2018), "Test Cases and Test Suites."</b> The mechanics of case design and suite
+      organization. Question: take three of your existing tests and rewrite their names in
+      <code>Method_Condition_ExpectedResult</code> form. Did any of them turn out to be testing two
+      things?</li>
+      <li><b>Coppola, Fulcini &amp; Strada (2024), "Know Your Bugs."</b> Question: which defect
+      classes in your own project's bug history would a unit test have plausibly caught, and which
+      would not have been caught by any automated test at any layer? Be honest about the second
+      list; it is the argument for keeping human testers.</li>
+      <li><b>Albaghajati &amp; Ahmed (2020), "Video Game Automated Testing Approaches."</b> A survey
+      &mdash; read it as a map. Question: name the approach closest to what you are building for the
+      benchmark, and one approach you rejected, with the reason.</li>
+      <li><b>Ariyurek, Betin-Can &amp; Surer (2021), "Automated Video Game Testing Using Synthetic
+      and Humanlike Agents."</b> Question: for your game, what would a synthetic agent optimize for,
+      and what defect would that objective make it systematically blind to?</li>
+      <li><b>Paduraru et al. (2021), "Automated Game Testing Using Computer Vision Methods."</b>
+      Question: name one defect in your project that only a visual check could detect, and one that
+      a visual check would report as a false positive.</li>
+      <li><b>Wilkins &amp; Stathis (2022), "World of Bugs."</b> Question: if you were adding your
+      project's defects to a labelled dataset, what metadata would each sample need to be useful to
+      someone else? Compare your answer to the bug-report fields from Topic 2.</li>
+    </ul>
+  </details>
+
+  <div class="deliver">
+    <h3>Bring to the assignment</h3>
+    <p><b>Benchmark &mdash; Unit Testing and Defect Trigger Coverage</b> &middot; 100 points &middot;
+    due Oct 11 &middot; assesses competency <b>1.1: Demonstrate proficiency with programming
+    languages used in game development.</b> Unit tests for one game feature covering all six defect
+    triggers, with setup/teardown, logging, automated failure alerts, CI integration, and a
+    3&ndash;5 minute video.</p>
+    <p>The grader is reading your test code as code. Arrive with:</p>
+    <ul>
+      <li><b>One feature, chosen for its seams.</b> Pick something with real arithmetic and real
+      state &mdash; stamina, ammo and reload, an inventory stack, a save round-trip, a cooldown, a
+      loot table. Do not pick "the player controller." If your chosen feature is currently a
+      <code>MonoBehaviour</code> or <code>AActor</code> full of engine statics, your first commit is
+      the section 3 refactor, and <em>showing that refactor in the video is worth more than showing
+      the tests</em>. It is the clearest possible demonstration of OOP proficiency.</li>
+      <li><b>Six tests, one per trigger, named so the trigger is obvious.</b>
+      <code>Configuration_HardcorePreset_IsRecoverable</code>, not <code>Test4</code>. Use the
+      Coverage Board to check you have not filed two Normal tests under different names &mdash; that
+      is the most common way students lose points here.</li>
+      <li><b>Real <code>SetUp</code>/<code>TearDown</code></b> (or <code>BeforeEach</code>/
+      <code>AfterEach</code>) that demonstrably isolate tests. Prove it: run the suite in reverse
+      order or with a shuffled seed and show it still passes. A suite that only passes in
+      declaration order is not isolated.</li>
+      <li><b>Structured logging from the tests themselves.</b> Test name, build/commit SHA, engine
+      version, platform, seed, duration, outcome &mdash; written to a file the CI job uploads as an
+      artifact. This is the Topic 2 evidence discipline applied to automation.</li>
+      <li><b>An automated failure alert</b> that reaches a human: a required PR status check, a
+      workflow notification, or a webhook. Show it firing. A screenshot of a red check on a pull
+      request is the cheapest possible proof that the pipeline is blocking rather than decorative.</li>
+      <li><b>A working CI config in the repo</b> &mdash; the YAML or BuildGraph script, with the
+      cheap stage first, artifacts uploaded on <code>if: always()</code>, and a run history showing
+      at least one red run that you then made green. A pipeline that has only ever been green has
+      not been shown to work.</li>
+      <li><b>One deliberate flaky test, quarantined properly</b>, if you can manage it. Tag it,
+      exclude it from the gate, run it in a nightly job, and file the bug. Demonstrating the
+      <em>process</em> rather than a clean suite is a stronger answer, and it is what the section 7
+      simulator was for.</li>
+      <li><b>The seed, in the ticket.</b> Every randomized test logs its seed on failure. Say this
+      out loud in the video; it takes eight seconds and it is the detail that separates people who
+      have maintained a suite from people who have written one.</li>
+    </ul>
+    <p class="small subtle">Sessions 9 and 10 are working sessions: bring a project that compiles
+    and a terminal in which you have already run your engine's test command once. The most common
+    way to lose an entire session is discovering that your licence, your test assembly definition,
+    or your <code>.Build.cs</code> was never configured.</p>
+  </div>
+
+  <footer class="lf"><a href="../index.html">&larr; Course hub</a><span>Advanced Game Testing and Debugging</span></footer>
+</div>
+<script id="lesson-kit-js">
+/* ---------- reading progress ---------- */
+(function(){
+  var b=document.createElement('div'); b.className='progressbar';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(b);});
+  addEventListener('scroll',function(){
+    var h=document.documentElement, m=h.scrollHeight-h.clientHeight;
+    b.style.width=(m>0?(h.scrollTop/m*100):0)+'%';
+  },{passive:true});
+})();
+
+/* ---------- engine tabs ---------- */
+function GDTtabs(root){
+  root.querySelectorAll('.tabhd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      root.querySelectorAll('.tabhd button').forEach(function(b){b.classList.remove('on')});
+      root.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('on')});
+      btn.classList.add('on');
+      var pane=root.querySelector('.tabpane[data-pane="'+btn.dataset.tab+'"]');
+      if(pane) pane.classList.add('on');
+    });
+  });
+}
+
+/* ---------- annotated code ---------- */
+function GDTannot(root){
+  root.querySelectorAll('.arow.hasnote').forEach(function(row){
+    row.addEventListener('click',function(){
+      var note=row.nextElementSibling;
+      var open=row.classList.contains('open');
+      row.classList.toggle('open',!open);
+      if(note&&note.classList.contains('note')) note.classList.toggle('open',!open);
+    });
+  });
+}
+
+/* ---------- knowledge check ---------- */
+function GDTcheck(root){
+  var done=false;
+  root.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      if(done) return; done=true;
+      var correct = opt.dataset.correct==='1';
+      root.querySelectorAll('.opt').forEach(function(o){
+        if(o.dataset.correct==='1'){o.classList.add('right');
+          o.insertAdjacentHTML('beforeend','<span class="tag">CORRECT</span>');}
+        else if(o===opt){o.classList.add('wrong');
+          o.insertAdjacentHTML('beforeend','<span class="tag">NOT QUITE</span>');}
+        o.style.cursor='default';
+      });
+      var exp=root.querySelector('.exp'); if(exp) exp.classList.add('on');
+    });
+  });
+}
+
+/* ---------- decision tree ----------
+   Usage: new GDTTree(document.getElementById('t1'), NODES, 'start')
+   NODES = { start:{q:'', hint:'', choices:[{t:'',sub:'',go:'nodeId'}]},
+             leafId:{leaf:true, title:'', body:'<p>…</p>'} }              */
+function GDTTree(root,nodes,startId){
+  var pathEl=root.querySelector('.path'), body=root.querySelector('.body');
+  var trail=[];
+  function render(id){
+    var n=nodes[id]; if(!n) return;
+    pathEl.innerHTML = trail.length? trail.map(function(t){return '<span>'+t+'</span>'}).join(' &rsaquo; ') : '&nbsp;';
+    if(n.leaf){
+      body.innerHTML='<div class="leaf"><h5>'+n.title+'</h5>'+n.body+'</div>'+
+        '<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>';
+    }else{
+      body.innerHTML='<p class="qq">'+n.q+'</p>'+(n.hint?'<p class="qh">'+n.hint+'</p>':'')+
+        '<div class="choices">'+n.choices.map(function(c,i){
+          return '<button data-go="'+c.go+'" data-lbl="'+(c.lbl||c.t).replace(/"/g,'&quot;')+'">'+c.t+
+                 (c.sub?'<span class="sub">'+c.sub+'</span>':'')+'</button>';}).join('')+'</div>'+
+        (trail.length?'<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>':'');
+    }
+    body.querySelectorAll('[data-go]').forEach(function(b){
+      b.addEventListener('click',function(){trail.push(b.dataset.lbl); render(b.dataset.go);});
+    });
+    var rs=body.querySelector('[data-restart]');
+    if(rs) rs.addEventListener('click',function(){trail=[]; render(startId);});
+  }
+  render(startId);
+}
+
+/* ---------- auto-wire everything ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.tabs').forEach(GDTtabs);
+  document.querySelectorAll('.annot').forEach(GDTannot);
+  document.querySelectorAll('.check').forEach(GDTcheck);
+});
+
+/* ---------- small helpers for simulators ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(n,d){return Number(n).toFixed(d===undefined?1:d)}
+function lerp(a,b,t){return a+(b-a)*t}
+/* deterministic pseudo-random so demos are reproducible for a class */
+function rng(seed){var s=seed||1;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296;}}
+</script>
+<script id="lesson-widgets">
+/* ============================================================
+   Advanced Game Testing and Debugging · Topic 3 · lesson-specific widgets
+   Every number rendered below is computed from the controls.
+   Models are simplified and labelled; the arithmetic is real.
+   ============================================================ */
+(function(){
+'use strict';
+
+function pct(x, d){ return (x * 100).toFixed(d === undefined ? 1 : d) + '%'; }
+function setV(el, cls){ if(el){ el.className = 'v' + (cls ? ' ' + cls : ''); } }
+
+/* ============================================================
+   WIDGET 1 — Defect Trigger Coverage Board
+   ============================================================ */
+var TRIGGERS = [
+  { id:'cfg', name:'Configuration',
+    df:'Settings, presets, platform, locale, hardware.',
+    opts:[
+      { s:0, t:'Sprint one second with the default preset and assert stamina is 80.',
+        why:'This is a <b>Normal</b>-trigger test wearing a Configuration label. It exercises exactly one configuration &mdash; the default &mdash; which is the one you were already testing.' },
+      { s:2, t:'Parameterized over all three shipped presets: each validates, drains to empty, and refills to full.',
+        why:'Genuine coverage. It runs every configuration you ship and asserts a <i>property</i> (drainable and recoverable) rather than a magic number, so it survives balance changes.' },
+      { s:1, t:'Assert Validate() throws on Max = -5 and on DrainPerSec = 0.',
+        why:'Partial. It covers rejection of illegal values, which is real, but never checks that the presets you actually ship are playable.' }
+    ]},
+  { id:'start', name:'Startup',
+    df:'First initialization, load order, fresh profile.',
+    opts:[
+      { s:1, t:'Construct the rules and assert Stamina == Max.',
+        why:'Partial. It pins the initial value but misses the interesting startup faults: absent save data, null collaborators, and construction ordering.' },
+      { s:0, t:'Reload the level and assert stamina carried over correctly.',
+        why:'That is the <b>Restart</b> trigger. It needs a prior run to exist, which is the opposite of a startup condition.' },
+      { s:2, t:'Restore on a fresh profile with no save data (full, not exhausted), and assert a null clock throws at construction rather than at first tick.',
+        why:'Genuine coverage. Two distinct startup faults: the first-run default, and fail-fast construction so an ordering bug surfaces at frame 0 instead of frame 4000.' }
+    ]},
+  { id:'exc', name:'Exception',
+    df:'Error paths: corrupt data, NaN, missing file, throwing callback.',
+    opts:[
+      { s:2, t:'Feed a 3-byte truncated save blob: assert fallback to defaults and exactly one warning logged.',
+        why:'Genuine coverage. It enters the handler, asserts the recovery behaviour, and asserts the log &mdash; so a silently-swallowed corruption fails the test.' },
+      { s:1, t:'Assert Tick() ignores dt = 0 and dt = -0.016.',
+        why:'Partial. Pathological input is one flavour of the Exception trigger, but nothing here exercises an actual error-handling path such as corrupt data or a throwing listener.' },
+      { s:0, t:'Wrap 400 ticks in try/catch and assert no exception escaped.',
+        why:'Vacuous. It never enters an error path, so it passes with the handler deleted. Asserting the absence of something you never provoked is not a test.' }
+    ]},
+  { id:'stress', name:'Stress',
+    df:'Volume, duration, resource pressure.',
+    opts:[
+      { s:0, t:'Spawn 500 enemies in the level and watch the frame rate.',
+        why:'Not automated and not an assertion &mdash; it is a performance measurement, which is Topic 4. A trigger is only covered when a machine can fail the build over it.' },
+      { s:1, t:'Run the normal drain/regen test 100 times in a loop.',
+        why:'Partial. Volume without variation: it repeats one path, so it can surface accumulation but never an interaction you did not already write down.' },
+      { s:2, t:'100,000 seeded random ticks; assert stamina never leaves [0, Max] and never becomes NaN.',
+        why:'Genuine coverage. Varied input at volume, an invariant rather than a value, and a fixed seed so a failure reproduces on the build machine.' }
+    ]},
+  { id:'normal', name:'Normal',
+    df:'Routine operation, expected inputs, expected ranges.',
+    opts:[
+      { s:1, t:'Assert stamina decreases while sprinting.',
+        why:'Partial. A direction check passes even when the drain rate is three times wrong, which is the defect a designer will actually file.' },
+      { s:2, t:'Sprint 1 s to 80, hold 1.5 s of cooldown with no regen, then 1 s of regen to 92.',
+        why:'Genuine coverage. Exact expected values with a tolerance, and it pins the cooldown boundary rather than only the rates.' },
+      { s:0, t:'Assert stamina stays in range across 100k random ticks.',
+        why:'That is the <b>Stress</b> trigger. Filing it under Normal is how a board shows six green cards while the happy-path arithmetic is unverified.' }
+    ]},
+  { id:'restart', name:'Restart',
+    df:'Relaunch, scene reload, respawn, suspend/resume.',
+    opts:[
+      { s:2, t:'Load the test scene twice; assert exactly one subscriber remains on the static exhaustion event.',
+        why:'Genuine coverage. It catches the double-subscription family, which no fixture-fresh test can see, and it asserts a count rather than a boolean.' },
+      { s:0, t:'Assert a fresh profile begins at full stamina.',
+        why:'That is the <b>Startup</b> trigger. Nothing has restarted; there was never a first session.' },
+      { s:1, t:'Serialize an exhausted state, restore it, assert still exhausted.',
+        why:'Partial. The save round-trip is real Restart coverage, but the lifecycle faults &mdash; duplicate subscriptions, residual statics, DontDestroyOnLoad orphans &mdash; only appear in a real reload.' }
+    ]}
+];
+
+function initTriggers(){
+  var root = document.getElementById('w-triggers');
+  if(!root) return;
+  var host = document.getElementById('tb-cards');
+  var state = {};
+
+  TRIGGERS.forEach(function(tr){
+    state[tr.id] = -1;
+    var card = document.createElement('div');
+    card.className = 'trigcard none';
+    card.id = 'tb-card-' + tr.id;
+    var sel = '<select data-trig="' + tr.id + '"><option value="-1">&mdash; not staffed &mdash;</option>';
+    tr.opts.forEach(function(o, i){
+      sel += '<option value="' + i + '">' + o.t.replace(/<[^>]+>/g, '') + '</option>';
+    });
+    sel += '</select>';
+    card.innerHTML = '<h5>' + tr.name + '</h5><p class="df">' + tr.df + '</p>' + sel +
+                     '<p class="fb" id="tb-fb-' + tr.id + '">Nothing selected.</p>';
+    host.appendChild(card);
+  });
+
+  $$('select[data-trig]', host).forEach(function(sel){
+    sel.addEventListener('change', function(){
+      state[sel.dataset.trig] = parseInt(sel.value, 10);
+      update();
+    });
+  });
+
+  $$('[data-tbpreset]', root).forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var want;
+      if(btn.dataset.tbpreset === 'clear')   want = { cfg:-1, start:-1, exc:-1, stress:-1, normal:-1, restart:-1 };
+      if(btn.dataset.tbpreset === 'typical') want = { cfg:0,  start:1,  exc:-1, stress:-1, normal:2,  restart:-1 };
+      if(btn.dataset.tbpreset === 'best')    want = { cfg:2,  start:2,  exc:2,  stress:2,  normal:2,  restart:2 };
+      TRIGGERS.forEach(function(tr){
+        var target = want[tr.id];
+        var idx = -1;
+        if(target >= 0){
+          for(var i = 0; i < tr.opts.length; i++){ if(tr.opts[i].s === target){ idx = i; break; } }
+        }
+        state[tr.id] = idx;
+        var sel = host.querySelector('select[data-trig="' + tr.id + '"]');
+        if(sel) sel.value = String(idx);
+      });
+      update();
+    });
+  });
+
+  function update(){
+    var pts = 0, good = 0, bad = 0, empty = 0;
+    var emptyNames = [], badNames = [];
+
+    TRIGGERS.forEach(function(tr){
+      var i = state[tr.id];
+      var card = document.getElementById('tb-card-' + tr.id);
+      var fb = document.getElementById('tb-fb-' + tr.id);
+      if(i < 0){
+        empty++; emptyNames.push(tr.name);
+        card.className = 'trigcard none';
+        fb.innerHTML = 'Nothing selected.';
+        return;
+      }
+      var o = tr.opts[i];
+      pts += o.s;
+      if(o.s === 2){ good++; card.className = 'trigcard good'; }
+      else if(o.s === 1){ card.className = 'trigcard part'; }
+      else { bad++; badNames.push(tr.name); card.className = 'trigcard bad'; }
+      fb.innerHTML = '<b>' + (o.s === 2 ? '+2 &middot; genuine' : o.s === 1 ? '+1 &middot; partial' : '+0 &middot; mis-filed') +
+                     '</b> &mdash; ' + o.why;
+    });
+
+    var cov = pts / 12;
+    document.getElementById('tb-bar').style.width = (cov * 100).toFixed(1) + '%';
+    var pctEl = document.getElementById('tb-pct');
+    pctEl.textContent = Math.round(cov * 100) + '%';
+    setV(pctEl, cov >= 0.85 ? 'ok' : cov >= 0.5 ? 'warn' : 'crit');
+    document.getElementById('tb-pts').textContent = pts + ' / 12';
+    document.getElementById('tb-good').textContent = String(good);
+    var badEl = document.getElementById('tb-bad');
+    badEl.textContent = String(bad); setV(badEl, bad ? 'crit' : 'ok');
+    var emEl = document.getElementById('tb-empty');
+    emEl.textContent = String(empty); setV(emEl, empty === 0 ? 'ok' : empty <= 2 ? 'warn' : 'crit');
+
+    var v = document.getElementById('tb-verdict');
+    var msg, cls;
+    if(empty === 6){
+      msg = 'Pick a scenario for any trigger to begin.'; cls = '';
+    } else if(bad > 0){
+      msg = '<b>' + bad + ' mis-filed scenario' + (bad > 1 ? 's' : '') + ' (' + badNames.join(', ') +
+            ').</b> This is worse than leaving the card empty: the board now claims coverage you do not have, ' +
+            'and the trigger that scenario really belongs to gets double-counted. Read the card feedback and re-file.';
+      cls = 'crit';
+    } else if(empty > 0){
+      msg = '<b>Unstaffed: ' + emptyNames.join(', ') + '.</b> ' +
+            (emptyNames.indexOf('Exception') >= 0 || emptyNames.indexOf('Restart') >= 0
+              ? 'Exception and Restart are the two triggers student suites skip most often, and between them they account for most of the defects that survive to a playtest. '
+              : '') +
+            'Coverage ' + Math.round(cov * 100) + '% &mdash; the benchmark wants all six staffed.';
+      cls = 'warn';
+    } else if(pts < 12){
+      msg = '<b>All six staffed, ' + pts + '/12 points.</b> Nothing is mis-filed, which is the hard part. ' +
+            'The partial cards are still worth upgrading: each one is a test that will pass while the defect it was ' +
+            'supposed to catch is still in the build.';
+      cls = 'warn';
+    } else {
+      msg = '<b>12/12.</b> Six triggers, six genuine tests, no double-filing. Now check the other half of the ' +
+            'benchmark: does each of these run headless, and does the suite still pass in a shuffled order?';
+      cls = 'ok';
+    }
+    v.className = 'verdict' + (cls ? ' ' + cls : '');
+    v.innerHTML = msg;
+  }
+
+  update();
+}
+
+/* ============================================================
+   WIDGET 2 — Flaky Test Simulator
+   ============================================================ */
+function initFlaky(){
+  var root = document.getElementById('w-flaky');
+  if(!root) return;
+
+  var SUITE_MIN = 9;      /* minutes for one full pipeline run */
+  var RETRY_MIN = 0.25;   /* minutes to re-run one failing PlayMode test */
+  var ids = ['n','p','r','runs','reg'];
+  var el = {};
+  ids.forEach(function(k){ el[k] = document.getElementById('fl-' + k); });
+
+  ids.forEach(function(k){ el[k].addEventListener('input', update); });
+
+  $$('[data-flpreset]', root).forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var p = btn.dataset.flpreset;
+      var v = p === 'healthy'    ? { n:1,  p:5,  r:0, runs:14, reg:3 }
+            : p === 'typical'    ? { n:6,  p:20, r:0, runs:14, reg:3 }
+            : p === 'rot'        ? { n:22, p:55, r:0, runs:20, reg:5 }
+            :                      { n:22, p:55, r:3, runs:20, reg:5 };
+      ids.forEach(function(k){ el[k].value = v[k]; });
+      update();
+    });
+  });
+
+  function update(){
+    var n    = parseInt(el.n.value, 10);
+    var p    = parseInt(el.p.value, 10) / 1000;   /* 0.1% .. 30% */
+    var r    = parseInt(el.r.value, 10);
+    var runs = parseInt(el.runs.value, 10);
+    var reg  = parseInt(el.reg.value, 10);
+
+    document.getElementById('fl-no').textContent    = String(n);
+    document.getElementById('fl-po').textContent    = (p * 100).toFixed(1) + '%';
+    document.getElementById('fl-ro').textContent    = String(r);
+    document.getElementById('fl-runso').textContent = String(runs);
+    document.getElementById('fl-rego').textContent  = String(reg);
+
+    /* a flaky test only reports failure if all r+1 attempts fail */
+    var q = Math.pow(p, r + 1);
+    var pFlake = 1 - Math.pow(1 - q, n);
+
+    var runsPerWeek = runs * 7;
+    var pReg = runsPerWeek > 0 ? Math.min(1, reg / runsPerWeek) : 0;
+
+    var falsePerWeek = runsPerWeek * (1 - pReg) * pFlake;
+    var realPerWeek  = runsPerWeek * pReg;
+    var totalRed     = falsePerWeek + realPerWeek;
+    var signal       = totalRed > 0 ? realPerWeek / totalRed : 1;
+    var ignoredPerYr = realPerWeek * (1 - signal) * 52;
+
+    /* expected retry attempts per run = n * (p + p^2 + ... + p^r) */
+    var attempts = 0, term = 1;
+    for(var k = 1; k <= r; k++){ term *= p; attempts += term; }
+    attempts *= n;
+    var extraMin = falsePerWeek * SUITE_MIN + runsPerWeek * attempts * RETRY_MIN;
+
+    var e;
+    e = document.getElementById('fl-pfalse'); e.textContent = pct(pFlake);
+    setV(e, pFlake < 0.02 ? 'ok' : pFlake < 0.12 ? 'warn' : 'crit');
+    document.getElementById('fl-fweek').textContent = falsePerWeek.toFixed(1);
+    document.getElementById('fl-rweek').textContent = realPerWeek.toFixed(1);
+    e = document.getElementById('fl-sig'); e.textContent = pct(signal, 0);
+    setV(e, signal > 0.7 ? 'ok' : signal > 0.35 ? 'warn' : 'crit');
+    e = document.getElementById('fl-ignored'); e.textContent = ignoredPerYr.toFixed(1);
+    setV(e, ignoredPerYr < 2 ? 'ok' : ignoredPerYr < 12 ? 'warn' : 'crit');
+    e = document.getElementById('fl-mins'); e.textContent = Math.round(extraMin);
+    setV(e, extraMin < 30 ? 'ok' : extraMin < 150 ? 'warn' : 'crit');
+
+    /* --- two weeks of runs, fixed seed so the class sees one picture --- */
+    var strip = document.getElementById('fl-strip');
+    strip.innerHTML = '';
+    var rand = rng(90210);
+    var total = Math.min(runsPerWeek * 2, 120);
+    var frag = document.createDocumentFragment();
+    for(var i = 0; i < total; i++){
+      var hasReg  = rand() < pReg;
+      var flaked  = rand() < pFlake;
+      var color, title;
+      if(hasReg){
+        if(rand() < signal){ color = '#f85149'; title = 'red — real regression, investigated'; }
+        else               { color = '#6e7f92'; title = 'red — real regression dismissed as flake'; }
+      } else if(flaked){    color = '#d29922'; title = 'red — flake only'; }
+      else {                color = '#3fb950'; title = 'green'; }
+      var sq = document.createElement('i');
+      sq.style.background = color;
+      sq.title = 'run ' + (i + 1) + ': ' + title;
+      frag.appendChild(sq);
+    }
+    strip.appendChild(frag);
+
+    var v = document.getElementById('fl-verdict');
+    var msg, cls;
+    if(pFlake < 0.02 && signal > 0.85){
+      cls = 'ok';
+      msg = '<b>A red build means something.</b> ' + pct(signal, 0) + ' of red runs are real, so a developer who ' +
+            'stops and investigates is right almost every time. This is the state worth defending; it is also the ' +
+            'state that decays quietly, which is why you track flake rate as a metric rather than a feeling.';
+    } else if(signal > 0.5){
+      cls = 'warn';
+      msg = '<b>Degrading.</b> ' + falsePerWeek.toFixed(1) + ' false reds a week against ' + realPerWeek.toFixed(1) +
+            ' real ones. Nobody has stopped trusting the pipeline yet, but each false red costs about ' +
+            SUITE_MIN + ' minutes of rerun plus the interruption, which is roughly ' + Math.round(extraMin) +
+            ' agent-minutes a week burned on noise. Quarantine the worst offenders now, while the list is short.';
+    } else if(signal > 0.2){
+      cls = 'crit';
+      msg = '<b>The boy who cried wolf.</b> Only ' + pct(signal, 0) + ' of red builds are real, so the rational ' +
+            'response to a red build is to hit rerun &mdash; and that means roughly <b>' + ignoredPerYr.toFixed(0) +
+            ' genuine regressions a year</b> get waved through as "probably flaky" (the grey squares). ' +
+            'The suite is now worse than no suite, because it also provides false assurance.';
+    } else {
+      cls = 'crit';
+      msg = '<b>The suite has been abandoned in place.</b> At ' + pct(signal, 0) + ' signal, red is the normal ' +
+            'colour of the pipeline and no one reads it. About ' + ignoredPerYr.toFixed(0) + ' real regressions a ' +
+            'year ship through this gate. Deleting the suite would at least be honest; quarantining the top few ' +
+            'flaky tests would be better, and usually two or three tests are producing most of this.';
+    }
+    if(r > 0){
+      msg += ' <i>With ' + r + ' retr' + (r === 1 ? 'y' : 'ies') + ' the reported flake rate is ' +
+             (q * 100).toFixed(3) + '% per test &mdash; the race is unchanged, you have only stopped measuring it.</i>';
+    }
+    v.className = 'verdict ' + cls;
+    v.innerHTML = msg;
+  }
+
+  update();
+}
+
+/* ============================================================
+   WIDGET 3 — CI Pipeline Builder
+   ============================================================ */
+function initPipeline(){
+  var root = document.getElementById('w-pipe');
+  if(!root) return;
+
+  var stages = [
+    { n:'Compile + static analysis',        min:3,  c:0.30 },
+    { n:'EditMode / Spec unit tests',       min:2,  c:0.45 },
+    { n:'PlayMode / Functional tests',      min:9,  c:0.35 },
+    { n:'Package player (build + cook)',    min:18, c:0.15 },
+    { n:'Smoke: boot build, load all maps', min:6,  c:0.30 },
+    { n:'Gauntlet soak (30 min bot run)',   min:30, c:0.25 }
+  ];
+
+  var list  = document.getElementById('pp-list');
+  var push  = document.getElementById('pp-push');
+  var gate  = document.getElementById('pp-gate');
+
+  push.addEventListener('input', update);
+  gate.addEventListener('input', update);
+
+  function move(i, d){
+    var j = i + d;
+    if(j < 0 || j >= stages.length) return;
+    var tmp = stages[i]; stages[i] = stages[j]; stages[j] = tmp;
+    update();
+  }
+
+  function analyse(k){
+    var cum = 0, caught = 0, weighted = 0, surv = 1;
+    var perStage = [];
+    for(var i = 0; i < k; i++){
+      cum += stages[i].min;
+      var pi = surv * stages[i].c;
+      perStage.push(pi);
+      weighted += pi * cum;
+      caught += pi;
+      surv *= (1 - stages[i].c);
+    }
+    return { cum:cum, caught:caught, ttr: caught > 0 ? weighted / caught : 0, per:perStage };
+  }
+
+  function update(){
+    var k = Math.min(parseInt(gate.value, 10), stages.length);
+    var pushes = parseInt(push.value, 10);
+    document.getElementById('pp-gateo').textContent = String(k);
+    document.getElementById('pp-pusho').textContent = String(pushes);
+
+    var a = analyse(k);
+
+    /* flag a stage that is both slower and weaker than one placed after it */
+    var flags = [];
+    for(var i = 0; i < k; i++){
+      for(var j = i + 1; j < k; j++){
+        if(stages[j].min < stages[i].min && stages[j].c > stages[i].c){
+          flags.push({ i:i, j:j });
+        }
+      }
+    }
+    var flagged = {};
+    flags.forEach(function(f){ flagged[f.i] = true; });
+
+    list.innerHTML = '';
+    for(var s = 0; s < stages.length; s++){
+      var row = document.createElement('div');
+      row.className = 'stagerow' + (flagged[s] ? ' flag' : '');
+      if(s >= k) row.style.opacity = '.45';
+      row.innerHTML =
+        '<span class="ix">' + (s + 1) + '</span>' +
+        '<span>' + stages[s].n + (s >= k ? ' <span class="subtle small">(nightly)</span>' : '') + '</span>' +
+        '<span class="mn">' + stages[s].min + ' min</span>' +
+        '<span class="ct">catch ' + Math.round(stages[s].c * 100) + '%</span>' +
+        '<span class="mv"><button data-up="' + s + '">&uarr;</button>' +
+        '<button data-dn="' + s + '">&darr;</button></span>';
+      list.appendChild(row);
+    }
+    $$('[data-up]', list).forEach(function(b){
+      b.addEventListener('click', function(){ move(parseInt(b.dataset.up, 10), -1); });
+    });
+    $$('[data-dn]', list).forEach(function(b){
+      b.addEventListener('click', function(){ move(parseInt(b.dataset.dn, 10), 1); });
+    });
+
+    var e;
+    e = document.getElementById('pp-ttr'); e.textContent = a.ttr.toFixed(1) + ' min';
+    setV(e, a.ttr <= 6 ? 'ok' : a.ttr <= 18 ? 'warn' : 'crit');
+    document.getElementById('pp-total').textContent = a.cum + ' min';
+    e = document.getElementById('pp-caught'); e.textContent = pct(a.caught, 0);
+    setV(e, a.caught > 0.75 ? 'ok' : a.caught > 0.5 ? 'warn' : 'crit');
+    e = document.getElementById('pp-escape'); e.textContent = pct(1 - a.caught, 0);
+    setV(e, a.caught > 0.75 ? 'ok' : 'warn');
+    e = document.getElementById('pp-cost'); e.textContent = String(pushes * a.cum);
+    setV(e, pushes * a.cum < 300 ? 'ok' : pushes * a.cum < 900 ? 'warn' : 'crit');
+
+    /* best achievable ordering of the same gate stages, by catch-per-minute */
+    var chosen = stages.slice(0, k).slice().sort(function(x, y){
+      return (y.c / y.min) - (x.c / x.min);
+    });
+    var saved = stages.slice();
+    stages = chosen.concat(stages.slice(k));
+    var best = analyse(k);
+    stages = saved;
+
+    var v = document.getElementById('pp-verdict');
+    var msg, cls;
+    if(flags.length){
+      var f = flags[0];
+      cls = 'crit';
+      msg = '<b>Wasted latency.</b> &ldquo;' + stages[f.i].n + '&rdquo; (' + stages[f.i].min + ' min, catch ' +
+            Math.round(stages[f.i].c * 100) + '%) runs before &ldquo;' + stages[f.j].n + '&rdquo; (' +
+            stages[f.j].min + ' min, catch ' + Math.round(stages[f.j].c * 100) + '%), which is both faster and ' +
+            'stronger. Every defect the later stage would have caught waits an extra ' + stages[f.i].min +
+            ' minutes for no benefit. Move it up.';
+    } else if(a.ttr > best.ttr + 0.3){
+      cls = 'warn';
+      msg = '<b>No dominated pairs left, but not optimal.</b> Expected time to red is ' + a.ttr.toFixed(1) +
+            ' min; ordering these same ' + k + ' stages by catch-per-minute gives ' + best.ttr.toFixed(1) +
+            ' min. That is ' + ((a.ttr - best.ttr) * pushes).toFixed(0) + ' developer-minutes a day spent ' +
+            'waiting, which is the cost you are actually optimizing.';
+    } else if(a.ttr <= 6){
+      cls = 'ok';
+      msg = '<b>Fast feedback.</b> Expected ' + a.ttr.toFixed(1) + ' minutes to a red signal &mdash; short enough ' +
+            'that a developer waits for it rather than context-switching, which is the threshold that decides ' +
+            'whether CI changes behaviour. ' + pct(1 - a.caught, 0) + ' of defects still escape this gate; that is ' +
+            'what the nightly stages and your human testers are for.';
+    } else {
+      cls = 'warn';
+      msg = '<b>Ordered as well as these stages allow, but still slow.</b> ' + a.ttr.toFixed(1) +
+            ' minutes to red is past the point where people wait. The lever now is not ordering &mdash; it is ' +
+            'moving work down a layer, so that more of the catch rate lives in the 2-minute stage instead of the ' +
+            '9-minute one. That is the test-pyramid argument from section 2, priced in minutes.';
+    }
+    v.className = 'verdict ' + cls;
+    v.innerHTML = msg;
+  }
+
+  update();
+}
+
+/* ============================================================
+   DECISION TREE — which layer does this test belong in?
+   ============================================================ */
+var TREE_NODES = {
+  start: {
+    q: 'Does verifying this behaviour require a rendered frame, a physics step, or an engine lifecycle callback?',
+    hint: 'Answer for the behaviour, not for where the code currently lives.',
+    choices: [
+      { t: 'No — it is arithmetic, state, or a data transformation', lbl: 'no engine needed', go: 'pure' },
+      { t: 'Yes — it needs the engine to actually run something', lbl: 'needs the engine', go: 'what' },
+      { t: 'I cannot tell, because it is all tangled together', lbl: 'tangled', go: 'seam' }
+    ]
+  },
+  pure: {
+    q: 'Can you construct the object under test without a GameObject or an AActor?',
+    hint: 'Try it in a scratch test. Ten minutes of trying beats an hour of theorising.',
+    choices: [
+      { t: 'Yes — plain class, constructor takes what it needs', lbl: 'constructible', go: 'unit' },
+      { t: 'No — it is a MonoBehaviour / component and always has been', lbl: 'component-bound', go: 'seam' }
+    ]
+  },
+  seam: {
+    q: 'Could you extract the decision logic into a plain class in under an hour?',
+    hint: 'The engine object keeps Update and the wiring; the plain class keeps the rules.',
+    choices: [
+      { t: 'Yes — the rules are maybe 60 lines buried in Update', lbl: 'extractable', go: 'refactor' },
+      { t: 'No — it is genuinely coupled to engine subsystems', lbl: 'truly coupled', go: 'integration' }
+    ]
+  },
+  what: {
+    q: 'What specifically does it need from the engine?',
+    hint: 'Be precise. "The engine" is not an answer; "a FixedUpdate physics step" is.',
+    choices: [
+      { t: 'A few frames, or two systems talking in a loaded world', lbl: 'frames + systems', go: 'integration' },
+      { t: 'A packaged build: cook, streaming, platform layer, real startup', lbl: 'packaged build', go: 'smoke' },
+      { t: 'Nondeterministic output — RNG, solver order, network timing', lbl: 'nondeterministic', go: 'det' },
+      { t: 'A human to judge whether it is any good', lbl: 'human judgment', go: 'oracle' }
+    ]
+  },
+  det: {
+    q: 'Can you fix or seed the source of the nondeterminism?',
+    hint: 'Seeded RNG, fixed timestep, injected clock, deterministic iteration order.',
+    choices: [
+      { t: 'Yes — I own that code and can inject a seed', lbl: 'can seed', go: 'determinize' },
+      { t: 'No — it comes from the solver, the OS, or a remote peer', lbl: 'cannot seed', go: 'property' }
+    ]
+  },
+  oracle: {
+    q: 'Can you state a pass/fail condition a machine could evaluate?',
+    hint: 'Not "the jump feels good" but "the jump apex is 3.2 &plusmn; 0.05 m and the coyote window is 6 frames".',
+    choices: [
+      { t: 'Yes, with a number and a tolerance', lbl: 'measurable', go: 'metric' },
+      { t: 'No — it is taste, comprehension, or difficulty', lbl: 'not measurable', go: 'playtest' }
+    ]
+  },
+  unit: { leaf:true, title:'Unit test — EditMode / Automation Spec',
+    body:'<p>The cheapest and most valuable layer. Milliseconds per test, no scene, no domain reload, ' +
+         'runs on every push and blocks the merge.</p>' +
+         '<p class="tool">Unity: [Test] in an Editor-only asmdef &middot; Unreal: DEFINE_SPEC with EditorContext</p>' +
+         '<p>Write the name as <code>Method_Condition_ExpectedResult</code>, assert exactly one behaviour, and ' +
+         'keep the whole fixture constructible in one line of SetUp. If this test needs more than about six lines ' +
+         'of arrange, that is a design signal about the class, not about the test.</p>' },
+  refactor: { leaf:true, title:'Refactor first, then unit test',
+    body:'<p>Do not write the awkward PlayMode test. Spend the hour extracting the rules into a plain class that ' +
+         'takes an <code>IClock</code>, an <code>IRandom</code> and its config as constructor parameters, and ' +
+         'leave the MonoBehaviour or AActor as a thin adapter.</p>' +
+         '<p class="tool">Section 3 walkthrough &middot; Dependency Inversion, the D in SOLID</p>' +
+         '<p>You get a fast deterministic test, and you also get code you can drive from a replay, a network ' +
+         'authority, or an automated agent later. On the benchmark this refactor demonstrates competency 1.1 ' +
+         'more convincingly than any number of tests written against untouched code.</p>' },
+  integration: { leaf:true, title:'Integration test — PlayMode / Functional Test',
+    body:'<p>A real world, real ticks, two or more systems. Correct when the thing you are verifying <em>is</em> ' +
+         'the interaction: the trigger volume firing the pickup, the checkpoint writing what the save system reads.</p>' +
+         '<p class="tool">Unity: [UnityTest] + yield return null &middot; Unreal: AFunctionalTest in a test map</p>' +
+         '<p>Budget them. Prefer <code>yield return null</code> counted in frames over <code>WaitForSeconds</code>, ' +
+         'use <code>WaitUntil</code> with a bounded timeout for anything async, and restore every global you touch ' +
+         'in teardown &mdash; timeScale, quality settings, statics.</p>' },
+  smoke: { leaf:true, title:'Smoke / soak — the packaged build',
+    body:'<p>Only a packaged build can fail the way a packaged build fails: cook errors, references that resolve ' +
+         'in the editor and not in the pak, platform defines, streaming, shader compilation, slow leaks.</p>' +
+         '<p class="tool">Unreal: Gauntlet via RunUAT RunUnreal &middot; Unity: built player + scripted input harness</p>' +
+         '<p>Put this in the nightly job, not the PR gate &mdash; a 30-minute stage in front of a developer is a ' +
+         'stage that gets bypassed. Assert the cheap universal things: no crash, no fatal log line, no assertion, ' +
+         'memory below a ceiling at the end, every level loaded at least once.</p>' },
+  determinize: { leaf:true, title:'Make it deterministic, then pick a layer again',
+    body:'<p>Nondeterminism is not a property of the feature, it is a property of the current implementation. ' +
+         'Seed the RNG explicitly and log the seed. Inject the clock. Fix the timestep. Sort before you iterate ' +
+         'a hash set.</p>' +
+         '<p class="tool">IRandom(seed) &middot; IClock &middot; fixed timestep &middot; stable iteration order</p>' +
+         '<p>Then come back to the top of this tree; most of these become unit tests. Doing this also fixes a ' +
+         'real class of shipping bug, because a system whose behaviour depends on iteration order is a system ' +
+         'that behaves differently on a different platform.</p>' },
+  property: { leaf:true, title:'Property / invariant test, run as a soak',
+    body:'<p>When you cannot predict the exact value, assert what must be true of <em>every</em> value. Stamina ' +
+         'is always in [0, Max]. No transform is ever NaN. Total currency never increases without a matching ' +
+         'transaction. The replay of a match produces the same final score.</p>' +
+         '<p class="tool">Seeded fuzz loop + invariant assertions &middot; metamorphic relations (Topic 5)</p>' +
+         '<p>Run many iterations, log the seed on failure, and fail fast on the first violation so you get one ' +
+         'readable error instead of a hundred thousand.</p>' },
+  metric: { leaf:true, title:'Automate the measurement, keep the judgment human',
+    body:'<p>You have an oracle, so you can automate. Assert the number in an integration or smoke test &mdash; ' +
+         'route completes in under 90 s, jump apex within tolerance, tutorial reachable in N inputs &mdash; and ' +
+         'let the humans spend their session on the part that has no number.</p>' +
+         '<p class="tool">Assert the metric, chart the trend, alert on regression</p>' +
+         '<p>Watch for the trap: a threshold that fails on a busy build agent is a flaky test. Assert a generous ' +
+         'ceiling in CI and track the trend line separately, which is the Topic 4 discipline.</p>' },
+  playtest: { leaf:true, title:'Human playtest — and that is the correct answer',
+    body:'<p>No assertion exists, so do not fake one. Automating this produces a test that passes while the game ' +
+         'is unfun, which is worse than no test because it consumes maintenance and buys assurance you have not ' +
+         'earned.</p>' +
+         '<p class="tool">Session-based exploratory testing with charters &middot; Topic 7</p>' +
+         '<p>What automation contributes here is indirect and large: every regression the machine catches is a ' +
+         'regression your playtesters do not waste their session rediscovering. Protect their attention &mdash; ' +
+         'it is the scarcest thing on the project.</p>' }
+};
+
+/* ---------- boot ---------- */
+document.addEventListener('DOMContentLoaded', function(){
+  initTriggers();
+  initFlaky();
+  initPipeline();
+  var t = document.getElementById('tree3');
+  if(t) new GDTTree(t, TREE_NODES, 'start');
+});
+
+})();
+</script>
+</body></html>

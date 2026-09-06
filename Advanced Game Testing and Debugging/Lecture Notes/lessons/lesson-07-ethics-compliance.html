@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Topic 7 · Ethics and Compliance in Testing — Advanced Game Testing and Debugging</title>
+<style id="lesson-kit">
+:root{
+  --bg:#0e1116; --bg2:#161b22; --bg3:#1c232d; --line:#2a3441; --line2:#3a4757;
+  --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#4da3ff; --acc2:#1f6feb;
+  --ok:#3fb950; --warn:#d29922; --crit:#f85149; --info:#a371f7; --teal:#39c5bb;
+  --unity:#5ec8f2; --unreal:#f0a44a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --sh:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 120px}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .crumb{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.topbar .spacer{flex:1}
+.topbar a{color:var(--tx2);text-decoration:none;font-size:13.5px;padding:5px 10px;
+  border-radius:7px;border:1px solid transparent}
+.topbar a:hover{color:var(--tx);background:var(--bg3);border-color:var(--line)}
+.progressbar{position:fixed;top:0;left:0;height:3px;background:var(--acc);
+  width:0;z-index:60;transition:width .12s linear}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero .kicker{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.14;margin:0 0 14px;
+  letter-spacing:-.02em;font-weight:800}
+.hero .lede{font-size:19px;color:var(--tx2);max-width:70ch;margin:0}
+.metarow{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:12.5px;color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+
+/* ---------- typography ---------- */
+h2{font-size:27px;margin:56px 0 6px;letter-spacing:-.015em;font-weight:750;
+  scroll-margin-top:80px}
+h2 .num{color:var(--acc);font-family:var(--mono);font-size:16px;
+  margin-right:11px;font-weight:600}
+h3{font-size:20px;margin:34px 0 6px;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16.5px;margin:24px 0 4px;font-weight:700;color:var(--tx)}
+p{margin:13px 0}
+a{color:var(--acc)}
+ul,ol{margin:13px 0;padding-left:24px}
+li{margin:7px 0}
+li::marker{color:var(--tx3)}
+strong{color:#fff;font-weight:650}
+em{color:var(--tx)}
+code{font-family:var(--mono);font-size:.885em;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;padding:1.5px 6px;color:#bfe3ff}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.subtle{color:var(--tx2)}
+.small{font-size:14px}
+
+/* ---------- callouts ---------- */
+.box{border:1px solid var(--line);border-left:3px solid var(--acc);
+  background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin:22px 0}
+.box .lbl{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:800;color:var(--acc);margin-bottom:7px}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.why{border-left-color:var(--info)}   .box.why .lbl{color:var(--info)}
+.box.warn{border-left-color:var(--warn)}  .box.warn .lbl{color:var(--warn)}
+.box.crit{border-left-color:var(--crit)}  .box.crit .lbl{color:var(--crit)}
+.box.ok{border-left-color:var(--ok)}      .box.ok .lbl{color:var(--ok)}
+.box.field{border-left-color:var(--teal)} .box.field .lbl{color:var(--teal)}
+
+/* ---------- objectives / goals ---------- */
+.goals{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;margin:26px 0}
+.goals h4{margin:0 0 10px;font-size:12px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx3)}
+.goals ol{margin:0;padding-left:20px}
+
+/* ---------- code ---------- */
+.codeblock{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  margin:20px 0;overflow:hidden}
+.codeblock .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);font-size:12.5px;
+  color:var(--tx2);font-family:var(--mono)}
+.codeblock .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);
+  font-size:13.4px;line-height:1.62;color:#d5e2f0}
+.codeblock pre .c{color:#6a7d91;font-style:italic}   /* comment */
+.codeblock pre .k{color:#ff7b9c}                     /* keyword */
+.codeblock pre .t{color:#7ee0c6}                     /* type    */
+.codeblock pre .s{color:#ffcf8f}                     /* string  */
+.codeblock pre .n{color:#c3a6ff}                     /* number  */
+.codeblock pre .f{color:#82c8ff}                     /* func    */
+
+/* annotated code: clickable gutter markers */
+.annot{display:grid;grid-template-columns:1fr;gap:0;margin:22px 0}
+.annot .rows{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.annot .arow{display:grid;grid-template-columns:34px 1fr;align-items:stretch;
+  border-bottom:1px solid rgba(42,52,65,.55)}
+.annot .arow:last-child{border-bottom:0}
+.annot .arow.hasnote{cursor:pointer}
+.annot .arow.hasnote:hover{background:rgba(77,163,255,.07)}
+.annot .gut{display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--tx3);font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--line);user-select:none}
+.annot .arow.hasnote .gut{color:#fff;background:var(--acc2);font-weight:700}
+.annot .arow.open .gut{background:var(--acc)}
+.annot .ln{font-family:var(--mono);font-size:13.3px;line-height:1.65;padding:2px 14px;
+  white-space:pre;overflow-x:auto;color:#d5e2f0}
+.annot .note{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--line);
+  padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease;
+  font-size:14.6px;color:var(--tx2)}
+.annot .arow.open + .note,.annot .note.open{max-height:600px;padding:13px 18px}
+.annot .note b{color:var(--tx)}
+.annot .hint{font-size:12.5px;color:var(--tx3);margin:8px 2px 0}
+
+/* ---------- engine tabs (Unity / Unreal) ---------- */
+.tabs{margin:24px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tabs .tabhd{display:flex;background:var(--bg3);border-bottom:1px solid var(--line)}
+.tabs .tabhd button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:14px;font-weight:650;padding:11px 20px;cursor:pointer}
+.tabs .tabhd button:hover{color:var(--tx2)}
+.tabs .tabhd button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tabs .tabhd button[data-engine="unity"].on{border-bottom-color:var(--unity);color:var(--unity)}
+.tabs .tabhd button[data-engine="unreal"].on{border-bottom-color:var(--unreal);color:var(--unreal)}
+.tabs .tabbody{padding:4px 20px 16px;background:var(--bg2)}
+.tabs .tabpane{display:none}.tabs .tabpane.on{display:block}
+.tabs .tabbody .codeblock{margin:16px -6px}
+
+/* ---------- quiz / check ---------- */
+.check{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin:26px 0}
+.check .q{font-weight:650;margin:0 0 14px}
+.check .opt{display:block;width:100%;text-align:left;background:var(--bg3);
+  border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin:8px 0;
+  color:var(--tx);font:inherit;font-size:15.2px;cursor:pointer;transition:.12s}
+.check .opt:hover{border-color:var(--line2);background:#222b36}
+.check .opt.right{border-color:var(--ok);background:rgba(63,185,80,.11)}
+.check .opt.wrong{border-color:var(--crit);background:rgba(248,81,73,.11)}
+.check .opt .tag{float:right;font-size:12px;font-weight:700;letter-spacing:.06em}
+.check .opt.right .tag{color:var(--ok)}.check .opt.wrong .tag{color:var(--crit)}
+.check .exp{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--tx2)}
+.check .exp.on{display:block}
+.check .exp b{color:var(--tx)}
+.check .exp .ex{margin:9px 0}
+.check .exp .ex .who{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em}
+
+/* ---------- widgets / simulators ---------- */
+.widget{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.widget > .whd{display:flex;align-items:baseline;gap:10px;margin:-2px 0 4px}
+.widget > .whd .wt{font-weight:750;font-size:17px}
+.widget > .whd .wk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--teal);font-weight:800;border:1px solid rgba(57,197,187,.35);
+  border-radius:5px;padding:2px 7px}
+.widget > .wsub{color:var(--tx2);font-size:14.5px;margin:4px 0 16px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;align-items:center;
+  gap:12px;margin:11px 0}
+.ctl label{font-size:14px;color:var(--tx2)}
+.ctl output{font-family:var(--mono);font-size:13.5px;color:var(--acc);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:22px}
+.btn{background:var(--acc2);border:1px solid var(--acc);color:#fff;font:inherit;
+  font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--acc)}
+.btn.ghost{background:var(--bg3);border-color:var(--line2);color:var(--tx2)}
+.btn.ghost:hover{background:#242e3a;color:var(--tx)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:10px;margin:16px 0 0}
+.readout .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px}
+.readout .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.readout .cell .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.readout .cell .v.ok{color:var(--ok)}.readout .cell .v.warn{color:var(--warn)}
+.readout .cell .v.crit{color:var(--crit)}
+.verdict{margin:16px 0 0;padding:13px 16px;border-radius:9px;font-size:14.8px;
+  background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--acc)}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict.crit{border-left-color:var(--crit)}
+canvas{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:9px;margin:16px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;
+  color:var(--tx2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px}
+
+/* ---------- decision tree ---------- */
+.tree{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.tree .path{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  margin:0 0 14px;min-height:17px}
+.tree .path span{color:var(--acc)}
+.tree .qq{font-size:17.5px;font-weight:700;margin:0 0 6px}
+.tree .qh{color:var(--tx2);font-size:14.5px;margin:0 0 14px}
+.tree .choices{display:grid;gap:9px}
+.tree .choices button{text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:12px 15px;color:var(--tx);font:inherit;font-size:15px;
+  cursor:pointer;transition:.12s}
+.tree .choices button:hover{border-color:var(--acc);background:#222c38}
+.tree .choices button .sub{display:block;color:var(--tx3);font-size:13px;margin-top:3px}
+.tree .leaf{border-left:3px solid var(--ok);background:var(--bg3);border-radius:9px;
+  padding:15px 18px}
+.tree .leaf h5{margin:0 0 8px;font-size:16.5px;color:var(--ok)}
+.tree .leaf p{margin:9px 0;font-size:15px}
+.tree .leaf .tool{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:14.6px}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+th{background:var(--bg3);font-weight:700;font-size:13px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--tx2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.017)}
+td code{font-size:.85em}
+
+/* ---------- misc ---------- */
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2.5px 9px;border-radius:999px;vertical-align:1px}
+.pill.s0{background:rgba(248,81,73,.16);color:var(--crit);border:1px solid rgba(248,81,73,.4)}
+.pill.s1{background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pill.s2{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pill.s3{background:rgba(159,176,195,.13);color:var(--tx2);border:1px solid var(--line2)}
+.pill.unity{background:rgba(94,200,242,.14);color:var(--unity);border:1px solid rgba(94,200,242,.4)}
+.pill.unreal{background:rgba(240,164,74,.14);color:var(--unreal);border:1px solid rgba(240,164,74,.4)}
+
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);
+  padding:0 18px;margin:20px 0}
+details.more > summary{cursor:pointer;padding:13px 0;font-weight:650;font-size:15.5px;
+  list-style:none;color:var(--tx)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"▸ ";color:var(--acc);font-weight:800}
+details.more[open] > summary::before{content:"▾ "}
+details.more[open]{padding-bottom:14px}
+details.more > summary:hover{color:var(--acc)}
+
+.deliver{background:linear-gradient(180deg,rgba(77,163,255,.07),transparent);
+  border:1px solid var(--acc2);border-radius:12px;padding:20px 24px;margin:40px 0 0}
+.deliver h3{margin-top:0;color:var(--acc)}
+
+footer.lf{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:13.5px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap}
+footer.lf a{color:var(--tx2);text-decoration:none}
+footer.lf a:hover{color:var(--acc)}
+
+@media (max-width:720px){
+  body{font-size:16px}
+  .ctl{grid-template-columns:1fr;gap:4px}
+  .ctl output{text-align:left}
+  .hero{padding:34px 0 24px}
+}
+@media print{
+  .topbar,.progressbar{display:none}
+  body{background:#fff;color:#111}
+  .widget,.tree,.check,.box,.goals{break-inside:avoid}
+}
+</style>
+<style id="lesson-local">
+.ctl2{display:grid;grid-template-columns:210px 1fr 96px;align-items:center;gap:12px;margin:11px 0}
+.ctl2 label{font-size:14px;color:var(--tx2)}
+.ctl2 output{font-family:var(--mono);font-size:13px;color:var(--acc);text-align:right}
+input[type=color]{width:100%;height:36px;background:var(--bg3);border:1px solid var(--line2);
+  border-radius:8px;padding:2px;cursor:pointer}
+.ccsw{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:18px 0 0}
+.ccsw .pan{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg3)}
+.ccsw .pan .cap{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);
+  font-weight:800;padding:8px 12px;border-bottom:1px solid var(--line)}
+.ccsw .pan .stage{padding:18px 12px;text-align:center;font-weight:700;font-size:15.5px}
+.ccsw .pan .chips{display:flex;gap:9px;padding:0 12px 10px;align-items:center}
+.ccsw .pan .dot{width:28px;height:28px;border-radius:50%;border:1px solid rgba(0,0,0,.4)}
+.ccsw .pan .mx{font-family:var(--mono);font-size:11.4px;color:var(--tx2);padding:0 12px 11px;line-height:1.55}
+.ccsw .pan .mx b{color:var(--tx)}
+.seg{display:inline-flex;flex-wrap:wrap;gap:6px}
+.seg button{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);font:inherit;
+  font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button.on{background:var(--acc2);border-color:var(--acc);color:#fff;font-weight:650}
+.logwrap{background:#0a0d12;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0 0}
+.logline{display:grid;grid-template-columns:30px 1fr;border-bottom:1px solid rgba(42,52,65,.5);cursor:pointer}
+.logline .n{font-family:var(--mono);font-size:10.5px;color:var(--tx3);background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;border-right:1px solid var(--line)}
+.logline .t{font-family:var(--mono);font-size:12.5px;line-height:1.62;padding:5px 12px;
+  white-space:pre-wrap;word-break:break-word;color:#cfe0f0}
+.logline:hover .t{background:rgba(77,163,255,.06)}
+.logline.sel .t{background:rgba(210,153,34,.15)}
+.logline.sel .n{background:var(--warn);color:#0e1116;font-weight:800}
+.logline.hit .n{background:var(--ok);color:#08130a;font-weight:800}
+.logline.miss .n{background:var(--crit);color:#fff;font-weight:800}
+.logline.fp .n{background:var(--info);color:#fff;font-weight:800}
+.logline.hit .t{background:rgba(63,185,80,.10)}
+.logline.miss .t{background:rgba(248,81,73,.13)}
+.logline.fp .t{background:rgba(163,113,247,.13)}
+.logexp{display:none;border-bottom:1px solid rgba(42,52,65,.5);background:var(--bg2);
+  padding:11px 16px;font-size:14.2px;color:var(--tx2);line-height:1.6}
+.logexp.on{display:block}
+.logexp b{color:var(--tx)}
+.reg{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:700;
+  letter-spacing:.05em;padding:2px 7px;border-radius:5px;border:1px solid var(--line2);
+  color:var(--tx2);margin-right:6px;background:var(--bg3)}
+textarea.charter{width:100%;min-height:120px;background:#0a0d12;border:1px solid var(--line2);
+  border-radius:9px;color:var(--tx);font-family:var(--mono);font-size:13.6px;line-height:1.6;
+  padding:12px 14px;resize:vertical}
+.critlist{margin:14px 0 0;padding:0;list-style:none}
+.critlist li{display:grid;grid-template-columns:24px 1fr;gap:9px;font-size:14.3px;
+  margin:8px 0;color:var(--tx2)}
+.critlist li .m{font-family:var(--mono);font-weight:800;font-size:15px}
+.critlist li.pass .m{color:var(--ok)}
+.critlist li.fail .m{color:var(--crit)}
+.critlist li b{color:var(--tx)}
+.scripture{border-left:3px solid var(--teal);background:var(--bg2);padding:13px 20px;
+  margin:20px 0;border-radius:0 9px 9px 0}
+.scripture p{margin:0;font-size:15.8px;color:var(--tx)}
+.scripture cite{display:block;margin-top:7px;font-style:normal;font-size:12.5px;
+  color:var(--tx3);font-family:var(--mono)}
+.readlist{font-size:14.6px;color:var(--tx2)}
+.readlist li b{color:var(--tx)}
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:22px 0}
+.tiers .ti{background:var(--bg2);border:1px solid var(--line);border-top:3px solid var(--acc);
+  border-radius:9px;padding:14px 17px}
+.tiers .ti h5{margin:0 0 6px;font-size:15.5px}
+.tiers .ti p{margin:0;font-size:14.2px;color:var(--tx2)}
+.tiers .ti.t2{border-top-color:var(--warn)}
+.tiers .ti.t3{border-top-color:var(--teal)}
+.tiers .ti.t4{border-top-color:var(--info)}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <span class="crumb">Advanced Game Testing and Debugging · Topic 7</span><span class="spacer"></span>
+  <a href="../index.html">Course hub</a>
+  <a href="lesson-06-memory-management.html">&larr; Prev</a>
+  <a href="lesson-08-applied-mobile-project.html">Next &rarr;</a>
+</div></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Topic 7 · Nov 23 &ndash; Dec 6 · Weeks 12&ndash;13 · Sessions 23&ndash;26</div>
+    <h1>Ethics and Compliance in Testing</h1>
+    <p class="lede">Everything you have tested so far had a machine-checkable oracle: a frame
+    budget, an assertion, a memory ceiling. This topic is about the requirements where the oracle
+    is a person &mdash; a player who cannot see your red icon, a regulator who wants to know why
+    you stored a birthdate, a producer who would very much like you to call that a severity 3.
+    You will find that almost all of it is still testable, and that the parts which are not are
+    the parts you have to be able to argue about.</p>
+    <div class="metarow">
+      <span class="chip"><b>Reading:</b> <i>Modern Game Testing</i> ch. 10&ndash;11 + 6 sources</span>
+      <span class="chip"><b>Assignment:</b> Ethical and Compliance Testing with a Christian Worldview &middot; 100 pts &middot; due Dec 6</span>
+      <span class="chip"><b>Sessions:</b> 23&ndash;26</span>
+      <span class="chip"><b>Est. time:</b> 130 min + reading</span>
+    </div>
+  </header>
+
+  <div class="goals"><h4>By the end you will be able to</h4><ol>
+    <li>Explain why accessibility, compliance, privacy and security are ethical considerations in
+    game testing &mdash; and why treating them as engineering requirements is what makes the ethics
+    operative rather than decorative.</li>
+    <li>Demonstrate techniques for verifying accessibility and compliance features, including
+    measured contrast, color-vision simulation, input remapping, subtitle standards, rating
+    descriptors and platform certification checks.</li>
+    <li>Explain and apply best practices for data privacy and security in testing: minimization,
+    lawful basis, consent, deletion, PII in logs and crash dumps, encrypted storage, and the
+    handling rules that apply to a tester holding a build full of real player data.</li>
+    <li>Run exploratory testing rigorously, with written charters, time boxes and debriefs, instead
+    of calling unstructured play "exploratory."</li>
+    <li>Reflect on how ethical testing practice aligns with Christian values &mdash; integrity in
+    reporting, respect for persons, stewardship of what is entrusted to you &mdash; and defend the
+    same commitments to a colleague who does not share that framework.</li>
+  </ol></div>
+
+  <h2><span class="num">1</span>Ethics here is a set of oracles, not a mood</h2>
+
+  <p>Students arrive at this topic expecting a lecture. What they get instead is a test plan.
+  Nearly every ethical claim in game QA converts, with a little work, into a statement of the
+  form <em>"this observable property of the build must hold, and here is how I checked."</em> Text
+  contrast is a number. Subtitle line length is a number. Whether the game sends a device
+  identifier before the consent dialog has been answered is a packet capture. Whether a crash dump
+  contains a player's email address is a regular expression run over a file. Whether an under-13
+  account received a personalized ad is a query.</p>
+
+  <p>That conversion is the whole method of this lesson, and it matters for a practical reason:
+  <strong>an ethical concern that stays a feeling loses every argument it enters.</strong> Bring
+  "I feel like the colorblind players will struggle" to a milestone meeting and you will be
+  outranked by anyone holding a schedule. Bring "the ammo-empty indicator differs from ammo-full
+  by a luminance contrast of 1.48 to 1, so it fails WCAG 1.4.11's 3:1 minimum for non-text content,
+  and under a deuteranopia simulation the two land 8 &Delta;E apart &mdash; the same khaki at the
+  same brightness; here is the two-line fix" and you are now the person in the room with data. Same conviction, different outcome.</p>
+
+  <div class="box why"><div class="lbl">Why this framing, and not a code of conduct</div>
+  <p>Codes of ethics are necessary and almost never sufficient. The ACM Code of Ethics already
+  says, in 1.4, to "be fair and take action not to discriminate," and in 1.6, to "respect privacy."
+  Nobody in your future studio will disagree with either sentence. Defects still ship, because the
+  gap is not between believing the principle and rejecting it &mdash; it is between believing the
+  principle and having a repeatable procedure that catches its violation before cert. This lesson
+  supplies procedures. The last section supplies the reason to run them when nobody is watching,
+  which is a different kind of problem and is not solved by more procedures.</p></div>
+
+  <p>There is also a hard-nosed argument, and you should be able to make it because sometimes it is
+  the only one that lands. Accessibility failures, privacy failures and compliance failures are all
+  <em>late-discovery, high-cost</em> defect classes. A contrast failure found in a mockup costs a
+  hex value. The same failure found at cert costs a UI re-export, a localization re-pass for the
+  screens whose layout shifted, a rebuild, and a resubmission window. A privacy defect &mdash; say,
+  telemetry sending a persistent device identifier before consent &mdash; is not a bug report at
+  all once you have shipped it; it is a disclosure obligation with a regulatory clock attached.
+  Everything in this topic obeys the cost curve you already learned in Topic 1, only steeper.</p>
+
+  <h2><span class="num">2</span>Accessibility as a measurement, starting with color</h2>
+
+  <p>Roughly 8% of men and 0.5% of women of Northern European descent have some form of red&ndash;green
+  color vision deficiency. For a game with 200,000 players that is on the order of eight thousand
+  people, which is more than most studios' entire external playtest population for the whole
+  project. They are not an edge case; they are a platform.</p>
+
+  <p>The rule that survives contact with production is short: <strong>never encode information in
+  hue alone.</strong> Any state a player must distinguish &mdash; friend/enemy, safe/damaging,
+  selected/unselected, interactable/scenery &mdash; must differ in at least one non-hue channel:
+  luminance, shape, icon, pattern, position, or text. The reason luminance carries so much weight
+  is visible in the widget below. Dichromatic vision reduces the three-cone color space to two
+  dimensions, and hue distinctions collapse along a confusion line; luminance differences survive
+  that projection almost intact. So a red/green pair with matched brightness collapses to a single
+  khaki tone, while a light-red/dark-green pair stays separable for everyone, including the player
+  looking at a phone in direct sunlight and the streamer whose capture card is crushing saturation.</p>
+
+  <p>Two numbers do the work. WCAG 2.2 keeps success criterion <b>1.4.3</b> at a contrast ratio of
+  <b>4.5:1</b> for normal body text and <b>3:1</b> for large text (18 pt, or 14 pt bold &mdash;
+  about 24 px and 18.7 px), <b>1.4.6</b> at <b>7:1</b> for AAA, and <b>1.4.11</b> at <b>3:1</b> for
+  non-text content such as icons, meters and focus rings. Games are not legally websites in most
+  jurisdictions, but these thresholds are the only widely agreed, reproducible numbers that exist,
+  every accessibility specialist you will ever work with uses them, and the platform holders'
+  guidelines point at them. Use them as your oracle and you will never have to argue about whether
+  something "looks readable."</p>
+
+  <div class="widget" id="w-contrast">
+    <div class="whd"><span class="wt">Contrast &amp; color-vision checker</span>
+      <span class="wk">Real WCAG math</span></div>
+    <p class="wsub">Each channel is linearized with the sRGB transfer function, relative luminance
+    is <code>L = 0.2126R + 0.7152G + 0.0722B</code>, and contrast is
+    <code>(L<sub>light</sub>+0.05)/(L<sub>dark</sub>+0.05)</code> &mdash; WCAG 2.x exactly. The
+    three deficiency panels apply the Machado, Oliveira &amp; Fernandes (2009) severity-1.0
+    matrices in linear light and re-encode to sRGB for display. &Delta;E is CIE76 in L*a*b*, which
+    is a coarse but honest measure of "do these still look like different colors."</p>
+
+    <div class="ctl2"><label for="cc-fg">Color A &mdash; icon / text</label>
+      <input type="color" id="cc-fg" value="#e57373"><output id="cc-fgo">#e57373</output></div>
+    <div class="ctl2"><label for="cc-bg">Color B &mdash; partner / background</label>
+      <input type="color" id="cc-bg" value="#81c784"><output id="cc-bgo">#81c784</output></div>
+
+    <div class="btnrow">
+      <button class="btn ghost" data-cc="#e57373|#81c784">Red / green status icons</button>
+      <button class="btn ghost" data-cc="#f0a44a|#39c5bb">Orange vs teal team colors</button>
+      <button class="btn ghost" data-cc="#ffffff|#262626">Subtitle on 85% scrim</button>
+      <button class="btn ghost" data-cc="#4da3ff|#7a8794">Quest marker on terrain</button>
+      <button class="btn ghost" data-cc="#ffc98a|#0f4c47">Team colors, luminance-separated</button>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Contrast ratio</div><div class="v" id="cc-ratio">&ndash;</div></div>
+      <div class="cell"><div class="k">AA body 4.5:1</div><div class="v" id="cc-aa">&ndash;</div></div>
+      <div class="cell"><div class="k">AA large / UI 3:1</div><div class="v" id="cc-aal">&ndash;</div></div>
+      <div class="cell"><div class="k">AAA 7:1</div><div class="v" id="cc-aaa">&ndash;</div></div>
+      <div class="cell"><div class="k">Worst sim ratio</div><div class="v" id="cc-worst">&ndash;</div></div>
+    </div>
+
+    <div class="ccsw" id="cc-panels"></div>
+    <div class="verdict" id="cc-verdict">Pick two colors.</div>
+    <p class="small subtle" style="margin-top:12px">Simulation caveat, stated because pedagogical
+    honesty matters: these matrices model <em>dichromacy</em> (the cone type is absent). Anomalous
+    trichromacy &mdash; deuteranomaly and protanomaly, which are far more common &mdash; sits
+    between this and normal vision, and individual variation is large. A simulator tells you a
+    pairing is unsafe; it cannot certify that a pairing is safe. That still requires a person.</p>
+  </div>
+
+  <p>The widget opens on Material Design's red 300 and green 300 &mdash; a pairing you have almost
+  certainly used, and one that standard vision reads as obviously different (&Delta;E 81). Look at
+  the deuteranopia panel: <code>#a99e71</code> against <code>#bfb488</code>, 8 &Delta;E apart, at a
+  luminance contrast of 1.29:1. Nothing survives. Now load "orange vs teal team colors" and read
+  the contrast ratio: <b>1.02:1</b>. Those two colors
+  look violently different on your monitor and are, in luminance terms, the same color. Take a
+  grayscale screenshot of your own game's team indicators and you will usually discover you have
+  shipped some version of this. Then load the luminance-separated preset and notice that the fix
+  did not require abandoning the team's brand colors &mdash; it required moving one of them along
+  the lightness axis.</p>
+
+  <div class="box field"><div class="lbl">Do this on your own project this week</div>
+  <p>Pick the five most decision-relevant color pairs in your UI: health full vs. health critical,
+  friendly vs. hostile nameplate, interactable highlight vs. background, selected vs. unselected
+  menu item, and the primary damage-warning indicator. Run each pair through the widget. Record the
+  ratio and the worst-case simulated ratio in a table. That table is a deliverable in your
+  assignment, and it takes about eight minutes. Unity ships a helper worth knowing about here:
+  <code>UnityEngine.Accessibility.VisionUtility.GetColorBlindSafePalette()</code> generates a
+  palette whose entries remain distinguishable under simulated deficiency, within a luminance range
+  you specify.</p></div>
+
+  <h2><span class="num">3</span>The rest of the accessibility surface</h2>
+
+  <p>Color is the part students find first because it is the part with a calculator. The larger
+  share of accessibility defects live in input, text, audio and pacing. The Game Accessibility
+  Guidelines organize their recommendations into <b>Basic</b>, <b>Intermediate</b> and
+  <b>Advanced</b> tiers, sorted by implementation cost and by how many players are affected; the
+  Xbox Accessibility Guidelines (XAG) are numbered and read like certification requirements, which
+  makes them easy to turn into test cases. Both are free. Neither is long.</p>
+
+  <div class="tiers">
+    <div class="ti"><h5>Input and motor</h5>
+      <p>Full remapping including modifiers, not a choice between three presets. No required
+      simultaneous inputs. Hold actions offer a toggle alternative. No mandatory quick-time events
+      without an assist option. One-handed viability for at least the core loop. Test with the
+      Xbox Adaptive Controller or a keyboard with one hand behind your back.</p></div>
+    <div class="ti t2"><h5>Text and subtitles</h5>
+      <p>Minimum size roughly 4% of screen height (about 43 px at 1080p) or a size slider; a
+      background scrim or outline rather than bare text; speaker identification when the speaker is
+      off-screen; two lines maximum; subtitles for all story-relevant audio and separate volume
+      sliders for speech, effects and music.</p></div>
+    <div class="ti t3"><h5>Cognitive load and pacing</h5>
+      <p>Difficulty options that are separable (combat vs. puzzle vs. timing), objective reminders
+      persistently available, no tutorial information that appears once and never again, the
+      ability to pause anything that is not multiplayer, and a legible reading time for any timed
+      text.</p></div>
+    <div class="ti t4"><h5>Photosensitivity</h5>
+      <p>WCAG 2.3.1: nothing flashes more than three times in any one second, and nothing that does
+      flash exceeds the general and red flash thresholds over more than a quarter of the screen. Run
+      the Harding-style analysis on captured footage of your most explosive sequences &mdash; not on
+      a menu.</p></div>
+  </div>
+
+  <p>Subtitles deserve a paragraph on their own because they are the accessibility feature most
+  likely to be implemented and still be wrong. The failure is almost never "no subtitles"; it is
+  desynchronization after a cutscene skip, a missing line for barked combat dialogue, a speaker
+  label omitted when two characters are off-screen, or text that fits in English and overflows in
+  German. Gauk &amp; Bezemer's <i>EchoTest</i> (2024) is worth reading precisely because it attacks
+  this at the only scale that works: comparing what the audio says against what the subtitle
+  displays, automatically, across recorded gameplay, rather than asking a human to watch forty
+  hours with a checklist. Larreina-Morales &amp; Mangiron (2024) is the counterpart for audio
+  description, and its method is the lesson &mdash; they asked players with visual disabilities
+  what they wanted rather than deriving it from a guideline document. When you write your test
+  charters, notice which of your assumptions came from a spec and which came from a person.</p>
+
+  <div class="box warn"><div class="lbl">The test that finds the most accessibility bugs per hour</div>
+  <p>Play your own game under an imposed constraint for twenty minutes and log every point of
+  failure. Mouse only, no keyboard. Keyboard only, no mouse. Sound muted, subtitles on. Grayscale
+  filter on at the OS level. Screen scaled to 150%. One hand. This is not a substitute for testing
+  with disabled players &mdash; nothing is &mdash; but it converts an abstract requirement into a
+  list of concrete tickets in the time it takes to eat lunch, and it will be a required activity in
+  session 23.</p></div>
+
+  <h3>Where the engines put the hooks</h3>
+
+  <div class="tabs"><div class="tabhd">
+    <button data-engine="unity" data-tab="u" class="on">Unity</button>
+    <button data-engine="unreal" data-tab="e">Unreal</button>
+  </div><div class="tabbody">
+    <div class="tabpane on" data-pane="u">
+      <p>Unity's accessibility support lives in the <code>UnityEngine.Accessibility</code>
+      namespace. Two distinct pieces matter:</p>
+      <ul>
+        <li><b>Screen reader support</b> (Unity 2023.2 / Unity 6 and later, iOS and Android):
+        <code>AssistiveSupport.isScreenReaderEnabled</code> tells you whether VoiceOver or TalkBack
+        is active, and you publish an <code>AccessibilityHierarchy</code> of
+        <code>AccessibilityNode</code> objects &mdash; each with a label, a value, a role and a
+        frame &mdash; that mirrors your UI. <code>AssistiveSupport.notificationDispatcher.SendAnnouncement()</code>
+        speaks a transient event such as "wave 3 incoming."</li>
+        <li><b>Color safety</b>: <code>VisionUtility.GetColorBlindSafePalette(palette, minLum, maxLum)</code>
+        fills an array with colors that stay distinguishable under simulated deficiency and returns
+        how many it managed within your luminance bounds.</li>
+      </ul>
+      <p>For text, TextMesh Pro auto-sizing plus a user-facing scale multiplier is the practical
+      path; hardcoded <code>fontSize</code> values are what make a size slider impossible to add
+      later. For localization, the <b>Localization</b> package (<code>com.unity.localization</code>)
+      gives you string tables, a Locale switcher you can drive at runtime, and a
+      <b>pseudo-locale</b> that inflates every string by a configurable percentage and pads it with
+      accented characters. Ship a pseudo-localized build to your own team for one day and every
+      fixed-width button in the game files its own bug.</p>
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Accessibility smoke test · EditMode</div><pre>
+<span class="c">// Fails the build if any UI color pair used for state falls under 3:1.</span>
+<span class="p">[</span><span class="t">Test</span><span class="p">]</span>
+<span class="k">public void</span> <span class="f">StateColorPairs_MeetNonTextContrastMinimum</span>()
+{
+    <span class="k">foreach</span> (<span class="k">var</span> pair <span class="k">in</span> UIPalette.StatePairs)
+    {
+        <span class="k">float</span> ratio = ContrastUtil.<span class="f">Ratio</span>(pair.a, pair.b);
+        Assert.<span class="f">GreaterOrEqual</span>(ratio, <span class="n">3.0f</span>,
+            $<span class="s">"{pair.name}: {ratio:F2}:1 &lt; 3:1 (WCAG 1.4.11)"</span>);
+    }
+}</pre></div>
+    </div>
+    <div class="tabpane" data-pane="e">
+      <p>Unreal exposes accessibility through Slate, and UMG surfaces it per-widget. In the
+      Details panel every widget has an <b>Accessibility</b> category: <i>Accessible Behavior</i>
+      (Not Accessible / Auto / Summary / Custom / Tool Tip), <i>Accessible Text</i>, <i>Accessible
+      Summary Behavior</i>, and <i>Can Children Be Accessible</i>. In C++ the equivalents are
+      <code>SetAccessibleBehavior(EAccessibleBehavior::Custom)</code> and
+      <code>SetAccessibleText(FText)</code> on the <code>SWidget</code>. The accessibility layer is
+      not active by default &mdash; it is enabled in project settings and via the
+      <code>Accessibility.Enable 1</code> console variable, which is worth knowing because "screen
+      reader reports nothing" is usually this and not your markup.</p>
+      <p>For text, use <code>FText</code> and <code>NSLOCTEXT</code>/<code>LOCTEXT</code> for
+      everything player-visible; an <code>FString</code> in a UI is a localization defect waiting to
+      be filed. The Localization Dashboard runs gather / compile passes, and you can launch with
+      <code>-culture=de</code> to check layout under a language that averages roughly a third more
+      characters than English. Subtitle timing lives in the dialogue wave assets
+      (<code>UDialogueWave</code> / <code>USoundWave</code> subtitle arrays), which means a subtitle
+      desync bug is frequently an <em>asset</em> bug, not a UI bug &mdash; check the wave before you
+      blame the widget.</p>
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Automation Spec · non-text contrast gate</div><pre>
+<span class="f">DEFINE_SPEC</span>(FUIContrastSpec, <span class="s">"Project.Accessibility.Contrast"</span>,
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+<span class="k">void</span> FUIContrastSpec::<span class="f">Define</span>()
+{
+    <span class="f">Describe</span>(<span class="s">"State color pairs"</span>, [<span class="k">this</span>]()
+    {
+        <span class="f">It</span>(<span class="s">"should reach 3:1 luminance contrast"</span>, [<span class="k">this</span>]()
+        {
+            <span class="k">for</span> (<span class="k">const</span> FStatePair&amp; P : UUIPalette::<span class="f">GetStatePairs</span>())
+            {
+                <span class="k">const</span> <span class="k">float</span> Ratio = FContrast::<span class="f">Ratio</span>(P.A, P.B);
+                <span class="f">TestTrue</span>(<span class="f">FString::Printf</span>(TEXT(<span class="s">"%s = %.2f:1"</span>), *P.Name, Ratio),
+                         Ratio &gt;= <span class="n">3.0f</span>);
+            }
+        });
+    });
+}</pre></div>
+    </div>
+  </div></div>
+
+  <div class="check">
+    <p class="q">Your HUD shows a poison status with a green icon and a burning status with a red
+    icon, identical shapes, both at the same size and position. A player files "I can't tell my
+    status effects apart." Contrast between the two icon colors measures 1.4:1. What is the correct
+    ticket?</p>
+    <button class="opt" data-correct="0">Feature request &mdash; add a colorblind mode toggle that swaps the palette for deuteranopia.</button>
+    <button class="opt" data-correct="1">Defect against WCAG 1.4.11 / GAG "don't rely on color alone": the two states are not distinguishable by any non-hue channel; fix is a distinct icon shape plus a luminance split.</button>
+    <button class="opt" data-correct="0">Not a defect &mdash; the status is also shown in the buff list on the character sheet, so the information is available.</button>
+    <div class="exp"><b>Why the second option:</b> the failure is that a state distinction is
+    carried by hue alone, and it is measurable &mdash; 1.4:1 is below the 3:1 non-text minimum, so
+    the two icons are near-identical in luminance as well. Naming the criterion turns a taste
+    argument into a spec violation with a defined fix, and the fix (different silhouette, different
+    lightness) helps every player, including the one squinting at a Steam Deck outdoors.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      A colorblind mode sounds generous and is what many shipped games do. But it is a
+      configuration screen bolted onto a design flaw: it requires the player to know they need it,
+      to find it, and to have exactly the deficiency you modeled &mdash; and it does nothing for the
+      grayscale capture, the cheap monitor, or the anomalous trichromat your three preset filters
+      do not cover. Fix the encoding first; offer palette options as an extra, not as the remedy.</div>
+      <div class="ex"><span class="who">Why the third is tempting</span><br>
+      It is technically true and completely fails the actual use case. The information is needed
+      during combat, in under a second, from the HUD. "Available somewhere in a menu" is the same
+      argument as "the crash is recoverable if you reload your save."</div>
+    </div>
+  </div>
+
+  <h2><span class="num">4</span>Compliance: ratings, certification, and money</h2>
+
+  <p>Compliance is the branch of this topic where being right is not enough &mdash; you also have
+  to be right in the format the external body expects. Three distinct systems will judge your
+  build, and confusing them is a classic student error.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>System</th><th>Who judges</th><th>What invalidates it</th><th>How you test it</th></tr></thead>
+    <tbody>
+      <tr><td><b>Content rating</b> (ESRB, PEGI, IARC, USK, CERO)</td>
+        <td>Rating boards, from your disclosure questionnaire</td>
+        <td>A patch that adds content you did not disclose &mdash; new gore, a new gambling-like
+        mechanic, unmoderated user-generated content, an in-game store.</td>
+        <td>A change-control checklist: every content PR is tagged against the disclosure form.
+        Any tag that flips requires the rating to be revisited before ship.</td></tr>
+      <tr><td><b>Platform certification</b> (TRC on PlayStation, XR on Xbox, Lotcheck on Nintendo)</td>
+        <td>The platform holder, against a numbered requirements document</td>
+        <td>Nothing "invalidates" it &mdash; you either pass each numbered requirement or you fail
+        submission and resubmit, typically losing days you did not budget.</td>
+        <td>A traceability matrix: requirement number &rarr; test case &rarr; last run &rarr;
+        result. Cert failures are quoted by number in the ticket, never paraphrased.</td></tr>
+      <tr><td><b>Law and regulation</b> (GDPR, CCPA/CPRA, COPPA, PCI DSS, accessibility statutes,
+        gambling law)</td>
+        <td>Regulators and courts, after the fact</td>
+        <td>Jurisdiction changes under you. A mechanic legal in one market becomes a licensing
+        question in another without you changing a line of code.</td>
+        <td>Testable proxies: data inventory, consent-state assertions, deletion verification,
+        age-gate behavior, currency and purchase-flow audits.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The certification requirements are the ones that most reliably ruin a student team's ship
+  date, and they are boring in a specific and useful way: suspend and resume, controller disconnect
+  during gameplay, account sign-out mid-session, storage device removed while saving, correct
+  button glyphs for the connected controller, correct legal and age-gate screens, correct behavior
+  when the network drops mid-purchase, achievements/trophies unlocking exactly once. None of these
+  are hard. All of them are invisible during development because nobody unplugs a controller during
+  a jam. Write them as a numbered checklist once and rerun it every milestone.</p>
+
+  <div class="box why"><div class="lbl">Why the disclosure form is a testing artifact</div>
+  <p>Rating boards issue a rating based on what you told them the game contains. Suppose your game
+  ships rated for teens, and four months later a live-ops patch adds a cosmetic loot box with a
+  randomized reward and a real-money price. Nothing crashed. Every test passed. You may nevertheless
+  now be shipping a product whose rating descriptors no longer describe it, in some markets under a
+  regulatory regime that treats randomized paid rewards as a gambling-adjacent mechanic. Bennett
+  (2023) is your reading on exactly how unsettled this is &mdash; Belgium's gaming regulator
+  concluded in 2018 that certain paid loot boxes fell under its gambling act, the Netherlands
+  pursued a case that was later overturned on appeal, and several jurisdictions have since gone the
+  disclosure-of-odds route instead. The engineering consequence is simple and non-negotiable: a
+  content change that touches monetization, randomness, chat, or user-generated content is a
+  compliance change and must be routed as one.</p></div>
+
+  <p>Pape (2024) extends the same point into finance. The CFPB's 2024 attention to banking and
+  payments inside video games and virtual worlds is a signal about in-game currencies: once players
+  can convert money into a currency, hold a balance, trade it, and convert some of it back out, the
+  systems around it start attracting the vocabulary of consumer finance &mdash; fraud, chargebacks,
+  money laundering, unauthorized transfers on children's accounts. For a tester, this reframes the
+  economy exploits you learned to file in Topic 1. A duplication bug in a tradeable currency is not
+  only a balance defect. It is a defect in a system that moves value between real people, and its
+  severity should be argued on those terms.</p>
+
+  <div class="tree" id="tree-comp"><p class="path"></p><div class="body"></div></div>
+
+  <div class="check">
+    <p class="q">Two weeks before submission you find that the game does not respond to the console
+    being put into rest mode during an autosave; on resume the save slot is corrupt. Your producer
+    points out that this requires "a really weird sequence" and asks whether it can ship as a known
+    issue.</p>
+    <button class="opt" data-correct="0">Yes, with a known-issues entry &mdash; the repro rate is low and the milestone is at risk.</button>
+    <button class="opt" data-correct="0">No, because save corruption is always S0 and S0 always blocks.</button>
+    <button class="opt" data-correct="1">No, and severity is not the deciding argument: suspend/resume behavior and save integrity are numbered certification requirements, so this is a submission blocker regardless of repro rate.</button>
+    <div class="exp"><b>Why the third option:</b> compliance blockers are decided by a different
+    authority than your triage board. The platform holder's requirement is binary &mdash; you pass
+    it or the submission fails and you resubmit. Presenting it as "this fails XR/TRC requirement
+    N, here is the clause" ends the negotiation in thirty seconds and, importantly, does not
+    require you to win an argument about how weird the sequence is.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      It is the answer that respects the schedule, and known-issues lists are a legitimate tool for
+      ordinary defects. It fails here because a failed submission costs more schedule than the fix
+      does &mdash; you lose the resubmission window on top of the fix.</div>
+      <div class="ex"><span class="who">Why the second is tempting</span><br>
+      Right conclusion, wrong reasoning, and the reasoning is what you will be asked for. "Always
+      S0" is a policy claim your producer can argue with, and severity-blocks-ship is a studio
+      convention rather than an external rule. The certification clause is an external rule. Use
+      the strongest available authority, not the loudest one.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">5</span>Privacy: what the law actually asks you to be able to prove</h2>
+
+  <p>You do not need to be a lawyer, and you should not pretend to be one. You do need to know
+  which four or five questions a privacy review will ask, because every one of them turns into a
+  test.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>The question</th><th>Where it comes from</th><th>The test you run</th></tr></thead>
+    <tbody>
+      <tr><td><b>What do you collect, and why do you need each field?</b></td>
+        <td>Data minimization &mdash; GDPR Art. 5(1)(c); the same idea appears in CCPA/CPRA's
+        purpose limitation.</td>
+        <td>Build a data inventory: every field, its purpose, its retention period, where it is
+        stored. Then delete any field whose purpose column says "might be useful later." That
+        sentence is not a purpose.</td></tr>
+      <tr><td><b>On what basis are you allowed to have it?</b></td>
+        <td>Lawful basis &mdash; GDPR Art. 6. Consent is one of six, and it is the most fragile.</td>
+        <td>Assert consent state at the call site. A telemetry event that fires when
+        <code>consent == unknown</code> is a defect with a stack trace, not a policy discussion.</td></tr>
+      <tr><td><b>Is the consent real?</b></td>
+        <td>GDPR Art. 4(11) and Art. 7: freely given, specific, informed, unambiguous, and by clear
+        affirmative action. Pre-ticked boxes and default-grant are not consent.</td>
+        <td>Test the dialog like a UI: is "Accept all" the same size and prominence as "Reject
+        all"? Does declining still let you play? Is withdrawing as easy as granting? Dark patterns
+        are testable &mdash; measure the buttons.</td></tr>
+      <tr><td><b>Can a player get their data and get it deleted?</b></td>
+        <td>DSAR and erasure &mdash; GDPR Art. 15 and 17; CCPA/CPRA's access and delete rights.</td>
+        <td>Run the deletion end to end, then go looking for the survivors: backups, analytics
+        warehouse, CDN logs, the support tool, the leaderboard, the moderation queue. Deletion that
+        only clears the primary database is the most common failure and the easiest to catch.</td></tr>
+      <tr><td><b>How old is the player?</b></td>
+        <td>COPPA in the US (under 13) and GDPR Art. 8 in the EU (13&ndash;16 depending on member
+        state).</td>
+        <td>Neutral age gate (a date entry that does not hint at the answer), no persistent
+        identifier or behavioral advertising for accounts below the threshold, and a check that the
+        gate cannot be trivially bypassed by backing out and re-entering.</td></tr>
+      <tr><td><b>Where is card data?</b></td>
+        <td>PCI DSS.</td>
+        <td>Nowhere in your code. If your build can see a primary account number, the architecture
+        is wrong, and the log line proving it is a finding, not a warning.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box crit"><div class="lbl">Rules for testers holding real player data</div>
+  <p>At some point you will be handed a production build, a production database snapshot, or a
+  player's save file attached to a support ticket. Four rules, and they are not negotiable:
+  <b>(1)</b> use anonymized or synthetic data unless the defect provably requires real data;
+  <b>(2)</b> if you must use real data, do it on managed hardware, never copy it to a personal
+  machine, a phone, a screenshot in Slack, or a Discord DM; <b>(3)</b> redact before attaching
+  &mdash; a bug ticket is read by dozens of people and lives for years; <b>(4)</b> delete your copy
+  when the ticket closes and say so in the ticket. Conklin et al.'s privacy chapter is your
+  reference for why these exist. The practical version is simpler: the fastest way for a QA
+  department to cause a reportable data incident is a well-intentioned tester attaching a full log
+  to a public issue tracker.</p></div>
+
+  <h2><span class="num">6</span>Walkthrough: nine lines, six violations</h2>
+
+  <p>Below is a telemetry-and-save routine of the kind that appears in student projects roughly
+  every semester. Nothing in it crashes. Every automated test passes. Click any highlighted line
+  to see which principle it breaks and what the fix is.</p>
+
+  <div class="annot"><div class="rows">
+    <div class="arow"><div class="gut">1</div><div class="ln">public void OnLevelComplete(LevelResult r)</div></div>
+    <div class="arow"><div class="gut">2</div><div class="ln">{</div></div>
+    <div class="arow hasnote"><div class="gut">3</div><div class="ln">    var p = new AnalyticsPayload {</div></div>
+    <div class="note"><b>No consent gate anywhere in this method.</b> The first question of any
+    privacy review is "on what lawful basis?" and the answer here is "we didn't ask." The fix is
+    structural, not cosmetic: analytics calls should not be reachable when consent state is
+    <code>Unknown</code> or <code>Denied</code>. Put the check in one place &mdash; a
+    <code>Telemetry.Send()</code> wrapper that early-returns &mdash; and assert on it in a unit
+    test, because a consent bug added six months from now will be added by someone who never read
+    this file.</div>
+    <div class="arow hasnote"><div class="gut">4</div><div class="ln">        email       = PlayerPrefs.GetString("account_email"),</div></div>
+    <div class="note"><b>Direct identifier in a gameplay event, and stored in <code>PlayerPrefs</code>
+    besides.</b> A level-completion event needs to be attributable to <em>an account</em>, not to a
+    human being; send an opaque internal <code>player_id</code> and let the backend join it if it
+    genuinely needs to. Separately, <code>PlayerPrefs</code> is an unencrypted registry key on
+    Windows and a plist on macOS &mdash; it is a convenience store for settings, not a place for
+    personal data.</div>
+    <div class="arow hasnote"><div class="gut">5</div><div class="ln">        displayName = Profile.Current.LegalName,</div></div>
+    <div class="note"><b>Data minimization, GDPR Art. 5(1)(c).</b> Ask the purpose question out
+    loud: what analysis of level-completion times requires a legal name? There isn't one. This
+    field exists because the profile object had it and the payload was written by copying fields.
+    Every field you carry is a field you must inventory, secure, retain on a schedule, produce on
+    request and delete on request &mdash; minimization is not asceticism, it is reduced liability
+    per byte.</div>
+    <div class="arow hasnote"><div class="gut">6</div><div class="ln">        birthDate   = Profile.Current.BirthDate,</div></div>
+    <div class="note"><b>You almost never need the date; you need the answer to a question.</b>
+    Store <code>ageBracket</code> (under-13 / 13&ndash;15 / 16+) computed once at registration, not
+    the birthdate, and certainly do not ship the birthdate in an event payload. A full date of
+    birth plus a name is one of the most useful pairs an attacker can steal, and under COPPA the
+    moment you know a user is under 13 you have acquired obligations &mdash; the correct design
+    knows the bracket and behaves differently, rather than knowing the date and doing nothing with
+    it.</div>
+    <div class="arow hasnote"><div class="gut">7</div><div class="ln">        deviceId    = SystemInfo.deviceUniqueIdentifier,</div></div>
+    <div class="note"><b>A persistent hardware identifier is personal data.</b> It survives
+    reinstall, links every app on the device, and cannot be reset by the player &mdash; which is
+    exactly why platform policies restrict it and why GDPR treats it as an identifier. Use a
+    per-install random GUID you generate yourself, store it with the save data, and regenerate it
+    when the player asks. That gives you the session-stitching you actually wanted without the
+    tracking property you didn't.</div>
+    <div class="arow hasnote"><div class="gut">8</div><div class="ln">        lat = Geo.Latitude, lon = Geo.Longitude,</div></div>
+    <div class="note"><b>Precise geolocation is a sensitive category under CPRA</b> and requires
+    its own justification everywhere else. If the actual requirement is "show players a nearby
+    server region," the correct field is <code>region = "eu-west-1"</code>, derived server-side and
+    never stored at coordinate precision. Eight-metre accuracy identifies a home address; a region
+    string identifies a data centre.</div>
+    <div class="arow hasnote"><div class="gut">9</div><div class="ln">        sessionToken= AuthService.BearerToken,</div></div>
+    <div class="note"><b>This is a credential, and it is now inside an analytics record.</b>
+    Anyone with read access to the analytics warehouse &mdash; a much longer list than the people
+    with access to auth &mdash; can impersonate this player until the token expires. Credentials,
+    tokens, keys and password material never appear in payloads, never appear in logs, and are the
+    one category where "we'll clean it up later" is wrong, because the retention already happened.</div>
+    <div class="arow"><div class="gut">10</div><div class="ln">        levelId = r.LevelId, elapsedMs = r.ElapsedMs</div></div>
+    <div class="arow"><div class="gut">11</div><div class="ln">    };</div></div>
+    <div class="arow"><div class="gut">12</div><div class="ln">    string json = JsonUtility.ToJson(p);</div></div>
+    <div class="arow hasnote"><div class="gut">13</div><div class="ln">    Debug.Log("[Telemetry] " + json);</div></div>
+    <div class="note"><b>The player's own log file is a public document.</b> On desktop it sits in
+    a known directory, and the standard support ritual is "please zip your log and post it in the
+    bug channel." Everything in that payload &mdash; email, legal name, birthdate, coordinates,
+    session token &mdash; is now in a Discord thread with a search index. Log the event
+    <em>name</em> and a correlation id; never log the payload. If you need the payload while
+    debugging, gate it behind a developer flag that is compiled out of shipping builds.</div>
+    <div class="arow"><div class="gut">14</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">15</div><div class="ln">    using (var w = new WebClient())</div></div>
+    <div class="note"><b>Look at the scheme on the next line.</b> Plaintext HTTP means every
+    device on the same coffee-shop network sees the whole payload, and anyone in the path can
+    modify the response. This is the cheapest fix in the entire lesson &mdash; change four
+    characters &mdash; and it is still the single most common finding in student security reviews.
+    While you are there: pin or at least validate the certificate, and do not disable certificate
+    validation to make a local test server work. That workaround ships more often than you would
+    believe.</div>
+    <div class="arow"><div class="gut">16</div><div class="ln">        w.UploadString("http://telemetry.studio.example/v1/level", json);</div></div>
+    <div class="arow"><div class="gut">17</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">18</div><div class="ln">    File.WriteAllText(Application.persistentDataPath + "/save0.json",</div></div>
+    <div class="note"><b>The entire profile, in cleartext JSON, on the player's disk.</b> Two
+    separate problems. First, personal data at rest with no protection &mdash; a stolen laptop or a
+    malicious app with file access reads it directly. Second, a save file the player can edit is a
+    trust boundary: if this JSON contains currency, unlocks or progression, your economy is
+    client-authoritative and you have an exploit, not just a privacy issue. Store the minimum
+    locally, encrypt what remains, and keep anything of value server-side.</div>
+    <div class="arow"><div class="gut">19</div><div class="ln">                      JsonUtility.ToJson(Profile.Current));</div></div>
+    <div class="arow"><div class="gut">20</div><div class="ln"></div></div>
+    <div class="arow"><div class="gut">21</div><div class="ln">    if (r.Crashed)</div></div>
+    <div class="arow hasnote"><div class="gut">22</div><div class="ln">        CrashReporter.Attach(Application.consoleLogPath);</div></div>
+    <div class="note"><b>This line takes every mistake above and mails it to a third party.</b>
+    Crash reporters are the most under-audited data flow in games: they attach whole log files,
+    memory regions and local variables, and they ship them to a vendor you have a contract with but
+    probably have not read. Before a crash reporter is enabled in a shipping build, someone must
+    run a scrubber over a real dump and confirm what is in it. That someone is you, and the widget
+    in the next section is the exercise.</div>
+  </div><p class="hint">Click any highlighted line to see the principle it breaks and the fix.</p></div>
+
+  <p>The corrected version is not longer. It is shorter, which is the point &mdash; nearly every
+  fix in a privacy review removes code:</p>
+
+  <div class="codeblock"><div class="hd"><span class="dot"></span>OnLevelComplete, after review</div><pre>
+<span class="k">public void</span> <span class="f">OnLevelComplete</span>(LevelResult r)
+{
+    <span class="c">// One gate, one place. Unit-tested. Compiles to a no-op if consent is absent.</span>
+    <span class="k">if</span> (!Consent.<span class="f">Granted</span>(ConsentScope.Analytics)) <span class="k">return</span>;
+
+    Telemetry.<span class="f">Send</span>(<span class="s">"level_complete"</span>, <span class="k">new</span> {
+        player  = InstallId.Value,        <span class="c">// per-install GUID, resettable by the player</span>
+        level   = r.LevelId,
+        ms      = r.ElapsedMs,
+        region  = Net.RegionCode          <span class="c">// "eu-west-1", not coordinates</span>
+    });                                   <span class="c">// Telemetry.Send uses HTTPS and never logs its body</span>
+
+    SaveSystem.<span class="f">Write</span>(SaveSlot.Auto, Profile.Current.<span class="f">ToSaveModel</span>()); <span class="c">// encrypted; no PII fields</span>
+}</pre></div>
+
+  <h3>Encrypting saves and scrubbing logs, per engine</h3>
+
+  <div class="tabs"><div class="tabhd">
+    <button data-engine="unity" data-tab="u" class="on">Unity</button>
+    <button data-engine="unreal" data-tab="e">Unreal</button>
+  </div><div class="tabbody">
+    <div class="tabpane on" data-pane="u">
+      <p>For saves, use <code>System.Security.Cryptography.Aes</code> with a key derived through
+      <code>Rfc2898DeriveBytes</code> (PBKDF2) from a per-install secret held in the platform
+      keystore, plus a random IV written alongside the ciphertext and an HMAC over the result so
+      tampering is detectable rather than merely inconvenient.</p>
+      <p>For logs, the leverage point is <code>Debug.unityLogger.logHandler</code>: replace it with
+      an <code>ILogHandler</code> that runs a redaction pass before writing, and set
+      <code>Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None)</code> in
+      shipping so ordinary log lines stop carrying file paths that include the player's OS
+      username. Wrap verbose diagnostics in <code>#if DEVELOPMENT_BUILD || UNITY_EDITOR</code> so
+      they physically do not exist in the shipping binary &mdash; a runtime flag can be flipped by
+      a config file; a preprocessor directive cannot.</p>
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Redacting log handler</div><pre>
+<span class="k">sealed class</span> <span class="t">RedactingLogHandler</span> : <span class="t">ILogHandler</span> {
+    <span class="k">static readonly</span> (Regex rx, <span class="k">string</span> tag)[] Rules = {
+        (<span class="k">new</span> <span class="t">Regex</span>(<span class="s">@"[\w.+-]+@[\w-]+\.[\w.]+"</span>),            <span class="s">"[email]"</span>),
+        (<span class="k">new</span> <span class="t">Regex</span>(<span class="s">@"\b(?:\d[ -]*?){13,16}\b"</span>),            <span class="s">"[pan]"</span>),
+        (<span class="k">new</span> <span class="t">Regex</span>(<span class="s">@"eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]+"</span>), <span class="s">"[jwt]"</span>),
+        (<span class="k">new</span> <span class="t">Regex</span>(<span class="s">@"[A-Z]:\\Users\\[^\\]+"</span>),               <span class="s">@"C:\Users\[user]"</span>),
+    };
+    <span class="k">readonly</span> ILogHandler _inner;
+    <span class="k">public</span> <span class="f">RedactingLogHandler</span>(ILogHandler inner) { _inner = inner; }
+    <span class="k">public void</span> <span class="f">LogFormat</span>(LogType t, Object c, <span class="k">string</span> fmt, <span class="k">params object</span>[] a) {
+        <span class="k">var</span> s = <span class="k">string</span>.<span class="f">Format</span>(fmt, a);
+        <span class="k">foreach</span> (<span class="k">var</span> r <span class="k">in</span> Rules) s = r.rx.<span class="f">Replace</span>(s, r.tag);
+        _inner.<span class="f">LogFormat</span>(t, c, <span class="s">"{0}"</span>, s);
+    }
+    <span class="k">public void</span> <span class="f">LogException</span>(Exception e, Object c) =&gt; _inner.<span class="f">LogException</span>(e, c);
+}
+<span class="c">// Install once, before anything else logs:</span>
+<span class="c">// Debug.unityLogger.logHandler = new RedactingLogHandler(Debug.unityLogger.logHandler);</span></pre></div>
+      <p class="small subtle">Redaction is a safety net, not a strategy. A regex catches the
+      formats you thought of. The actual control is not putting the data in the string.</p>
+    </div>
+    <div class="tabpane" data-pane="e">
+      <p>For saves, <code>UGameplayStatics::SaveGameToSlot</code> writes an unencrypted
+      <code>.sav</code> by default. Override <code>ISaveGameSystem</code> (or wrap
+      <code>SerializeObject</code>) and run the buffer through <code>FAES::EncryptData</code> /
+      <code>FAES::DecryptData</code> with a key you fetch at runtime rather than one baked into the
+      binary &mdash; a hardcoded key in a shipped executable is recovered in minutes with
+      <code>strings</code>. Separately, project Crypto settings let you encrypt pak files and
+      <code>.ini</code> content, which protects assets but does nothing for player data written at
+      runtime; students routinely conflate the two.</p>
+      <p>For logs, use narrow <code>UE_LOG</code> categories so verbosity is tunable per subsystem
+      from <code>DefaultEngine.ini</code> under <code>[Core.Log]</code>, and keep anything
+      sensitive at <code>Verbose</code>/<code>VeryVerbose</code> &mdash; those calls are compiled
+      out in Shipping and Test builds, so the data cannot leak from a binary that does not contain
+      the string. For a belt-and-braces pass, register an <code>FOutputDevice</code> with
+      <code>GLog</code> that filters before serialization, and audit what
+      <code>-abslog</code> and the crash reporter actually upload.</p>
+      <div class="codeblock"><div class="hd"><span class="dot"></span>Encrypted save + filtered output device</div><pre>
+<span class="c">// --- save ---</span>
+TArray&lt;uint8&gt; Bytes;
+FMemoryWriter Ar(Bytes, <span class="k">true</span>);
+SaveObject-&gt;<span class="f">Serialize</span>(Ar);
+Bytes.<span class="f">SetNumZeroed</span>(<span class="f">Align</span>(Bytes.<span class="f">Num</span>(), FAES::AESBlockSize));   <span class="c">// AES needs block alignment</span>
+FAES::<span class="f">EncryptData</span>(Bytes.<span class="f">GetData</span>(), Bytes.<span class="f">Num</span>(), Key);        <span class="c">// Key from platform keystore</span>
+FFileHelper::<span class="f">SaveArrayToFile</span>(Bytes, *SlotPath);
+
+<span class="c">// --- logs ---</span>
+<span class="k">class</span> <span class="t">FRedactingOutput</span> : <span class="k">public</span> FOutputDevice {
+<span class="k">public</span>:
+    <span class="k">virtual void</span> <span class="f">Serialize</span>(<span class="k">const</span> TCHAR* V, ELogVerbosity::Type Verb,
+                           <span class="k">const</span> <span class="k">class</span> FName&amp; Cat) <span class="k">override</span> {
+        FString S(V);
+        <span class="k">for</span> (<span class="k">const</span> FRegexPattern&amp; P : GetRedactionPatterns()) { <span class="c">/* replace in place */</span> }
+        <span class="c">// forward S to the real device</span>
+    }
+};
+<span class="c">// GLog-&gt;AddOutputDevice(new FRedactingOutput());  // install during early startup</span></pre></div>
+    </div>
+  </div></div>
+
+  <h2><span class="num">7</span>Audit a crash dump</h2>
+
+  <p>This is the exercise that changes behavior. Below is a synthetic log bundle of the kind
+  attached to a crash report. Read every line, click the ones you would flag before this file leaves
+  the building, then submit. The tool scores what you caught, what you missed, and what you flagged
+  that was actually fine &mdash; because over-flagging has a cost too: a QA team that flags
+  everything gets its findings ignored.</p>
+
+  <div class="widget" id="w-pii">
+    <div class="whd"><span class="wt">PII-in-logs auditor</span><span class="wk">Scored</span></div>
+    <p class="wsub">20 lines from <code>GDTDemo_2026-11-24.log</code>. Eleven of them are findings.
+    Nine are exactly what a log should contain. Click to flag, click again to unflag.</p>
+    <div class="logwrap" id="pii-lines"></div>
+    <div class="btnrow">
+      <button class="btn" id="pii-submit">Submit audit</button>
+      <button class="btn ghost" id="pii-reset">Reset</button>
+    </div>
+    <div class="readout">
+      <div class="cell"><div class="k">Flagged</div><div class="v" id="pii-sel">0</div></div>
+      <div class="cell"><div class="k">Caught</div><div class="v" id="pii-hit">&ndash;</div></div>
+      <div class="cell"><div class="k">Missed</div><div class="v" id="pii-miss">&ndash;</div></div>
+      <div class="cell"><div class="k">False positives</div><div class="v" id="pii-fp">&ndash;</div></div>
+      <div class="cell"><div class="k">Precision</div><div class="v" id="pii-prec">&ndash;</div></div>
+    </div>
+    <div class="verdict" id="pii-verdict">Flag the lines you would not let leave the studio.</div>
+  </div>
+
+  <div class="box why"><div class="lbl">Why the false-positive column is on the scoreboard</div>
+  <p>Line 5 &mdash; the pseudonymous <code>player_id</code> &mdash; catches most students. It is a
+  reasonable flag and it is wrong, and the distinction is worth holding onto. A pseudonymous
+  identifier <em>is</em> personal data under GDPR: it is in scope for access and deletion requests,
+  and it must be inventoried. But it is also precisely the identifier logs are supposed to use,
+  because it lets you debug a player's session without ever knowing who they are. Pseudonymization
+  is the control working. If you flag it, you are asking engineering to remove the thing that makes
+  the logs both useful and safe, and the next finding you raise gets a little less attention.</p></div>
+
+  <div class="check">
+    <p class="q">Your crash reporter uploads the last 500 log lines with every report. A scrub of
+    real dumps shows that about one in forty contains a player email address, always from the same
+    sign-in success line. The reporter has been live for four months. What is the first action?</p>
+    <button class="opt" data-correct="0">Add an email regex to the crash reporter's upload path so future reports are clean.</button>
+    <button class="opt" data-correct="0">Open a defect on the sign-in log line, severity S2, scheduled for the next sprint.</button>
+    <button class="opt" data-correct="1">Treat it as a live data-handling incident: stop the flow, notify whoever owns privacy at the studio, and scope what was already collected and who can read it &mdash; then fix the log line and the upload path.</button>
+    <div class="exp"><b>Why the third option:</b> the data has already been collected and is sitting
+    in a third-party system with its own access list and retention policy. That is not a defect
+    with a schedule; it is a condition with a clock, and the person who owns privacy obligations
+    needs to know today so they can decide whether anything further is required. Your job is fast,
+    accurate escalation with scope &mdash; how many reports, what fields, who has access, since
+    when &mdash; not a legal judgment.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      It is the correct engineering fix and you should absolutely do it. As a <em>first</em>
+      action it quietly reframes a disclosure question as a code change, and it does nothing about
+      the four months of data already uploaded. Fixing forward while saying nothing about backward
+      is how a small problem becomes a serious one.</div>
+      <div class="ex"><span class="who">Why the second is tempting</span><br>
+      It uses the process correctly, which is why it feels responsible. But a normal severity and a
+      sprint boundary are the wrong instruments here: the ticket will be triaged by someone
+      optimizing for release scope, and the sentence "personal data is currently flowing to a
+      vendor" does not fit in a severity field.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">8</span>Security defects are trust defects</h2>
+
+  <p>Security testing in games is not a separate discipline so much as a habit of asking, for every
+  boundary: <em>who is allowed to assert this, and does the receiving side check?</em> Four classes
+  cover most of what you will find in a student or indie project.</p>
+
+  <ul>
+    <li><b>Injection.</b> The leaderboard endpoint that builds SQL by concatenating a player name
+    is the canonical example, and it still appears because leaderboards are written late, by
+    whoever is free. The test is a name containing <code>' OR 1=1 --</code> and a check on what
+    comes back; the fix is parameterized queries, always, with no exceptions for "internal" tools.
+    The same category covers command injection in a modding hook and path traversal in a
+    user-supplied filename &mdash; <code>../../</code> in a custom level name is worth five minutes
+    of anyone's afternoon.</li>
+    <li><b>Insecure direct object reference (IDOR).</b> <code>GET /api/save/1042</code> returns
+    save 1042. Change it to 1043. If you get somebody else's save, the endpoint is authenticating
+    but not authorizing, and the entire player base's data is enumerable by counting. This is
+    trivially testable and disproportionately common.</li>
+    <li><b>Client trust.</b> Any value the client computes and the server accepts is a value
+    players will edit: score, currency, damage, position, time elapsed, item ids. The test is to
+    send an absurd value with an intercepting proxy and see whether the server takes it. The rule
+    is that the client is an untrusted rendering of a server-owned state, and every exception you
+    make is a future economy exploit &mdash; which, per Pape's reading, is now also a fraud
+    surface.</li>
+    <li><b>Transport and storage.</b> Plaintext HTTP, disabled certificate validation, secrets
+    committed to the repository, API keys in a shipped binary, unencrypted saves. Run
+    <code>strings</code> on your own shipping build for ten minutes; students find an embedded
+    key almost every time.</li>
+  </ul>
+
+  <p>All four are exploratory work, not scripted work &mdash; which brings us to how you do that
+  without it degenerating into unstructured play.</p>
+
+  <h2><span class="num">9</span>Exploratory testing, done as engineering</h2>
+
+  <p>"Exploratory testing" is the most abused term in QA. It does not mean playing the game and
+  seeing what happens; that is playing the game. Exploratory testing in the session-based sense
+  (SBTM) means: a written <b>charter</b> stating a mission, a fixed <b>time box</b>, an explicit
+  <b>oracle</b> for deciding whether what you see is wrong, continuous <b>note-taking</b>, and a
+  <b>debrief</b> that turns the session into tickets and into the next charter. The structure is
+  what makes the results reportable &mdash; and reportability is the whole difference between "I
+  poked at the shop for a while" and "three sessions of ninety minutes against the purchase flow,
+  eleven findings, two of them cert blockers."</p>
+
+  <p>A charter fits in two sentences and names four things: what you are exploring, with what
+  resources or techniques, to discover what information, and for how long. Vagueness in any of the
+  four produces a session you cannot repeat or defend. The widget below scores a charter against
+  those properties &mdash; it is a text analyzer, not a grader, and it will happily approve a
+  well-formed charter for a bad idea, which is itself a lesson about automated quality gates.</p>
+
+  <div class="widget" id="w-charter">
+    <div class="whd"><span class="wt">Charter critic</span><span class="wk">Heuristic</span></div>
+    <p class="wsub">Write a charter for a session you could actually run this week on your own
+    project. The checks below are literal string and structure tests, listed so you can see exactly
+    what is being measured.</p>
+    <div class="ctl2" style="grid-template-columns:210px 1fr"><label>Time box</label>
+      <div class="seg" id="ch-time">
+        <button data-v="0">Not set</button><button data-v="45">45 min</button>
+        <button data-v="60">60 min</button><button data-v="90" class="on">90 min</button>
+        <button data-v="180">3 hours</button>
+      </div></div>
+    <textarea class="charter" id="ch-text" spellcheck="false">Explore the in-game store purchase flow on Android using a proxy and a test payment account to discover client-trust and consent defects, comparing observed requests against the documented telemetry consent rules and PCI expectations; record every request in session notes and file findings with build ID.</textarea>
+    <div class="btnrow">
+      <button class="btn ghost" data-ch="weak">Load a weak charter</button>
+      <button class="btn ghost" data-ch="strong">Load a strong charter</button>
+      <button class="btn ghost" data-ch="a11y">Load an accessibility charter</button>
+    </div>
+    <div class="readout">
+      <div class="cell"><div class="k">Checks passed</div><div class="v" id="ch-score">&ndash;</div></div>
+      <div class="cell"><div class="k">Words</div><div class="v" id="ch-words">&ndash;</div></div>
+      <div class="cell"><div class="k">Time box</div><div class="v" id="ch-tb">90 min</div></div>
+    </div>
+    <ul class="critlist" id="ch-list"></ul>
+    <div class="verdict" id="ch-verdict">Type or load a charter.</div>
+  </div>
+
+  <p>Three charters that would each fill a real session, to model the shape: <em>"Explore the
+  settings menu with a screen reader and keyboard only, for 60 minutes, to discover controls that
+  are unreachable or unlabeled, comparing against XAG; capture a screenshot per failure."</em>
+  &mdash; <em>"Explore save and load across suspend/resume and storage removal on the target
+  console, for 90 minutes, to discover data-loss and certification failures, comparing against the
+  numbered TRC list; record requirement numbers in notes."</em> &mdash; <em>"Explore the crash
+  reporter's upload payload using a local proxy, for 45 minutes, to discover personal data leaving
+  the client, comparing against the data inventory; log every field observed."</em></p>
+
+  <h2><span class="num">10</span>Bias, and the number you will be tempted to shade</h2>
+
+  <p>Two ethical failures in QA are almost invisible from inside, because neither involves anyone
+  doing something they would describe as wrong.</p>
+
+  <p>The first is <b>bias in whose report gets believed.</b> When a senior engineer says a build
+  feels unstable, it gets investigated. When an external contract tester in a different time zone
+  files the same observation with worse English, it gets closed as cannot-reproduce. Playtest
+  panels recruited through the studio's Discord skew toward players who already like the game, own
+  good hardware, and have no disabilities that would have made the demo unplayable &mdash; and the
+  data from that panel then justifies the decision not to fix the thing they never encountered. The
+  countermeasure is procedural and unglamorous: log who reported what, review your
+  cannot-reproduce closures monthly and check whether they cluster around particular reporters,
+  record the composition of your playtest panel next to its results, and treat an unrepresentative
+  panel as a known limitation you state out loud rather than a detail you omit.</p>
+
+  <p>The second is <b>severity drift under schedule pressure.</b> This is the one you will
+  personally face, probably within two years, and it will not arrive as a request to lie. It
+  arrives as "is that really a severity 1, though?" at 6 p.m. on the Thursday before a milestone,
+  from someone you like, who is under more pressure than you are. It is a genuinely reasonable
+  question with a genuinely reasonable-sounding answer, and if you say yes, three things happen:
+  the schedule is protected, nobody notices, and your severity data stops describing reality. Six
+  weeks later a release decision is made from that data.</p>
+
+  <div class="box crit"><div class="lbl">The rule that makes this survivable</div>
+  <p>Separate the two decisions, out loud, every time. <b>Severity is a description of what
+  happens to the player and it does not move.</b> <b>Priority is a decision about the schedule and
+  it moves all the time, legitimately.</b> When you are asked to lower a severity, offer to lower
+  the priority instead, in the same breath: "It stays S1 because the player loses the save. I'm
+  fine with P2 this milestone &mdash; let's write the exposure number in the ticket so the call is
+  reviewable." You have given the producer everything they actually needed and kept the one thing
+  the project cannot replace. This costs nothing and it is the single most useful sentence in this
+  lesson.</p></div>
+
+  <div class="check">
+    <p class="q">Your accessibility pass found 23 issues. The lead asks you to "cut it down to the
+    ones that really matter" for the milestone review, because a list of 23 will look like the
+    feature is failing. What is the professional response?</p>
+    <button class="opt" data-correct="0">Present the top five by severity; the other 18 stay in the tracker and can be discussed if anyone asks.</button>
+    <button class="opt" data-correct="1">Present all 23 as a count with a severity breakdown, then spend the meeting on the five that block play &mdash; the number is the finding, the detail is the discussion.</button>
+    <button class="opt" data-correct="0">Present all 23 in full detail; the lead is asking you to hide defects and you should not participate.</button>
+    <div class="exp"><b>Why the second option:</b> the lead's actual problem is meeting time and
+    narrative, not the existence of the defects, and you can solve that without losing information.
+    A count plus a breakdown is honest, is faster to present than five detailed items, and gives
+    the room the thing it needs to make a decision: the shape of the problem. You have not shaded
+    anything, and you have made the meeting better.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      It is what most people do and it sounds like normal prioritization. The failure is subtle: a
+      milestone review that hears "five accessibility issues" forms a picture of a nearly-done
+      feature, and no one in the room ever learns the real number. Nothing was hidden in the
+      tracker, but the decision was made on a wrong impression, which is the outcome honesty was
+      supposed to prevent.</div>
+      <div class="ex"><span class="who">Why the third is tempting</span><br>
+      It has the right instinct and the wrong reading of the situation. Treating a request for
+      concision as a request for concealment burns a relationship you will need, and an hour of
+      itemized detail genuinely does make the review worse. Integrity that cannot distinguish
+      between "compress this" and "hide this" is not much use to a team.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">11</span>The reading, and what to take from each</h2>
+
+  <details class="more"><summary>Reading list with a specific question to answer for each</summary>
+    <ul class="readlist">
+      <li><b>Finska, <i>Modern Game Testing</i>, ch. 10&ndash;11.</b> The studio-process view of
+      compliance and release. Question: which of the checks described are currently performed by
+      nobody on your project team, and what would it cost to add the cheapest one?</li>
+      <li><b>Gauk &amp; Bezemer (2024), "Detecting Discrepancies Between Subtitles and Audio in
+      Gameplay Videos with EchoTest."</b> Question: what class of subtitle defect does their
+      approach catch that a human checklist reliably misses, and what does it miss that a human
+      catches immediately?</li>
+      <li><b>Larreina-Morales &amp; Mangiron (2024), "Audio Description in Video Games? Persons
+      with Visual Disabilities Weigh In."</b> Question: the method is a survey of players rather
+      than a derivation from guidelines &mdash; name one requirement in your own project you have
+      been inferring rather than asking about.</li>
+      <li><b>Conklin et al. (2022), "Chapter 24: Privacy."</b> Question: map three controls from
+      the chapter onto the data inventory for your own game. If you have no data inventory, that is
+      the answer, and building one is the deliverable.</li>
+      <li><b>Bennett (2023), "Fake Loot, Real Money: The Uncertain Legal Future of Loot Boxes."</b>
+      Question: what feature of a randomized reward makes the legal analysis change &mdash; and can
+      you name a design change that would move a mechanic across that line in either direction?</li>
+      <li><b>Fouquet (2022), "3 Strategies for Developing More-Accessible Software."</b>
+      Question: which of the three strategies is cheapest to adopt in a 4-person student team, and
+      what is the first thing you would stop doing?</li>
+      <li><b>Pape (2024), "CFPB Warns Banks of Video Games' Money Laundering, Fraud Risks."</b>
+      Question: if your game had a tradeable currency, which existing bug in your tracker would you
+      re-file at a higher severity after reading this, and on what grounds?</li>
+    </ul>
+  </details>
+
+  <div class="deliver">
+    <h3>Bring to the assignment</h3>
+    <p><b>Ethical and Compliance Testing with a Christian Worldview</b> &middot; 100 points &middot;
+    due Dec 6 &middot; 5&ndash;7 minute video plus a 1&ndash;2 page reflection.</p>
+    <p>The assignment has five parts and this lesson produced raw material for them. Arrive
+    with:</p>
+    <ul>
+      <li><b>An accessibility test report</b> covering color vision, mobility and cognitive load.
+      Minimum viable version: the contrast table from section 2 (five decision-relevant color
+      pairs, measured ratio, worst simulated ratio, verdict), plus a twenty-minute
+      constrained-play log for one motor constraint and one cognitive constraint, plus the specific
+      guideline each finding violates. Cite the criterion &mdash; "WCAG 1.4.11, 2.1:1" &mdash; not
+      an impression.</li>
+      <li><b>A compliance assessment</b>: your game's rating descriptors as you would disclose them
+      today, five platform certification requirements written as executable test cases with pass/fail
+      results, and one paragraph on any monetization, chat, or user-generated content feature that
+      would require re-review. Use the decision tree in section 4 to justify at least one
+      classification.</li>
+      <li><b>A privacy and security test pass</b>: a data inventory table (field, purpose,
+      retention, storage location), a consent-state assertion you added or would add, a deletion
+      test with the survivors listed, an audit of one real log or crash dump from your own build
+      using the section 7 method, and at least one of the four security classes from section 8
+      actually attempted with the result recorded &mdash; including "I tried the IDOR test and the
+      server rejected it," which is a finding.</li>
+      <li><b>Two exploratory sessions</b> run properly: written charter, time box, oracle, session
+      notes, debrief, and the tickets that came out of them. Run the charters through the critic
+      widget before you use them and paste the charter text into your submission &mdash; a
+      well-formed charter is half the grade of this part and takes four minutes to write.</li>
+      <li><b>The reflection (1&ndash;2 pages)</b> on integrity, respect for others, and stewardship.
+      Ground it in something you actually did in this lesson: a severity you would refuse
+      to move and why, an accessibility defect you found and whose exclusion it represents, a data
+      field you deleted from your own payload. Say what grounds those commitments for you and argue
+      for it &mdash; a clear, honest account of why you hold them is worth more than a borrowed
+      one.</li>
+    </ul>
+    <p class="small subtle">Session 23 is the constrained-play accessibility exercise; bring
+    headphones and your own build. Session 26 is a live "defend your severity" round with the ethics
+    scenarios from section 10 &mdash; you will be assigned the producer's side at least once, on
+    purpose.</p>
+  </div>
+
+  <footer class="lf"><a href="../index.html">&larr; Course hub</a><span>Advanced Game Testing and Debugging</span></footer>
+</div>
+<script id="lesson-kit-js">
+/* ---------- reading progress ---------- */
+(function(){
+  var b=document.createElement('div'); b.className='progressbar';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(b);});
+  addEventListener('scroll',function(){
+    var h=document.documentElement, m=h.scrollHeight-h.clientHeight;
+    b.style.width=(m>0?(h.scrollTop/m*100):0)+'%';
+  },{passive:true});
+})();
+
+/* ---------- engine tabs ---------- */
+function GDTtabs(root){
+  root.querySelectorAll('.tabhd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      root.querySelectorAll('.tabhd button').forEach(function(b){b.classList.remove('on')});
+      root.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('on')});
+      btn.classList.add('on');
+      var pane=root.querySelector('.tabpane[data-pane="'+btn.dataset.tab+'"]');
+      if(pane) pane.classList.add('on');
+    });
+  });
+}
+
+/* ---------- annotated code ---------- */
+function GDTannot(root){
+  root.querySelectorAll('.arow.hasnote').forEach(function(row){
+    row.addEventListener('click',function(){
+      var note=row.nextElementSibling;
+      var open=row.classList.contains('open');
+      row.classList.toggle('open',!open);
+      if(note&&note.classList.contains('note')) note.classList.toggle('open',!open);
+    });
+  });
+}
+
+/* ---------- knowledge check ---------- */
+function GDTcheck(root){
+  var done=false;
+  root.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      if(done) return; done=true;
+      var correct = opt.dataset.correct==='1';
+      root.querySelectorAll('.opt').forEach(function(o){
+        if(o.dataset.correct==='1'){o.classList.add('right');
+          o.insertAdjacentHTML('beforeend','<span class="tag">CORRECT</span>');}
+        else if(o===opt){o.classList.add('wrong');
+          o.insertAdjacentHTML('beforeend','<span class="tag">NOT QUITE</span>');}
+        o.style.cursor='default';
+      });
+      var exp=root.querySelector('.exp'); if(exp) exp.classList.add('on');
+    });
+  });
+}
+
+/* ---------- decision tree ----------
+   Usage: new GDTTree(document.getElementById('t1'), NODES, 'start')
+   NODES = { start:{q:'', hint:'', choices:[{t:'',sub:'',go:'nodeId'}]},
+             leafId:{leaf:true, title:'', body:'<p>…</p>'} }              */
+function GDTTree(root,nodes,startId){
+  var pathEl=root.querySelector('.path'), body=root.querySelector('.body');
+  var trail=[];
+  function render(id){
+    var n=nodes[id]; if(!n) return;
+    pathEl.innerHTML = trail.length? trail.map(function(t){return '<span>'+t+'</span>'}).join(' &rsaquo; ') : '&nbsp;';
+    if(n.leaf){
+      body.innerHTML='<div class="leaf"><h5>'+n.title+'</h5>'+n.body+'</div>'+
+        '<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>';
+    }else{
+      body.innerHTML='<p class="qq">'+n.q+'</p>'+(n.hint?'<p class="qh">'+n.hint+'</p>':'')+
+        '<div class="choices">'+n.choices.map(function(c,i){
+          return '<button data-go="'+c.go+'" data-lbl="'+(c.lbl||c.t).replace(/"/g,'&quot;')+'">'+c.t+
+                 (c.sub?'<span class="sub">'+c.sub+'</span>':'')+'</button>';}).join('')+'</div>'+
+        (trail.length?'<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>':'');
+    }
+    body.querySelectorAll('[data-go]').forEach(function(b){
+      b.addEventListener('click',function(){trail.push(b.dataset.lbl); render(b.dataset.go);});
+    });
+    var rs=body.querySelector('[data-restart]');
+    if(rs) rs.addEventListener('click',function(){trail=[]; render(startId);});
+  }
+  render(startId);
+}
+
+/* ---------- auto-wire everything ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.tabs').forEach(GDTtabs);
+  document.querySelectorAll('.annot').forEach(GDTannot);
+  document.querySelectorAll('.check').forEach(GDTcheck);
+});
+
+/* ---------- small helpers for simulators ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(n,d){return Number(n).toFixed(d===undefined?1:d)}
+function lerp(a,b,t){return a+(b-a)*t}
+/* deterministic pseudo-random so demos are reproducible for a class */
+function rng(seed){var s=seed||1;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296;}}
+</script>
+<script id="lesson-widgets">
+/* ============================================================
+   Advanced Game Testing and Debugging · Topic 7 · lesson-specific widgets
+   Every number below is computed, not authored. The color math
+   is WCAG 2.x relative luminance + Machado/Oliveira/Fernandes
+   (2009) dichromacy matrices applied in linear light.
+   ============================================================ */
+(function(){
+'use strict';
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function cbrt(x){ return Math.cbrt ? Math.cbrt(x) : Math.pow(x, 1/3); }
+
+/* ============================================================
+   1 · CONTRAST + COLOR-VISION CHECKER
+   ============================================================ */
+(function(){
+  var root = document.getElementById('w-contrast');
+  if(!root) return;
+
+  var fgIn = $('#cc-fg', root), bgIn = $('#cc-bg', root);
+  var fgO  = $('#cc-fgo', root), bgO = $('#cc-bgo', root);
+  var panels = $('#cc-panels', root), verdict = $('#cc-verdict', root);
+
+  /* ---- sRGB <-> linear, WCAG 2.1/2.2 form ---- */
+  function toLinear(c8){
+    var c = c8 / 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+  function toSrgb(lin){
+    var c = clamp(lin, 0, 1);
+    var v = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+    return Math.round(clamp(v, 0, 1) * 255);
+  }
+  function hexToRgb(h){
+    h = String(h).replace('#','');
+    if(h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+  }
+  function rgbToHex(rgb){
+    return '#' + rgb.map(function(v){
+      var s = clamp(Math.round(v),0,255).toString(16);
+      return s.length === 1 ? '0'+s : s;
+    }).join('');
+  }
+  /* WCAG relative luminance */
+  function relLum(rgb){
+    return 0.2126*toLinear(rgb[0]) + 0.7152*toLinear(rgb[1]) + 0.0722*toLinear(rgb[2]);
+  }
+  /* WCAG contrast ratio */
+  function ratioOf(a, b){
+    var la = relLum(a), lb = relLum(b);
+    var hi = Math.max(la, lb), lo = Math.min(la, lb);
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  /* ---- Machado, Oliveira & Fernandes (2009), severity 1.0, linear RGB ---- */
+  var CVD = {
+    Protanopia:   [ 0.152286, 1.052583,-0.204868,
+                    0.114503, 0.786281, 0.099216,
+                   -0.003882,-0.048116, 1.051998],
+    Deuteranopia: [ 0.367322, 0.860646,-0.227968,
+                    0.280085, 0.672501, 0.047413,
+                   -0.011820, 0.042940, 0.968881],
+    Tritanopia:   [ 1.255528,-0.076749,-0.178779,
+                   -0.078411, 0.930809, 0.147602,
+                    0.004733, 0.691367, 0.303900]
+  };
+  function simulate(rgb, m){
+    var r = toLinear(rgb[0]), g = toLinear(rgb[1]), b = toLinear(rgb[2]);
+    return [ toSrgb(m[0]*r + m[1]*g + m[2]*b),
+             toSrgb(m[3]*r + m[4]*g + m[5]*b),
+             toSrgb(m[6]*r + m[7]*g + m[8]*b) ];
+  }
+
+  /* ---- CIE76 deltaE, via linear sRGB -> XYZ(D65) -> L*a*b* ---- */
+  function toLab(rgb){
+    var r = toLinear(rgb[0]), g = toLinear(rgb[1]), b = toLinear(rgb[2]);
+    var X = 0.4124564*r + 0.3575761*g + 0.1804375*b;
+    var Y = 0.2126729*r + 0.7151522*g + 0.0721750*b;
+    var Z = 0.0193339*r + 0.1191920*g + 0.9503041*b;
+    var Xn = 0.95047, Yn = 1.0, Zn = 1.08883;
+    function f(t){ return t > 0.008856451679 ? cbrt(t) : (903.2962962*t + 16) / 116; }
+    var fx = f(X/Xn), fy = f(Y/Yn), fz = f(Z/Zn);
+    return [116*fy - 16, 500*(fx - fy), 200*(fy - fz)];
+  }
+  function deltaE76(a, b){
+    var A = toLab(a), B = toLab(b);
+    return Math.sqrt(Math.pow(A[0]-B[0],2) + Math.pow(A[1]-B[1],2) + Math.pow(A[2]-B[2],2));
+  }
+
+  function cell(id, pass, txt){
+    var el = $(id, root);
+    el.textContent = txt;
+    el.className = 'v ' + (pass ? 'ok' : 'crit');
+  }
+
+  function render(){
+    var fg = hexToRgb(fgIn.value), bg = hexToRgb(bgIn.value);
+    fgO.textContent = fgIn.value.toLowerCase();
+    bgO.textContent = bgIn.value.toLowerCase();
+
+    var r0 = ratioOf(fg, bg), de0 = deltaE76(fg, bg);
+    $('#cc-ratio', root).textContent = fmt(r0, 2) + ':1';
+    $('#cc-ratio', root).className = 'v ' + (r0 >= 4.5 ? 'ok' : (r0 >= 3 ? 'warn' : 'crit'));
+    cell('#cc-aa',  r0 >= 4.5, r0 >= 4.5 ? 'PASS' : 'FAIL');
+    cell('#cc-aal', r0 >= 3.0, r0 >= 3.0 ? 'PASS' : 'FAIL');
+    cell('#cc-aaa', r0 >= 7.0, r0 >= 7.0 ? 'PASS' : 'FAIL');
+
+    var rows = [{ name:'Standard trichromacy', fg:fg, bg:bg, r:r0, de:de0 }];
+    Object.keys(CVD).forEach(function(k){
+      var f = simulate(fg, CVD[k]), b = simulate(bg, CVD[k]);
+      rows.push({ name:k, fg:f, bg:b, r:ratioOf(f,b), de:deltaE76(f,b) });
+    });
+
+    panels.innerHTML = rows.map(function(row){
+      return '<div class="pan">' +
+        '<div class="cap">' + esc(row.name) + '</div>' +
+        '<div class="stage" style="background:' + rgbToHex(row.bg) + ';color:' + rgbToHex(row.fg) + '">' +
+          'Ammo 12 / 30</div>' +
+        '<div class="chips">' +
+          '<span class="dot" style="background:' + rgbToHex(row.fg) + '"></span>' +
+          '<span class="dot" style="background:' + rgbToHex(row.bg) + '"></span>' +
+          '<span class="mx" style="padding:0">' + rgbToHex(row.fg) + ' / ' + rgbToHex(row.bg) + '</span>' +
+        '</div>' +
+        '<div class="mx">contrast <b>' + fmt(row.r,2) + ':1</b><br>' +
+          '&Delta;E<sub>76</sub> <b>' + fmt(row.de,1) + '</b></div>' +
+      '</div>';
+    }).join('');
+
+    var sims = rows.slice(1);
+    var minR = rows.reduce(function(m,x){ return Math.min(m, x.r); }, Infinity);
+    var worst = sims.reduce(function(m,x){ return x.de < m.de ? x : m; }, sims[0]);
+    $('#cc-worst', root).textContent = fmt(sims.reduce(function(m,x){
+      return Math.min(m, x.r); }, Infinity), 2) + ':1';
+
+    var cls, msg;
+    if(minR >= 4.5){
+      cls = 'ok';
+      msg = '<b>Safe.</b> The pair holds ' + fmt(minR,2) + ':1 or better under all four models, ' +
+        'which clears 4.5:1 body text and 3:1 non-text everywhere. The separation is carried by ' +
+        'luminance, so it also survives grayscale capture, sunlight and a cheap panel.';
+    } else if(minR >= 3.0){
+      cls = 'warn';
+      msg = '<b>Usable for icons and large text, not for body text.</b> Worst case across the four ' +
+        'models is ' + fmt(minR,2) + ':1 &mdash; above the 3:1 minimum in WCAG 1.4.11 for non-text ' +
+        'content and 1.4.3 for large text, below the 4.5:1 needed for normal body text. Fine for a ' +
+        'meter or an icon; do not set subtitles in it.';
+    } else if(worst.de < 12){
+      cls = 'crit';
+      msg = '<b>Collapses.</b> Under ' + esc(worst.name) + ' these two become &Delta;E ' +
+        fmt(worst.de,1) + ' apart &mdash; effectively the same color &mdash; and luminance ' +
+        'separation across the four models bottoms out at ' + fmt(minR,2) + ':1. Any state ' +
+        'encoded by this pair alone is invisible to those players. Change the lightness of one ' +
+        'color, or add a second channel: shape, icon, pattern or label.';
+    } else {
+      cls = 'crit';
+      msg = '<b>Hue-only distinction.</b> The colors stay separable by hue under simulation ' +
+        '(worst &Delta;E ' + fmt(worst.de,1) + ', under ' + esc(worst.name) + '), but luminance ' +
+        'separation bottoms out at ' + fmt(minR,2) + ':1, which fails the 3:1 non-text minimum. ' +
+        'It will fail in grayscale, in sunlight, on a washed-out stream, and for anomalous ' +
+        'trichromats these matrices do not model. Separate them in lightness.';
+    }
+    verdict.className = 'verdict ' + cls;
+    verdict.innerHTML = msg;
+  }
+
+  fgIn.addEventListener('input', render);
+  bgIn.addEventListener('input', render);
+  $$('[data-cc]', root).forEach(function(b){
+    b.addEventListener('click', function(){
+      var p = b.dataset.cc.split('|');
+      fgIn.value = p[0]; bgIn.value = p[1]; render();
+    });
+  });
+  render();
+})();
+
+/* ============================================================
+   2 · PII-IN-LOGS AUDITOR
+   ============================================================ */
+(function(){
+  var root = document.getElementById('w-pii');
+  if(!root) return;
+
+  var LINES = [
+    { t:'[Boot ] Course Demo build 4127 (Win64 Shipping) commit 9c3ab41 2026-11-24T18:02:11Z',
+      flag:false, tags:['CLEAN'],
+      why:'Build metadata is exactly what a log is for. Without the build number and commit SHA a crash report is unactionable &mdash; this line is the reason the dump is worth keeping.' },
+    { t:'[GFX  ] Adapter NVIDIA GeForce RTX 3060, driver 552.22, 12288 MB VRAM',
+      flag:false, tags:['CLEAN'],
+      why:'Hardware configuration, not personal data. It identifies a graphics card, not a person, and it is the first thing you need when a rendering bug reproduces on one vendor only.' },
+    { t:'[Auth ] signin ok user=maria.velasquez@example.com pw="Hunter2!" mfa=false',
+      flag:true, tags:['GDPR','CCPA','SECURITY'],
+      why:'Two findings on one line. The email address is a direct identifier (GDPR Art. 4 personal data; CCPA personal information), and the <b>password is in cleartext</b>, which is a credential-handling failure with no acceptable justification &mdash; passwords are never logged, in any environment, at any verbosity. Log an opaque player id and an auth result code.' },
+    { t:'[Auth ] issued bearer=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfN2Yz',
+      flag:true, tags:['SECURITY','PLATFORM CERT'],
+      why:'A session token is a credential. Anyone who can read this log can act as that player until it expires, and log files travel &mdash; support tickets, Discord, a vendor bucket. Redact tokens at the log handler and treat any token that reached a file as compromised.' },
+    { t:'[Acct ] player_id=usr_7f3d9c tier=gold sessions=214 lifetime_min=4180',
+      flag:false, tags:['CLEAN','TRAP'],
+      why:'A pseudonymous internal id, and this is the control working as designed. It is still personal data for the purposes of access and deletion requests, so it belongs in your data inventory &mdash; but it is exactly what logs should carry, because it supports debugging a session without revealing who the player is. Flagging it asks engineering to remove the safe alternative.' },
+    { t:'[Acct ] dob=2014-06-11 computed_age=12 coppa_gate=skipped(no_gate_configured)',
+      flag:true, tags:['COPPA','GDPR Art.8'],
+      why:'The build knows this account belongs to a 12-year-old and proceeded anyway. Under COPPA, actual knowledge that a user is under 13 triggers obligations immediately &mdash; verifiable parental consent, no behavioral advertising, minimized collection. GDPR Art. 8 sets a similar threshold at 13&ndash;16 depending on member state. Store an age bracket, not a date of birth, and never let the gate fail open.' },
+    { t:'[Net  ] client ip=203.0.113.42 geo_lat=41.39021 geo_lon=2.15403 accuracy=8m',
+      flag:true, tags:['GDPR','CPRA SENSITIVE'],
+      why:'An IP address is personal data under GDPR when it can be linked to an individual, and precise geolocation is a <em>sensitive</em> category under CPRA requiring its own basis and disclosure. Eight-metre accuracy is a home address. If the requirement was server selection, the field should be a region code derived server-side.' },
+    { t:'[Net  ] region=eu-west-1 rtt=41ms loss=0.2% mtu=1500',
+      flag:false, tags:['CLEAN'],
+      why:'This is what the geolocation line should have been. A region code and network statistics diagnose a latency complaint without identifying anybody.' },
+    { t:'[Store] purchase ok sku=gem_pack_2 card=4539 8890 1234 5566 exp=07/28 name="MARIA VELASQUEZ"',
+      flag:true, tags:['PCI DSS','GDPR'],
+      why:'A primary account number in a log file. PCI DSS prohibits storing the full PAN unless it is protected, and forbids storing sensitive authentication data after authorization at all. The deeper finding is architectural: your client should never have seen this number. Payment goes through the platform or a tokenizing processor, and your code receives a token and a receipt id.' },
+    { t:'[Store] receipt_id=rcpt_88a1e2 amount=4.99 currency=USD platform=steam result=ok',
+      flag:false, tags:['CLEAN'],
+      why:'The correct shape for a purchase log: an opaque receipt id you can reconcile with the platform, an amount, and a result. Enough to debug a failed purchase, nothing that identifies an instrument or a person.' },
+    { t:'[Chat ] recv from usr_1a44: "call me on 555-0143, im maria\'s brother"',
+      flag:true, tags:['GDPR','PLATFORM UGC'],
+      why:'The content of private communications, retained in a diagnostic log with a phone number in it. Chat content has its own legal treatment and its own platform policy obligations around moderation and retention; it should never fall into general logging as a side effect. Log message ids and moderation decisions, not message bodies.' },
+    { t:'[Consent] analytics consent_state=unknown -> defaulting to GRANTED',
+      flag:true, tags:['GDPR Art.7','CCPA'],
+      why:'This is the most quietly serious line in the file. GDPR Art. 4(11) requires consent to be a freely given, specific, informed and unambiguous indication by clear affirmative action. "Unknown, so yes" is the definition of what that rule excludes, and it converts every downstream analytics event into data processed without a basis. Default to denied and fail closed.' },
+    { t:'[Ads  ] sent advertising_id=6D92D3E1-4C0B-4E9A-9F31-77A1 audience=kids_6_12',
+      flag:true, tags:['COPPA','PLATFORM POLICY'],
+      why:'A persistent advertising identifier transmitted for an account the build has already labelled as a child. COPPA treats persistent identifiers used for behavioral advertising as personal information requiring verifiable parental consent, and both mobile stores have child-directed policies that forbid this outright. This is the line that turns a privacy defect into a store rejection.' },
+    { t:'[Telem] POST http://analytics.example.net/v1/ingest 200 (payload 1.8 KB)',
+      flag:true, tags:['GDPR Art.32','SECURITY'],
+      why:'Plaintext HTTP. Everything in that 1.8 KB is readable by anything on the path, and the response can be modified in transit. GDPR Art. 32 requires appropriate technical measures for security of processing; transport encryption is the least of them. Cost of the fix: one character.' },
+    { t:'[Save ] wrote save0.json 181244 bytes fields=[displayName,email,purchase_history] encrypted=false',
+      flag:true, tags:['GDPR Art.32','PLATFORM CERT'],
+      why:'Personal data at rest with no protection, on a device you do not control, in a file the player can also edit. Two distinct risks: disclosure if the machine is compromised, and tampering if any of those fields carries value. Minimize the fields, encrypt what remains, keep anything of economic value server-side.' },
+    { t:'[Save ] slot=2 checksum=0x8A31FF00 write_ms=14.2 result=ok',
+      flag:false, tags:['CLEAN'],
+      why:'Save telemetry with no payload. A checksum and a write time are precisely what you need to diagnose the corruption bug from section 4 and reveal nothing about the player.' },
+    { t:'[Crash] EXCEPTION_ACCESS_VIOLATION 0x00007FF6C21A44C module GDTDemo.exe+0x1A44C thread 7',
+      flag:false, tags:['CLEAN'],
+      why:'The actual crash information. Addresses and module offsets are what the symbol server turns into a stack trace. This is the payload of the report; everything flagged above is contamination around it.' },
+    { t:'[Crash] dump path C:\\Users\\mvelasquez\\AppData\\Local\\Temp\\GDTDemo_2026-11-24.dmp',
+      flag:true, tags:['GDPR','SECURITY'],
+      why:'The operating system user name is embedded in the path, and here it matches the account holder well enough to identify her. Full file paths leak usernames constantly &mdash; this is why shipping builds should call <code>Application.SetStackTraceLogType</code> or run a path redaction rule. Rewrite the user segment before the line is written.' },
+    { t:'[Input] remap profile "one-handed-left" loaded (12 bindings, 0 conflicts)',
+      flag:false, tags:['CLEAN'],
+      why:'An accessibility configuration event. Useful, non-identifying, and worth logging precisely because "the remap did not load" is otherwise very hard to diagnose from a user report.' },
+    { t:'[Perf ] frame 41822 dt=33.4ms gc_alloc=1.2MB drawcalls=1844 tris=2.1M',
+      flag:false, tags:['CLEAN'],
+      why:'Performance telemetry, aggregate and anonymous. This is the line Topic 4 asked you to add.' }
+  ];
+
+  var box = $('#pii-lines', root);
+  var sel = LINES.map(function(){ return false; });
+  var submitted = false;
+
+  function build(){
+    box.innerHTML = LINES.map(function(L, i){
+      return '<div class="logline" data-i="' + i + '">' +
+               '<div class="n">' + (i+1) + '</div>' +
+               '<div class="t">' + esc(L.t) + '</div>' +
+             '</div>' +
+             '<div class="logexp" data-e="' + i + '">' +
+               L.tags.map(function(t){ return '<span class="reg">' + esc(t) + '</span>'; }).join('') +
+               L.why + '</div>';
+    }).join('');
+    $$('.logline', box).forEach(function(row){
+      row.addEventListener('click', function(){
+        if(submitted) return;
+        var i = parseInt(row.dataset.i, 10);
+        sel[i] = !sel[i];
+        row.classList.toggle('sel', sel[i]);
+        count();
+      });
+    });
+  }
+  function count(){
+    $('#pii-sel', root).textContent = sel.filter(Boolean).length;
+  }
+  function score(){
+    if(submitted) return;
+    submitted = true;
+    var hit = 0, miss = 0, fp = 0;
+    LINES.forEach(function(L, i){
+      var row = $('.logline[data-i="' + i + '"]', box);
+      var exp = $('.logexp[data-e="' + i + '"]', box);
+      row.classList.remove('sel');
+      if(L.flag && sel[i]){ hit++;  row.classList.add('hit'); }
+      else if(L.flag && !sel[i]){ miss++; row.classList.add('miss'); }
+      else if(!L.flag && sel[i]){ fp++;  row.classList.add('fp'); }
+      exp.classList.add('on');
+    });
+    var total = LINES.filter(function(L){ return L.flag; }).length;
+    var flagged = hit + fp;
+    var precision = flagged ? (hit / flagged) : 0;
+    var recall = hit / total;
+
+    $('#pii-hit',  root).textContent = hit + ' / ' + total;
+    $('#pii-hit',  root).className = 'v ' + (recall >= 0.8 ? 'ok' : (recall >= 0.5 ? 'warn' : 'crit'));
+    $('#pii-miss', root).textContent = String(miss);
+    $('#pii-miss', root).className = 'v ' + (miss === 0 ? 'ok' : (miss <= 2 ? 'warn' : 'crit'));
+    $('#pii-fp',   root).textContent = String(fp);
+    $('#pii-fp',   root).className = 'v ' + (fp === 0 ? 'ok' : (fp <= 1 ? 'warn' : 'crit'));
+    $('#pii-prec', root).textContent = flagged ? Math.round(precision * 100) + '%' : 'n/a';
+    $('#pii-prec', root).className = 'v ' + (precision >= 0.85 ? 'ok' : (precision >= 0.6 ? 'warn' : 'crit'));
+
+    var v = $('#pii-verdict', root), cls, msg;
+    if(miss === 0 && fp === 0){
+      cls = 'ok';
+      msg = '<b>Clean audit.</b> Eleven findings, no false positives. That is the standard: the ' +
+        'engineer receiving this list can act on every line without re-litigating any of them.';
+    } else if(miss === 0){
+      cls = 'warn';
+      msg = '<b>Nothing leaked, but you over-flagged ' + fp + ' line' + (fp===1?'':'s') + '.</b> ' +
+        'Read the explanations on the purple rows. Over-flagging is not free &mdash; a findings ' +
+        'list that includes safe lines gets skimmed, and the next real finding is skimmed with it.';
+    } else if(miss <= 2){
+      cls = 'warn';
+      msg = '<b>' + miss + ' finding' + (miss===1?'':'s') + ' would have left the building.</b> ' +
+        'Red rows are what you missed. Note which ones: most people miss the consent default and ' +
+        'the Windows user path, because neither looks like personal data until you say it out loud.';
+    } else {
+      cls = 'crit';
+      msg = '<b>' + miss + ' findings missed.</b> Recall ' + Math.round(recall*100) + '%. This is ' +
+        'the normal first-attempt result and it is exactly why a scrub is a written procedure with ' +
+        'a pattern list rather than a careful read. Go through the red rows, then write the four ' +
+        'regexes that would have caught them automatically.';
+    }
+    v.className = 'verdict ' + cls;
+    v.innerHTML = msg;
+  }
+  function reset(){
+    submitted = false;
+    sel = LINES.map(function(){ return false; });
+    build(); count();
+    ['#pii-hit','#pii-miss','#pii-fp','#pii-prec'].forEach(function(id){
+      var el = $(id, root); el.textContent = '\u2013'; el.className = 'v';
+    });
+    var v = $('#pii-verdict', root);
+    v.className = 'verdict';
+    v.textContent = 'Flag the lines you would not let leave the studio.';
+  }
+
+  $('#pii-submit', root).addEventListener('click', score);
+  $('#pii-reset', root).addEventListener('click', reset);
+  build(); count();
+})();
+
+/* ============================================================
+   3 · EXPLORATORY CHARTER CRITIC
+   ============================================================ */
+(function(){
+  var root = document.getElementById('w-charter');
+  if(!root) return;
+
+  var ta = $('#ch-text', root), list = $('#ch-list', root), verdict = $('#ch-verdict', root);
+  var timebox = 90;
+
+  var PRESETS = {
+    weak: 'Test the game and check that everything works properly.',
+    strong: 'Explore the in-game store purchase flow on Android using an intercepting proxy and a ' +
+      'test payment account to discover client-trust and consent defects, comparing observed ' +
+      'requests against the documented telemetry consent rules and PCI expectations; record every ' +
+      'request in session notes and file findings with the build ID.',
+    a11y: 'Explore the settings menu and the pause menu with a screen reader and keyboard only to ' +
+      'discover controls that are unreachable or unlabeled, comparing behaviour against the Xbox ' +
+      'Accessibility Guidelines; capture a screenshot and a note for every control that cannot be ' +
+      'reached.'
+  };
+
+  function words(s){
+    return s.trim().split(/\s+/).filter(function(w){ return w.length > 0; }).length;
+  }
+
+  var CHECKS = [
+    { k:'Names a specific target area',
+      help:'Name the screen, system or flow. "The game" is not an area.',
+      t:function(s){ return /\b(menu|hud|store|shop|purchase|checkout|inventory|settings|save|load|matchmaking|tutorial|boss|leaderboard|chat|onboarding|crash report\w*|telemetry|options|controller|subtitle|level\s*\d+)\w*/i.test(s); } },
+    { k:'States a technique, tool or resource',
+      help:'Say how: with a proxy, with a screen reader, keyboard only, on a low-tier device, in grayscale.',
+      t:function(s){ return /\b(using|with|via|through)\b/i.test(s) &&
+          /\b(proxy|screen reader|keyboard|controller|profiler|grayscale|simulat\w+|test (payment |)account|debug build|logcat|packet capture|renderdoc|checklist|adaptive|voiceover|talkback|one hand\w*|muted|pseudo-local\w*|filter|emulator|device|dump)\b/i.test(s); } },
+    { k:'States what information you are hunting',
+      help:'A charter hunts information, not "bugs in general". Add a "to discover \u2026" clause.',
+      t:function(s){ return /\b(to discover|to find|to determine|to identify|to learn|to assess|to verify|looking for)\b/i.test(s); } },
+    { k:'Names an oracle',
+      help:'How will you know something is wrong? Name the standard, spec, baseline or inventory you compare against.',
+      t:function(s){ return /\b(compar\w+|against|spec|requirement\w*|expected|documented|baseline|wcag|xag|gag|trc|tcr|xr|gdpr|ccpa|coppa|pci|guidelines?|policy|inventory|acceptance criteri\w+)\b/i.test(s); } },
+    { k:'Avoids catch-all vagueness',
+      help:'"Test the game", "check everything", "make sure it works" \u2014 these are the absence of a mission.',
+      t:function(s){ return !/\b(test|check|explore|look at|try|play|verify)\s+(that\s+)?(the\s+)?(whole\s+)?(game|everything|it|things|stuff|app)\b/i.test(s); } },
+    { k:'Promises evidence',
+      help:'Say what leaves the session: notes, screenshots, a capture, filed tickets.',
+      t:function(s){ return /\b(record\w*|logg?\w*|captur\w*|screenshot\w*|notes?|video|trace|document\w*|file\b|ticket\w*|report\w*|findings?)\b/i.test(s); } },
+    { k:'Time box set, two hours or less',
+      help:'A session longer than two hours is a project. Split it; the debrief is where the value is.',
+      t:function(s){ return timebox > 0 && timebox <= 120; } },
+    { k:'Right length (15\u201370 words)',
+      help:'Under 15 words is a slogan. Over 70 is a test plan wearing a charter costume.',
+      t:function(s){ var w = words(s); return w >= 15 && w <= 70; } }
+  ];
+
+  function render(){
+    var s = ta.value || '';
+    var passed = 0;
+    list.innerHTML = CHECKS.map(function(c){
+      var ok = false;
+      try { ok = !!c.t(s); } catch(e){ ok = false; }
+      if(ok) passed++;
+      return '<li class="' + (ok ? 'pass' : 'fail') + '"><span class="m">' +
+             (ok ? '\u2713' : '\u2715') + '</span><span><b>' + esc(c.k) + '</b>' +
+             (ok ? '' : ' &mdash; ' + esc(c.help)) + '</span></li>';
+    }).join('');
+
+    $('#ch-score', root).textContent = passed + ' / ' + CHECKS.length;
+    $('#ch-score', root).className = 'v ' + (passed >= 7 ? 'ok' : (passed >= 5 ? 'warn' : 'crit'));
+    $('#ch-words', root).textContent = String(words(s));
+    $('#ch-tb', root).textContent = timebox > 0 ? timebox + ' min' : 'unset';
+    $('#ch-tb', root).className = 'v ' + (timebox > 0 && timebox <= 120 ? 'ok' : 'crit');
+
+    var cls, msg;
+    if(passed >= 7){
+      cls = 'ok';
+      msg = '<b>Runnable.</b> Someone else on your team could execute this charter without asking ' +
+        'you a question, and could tell afterwards whether the session succeeded. That is the bar.';
+    } else if(passed >= 5){
+      cls = 'warn';
+      msg = '<b>Close.</b> The missing pieces above are the ones that make a session reportable ' +
+        'rather than merely performed. Fix them before you start the timer, not after.';
+    } else {
+      cls = 'crit';
+      msg = '<b>This is not yet a charter.</b> As written it authorizes an hour of unstructured ' +
+        'play, and the debrief will produce anecdotes instead of findings. Work down the failed ' +
+        'checks; it takes about four minutes.';
+    }
+    verdict.className = 'verdict ' + cls;
+    verdict.innerHTML = msg + ' <span class="small subtle">These are literal string tests \u2014 ' +
+      'a well-formed charter for a pointless mission still scores 8/8. Automated gates measure ' +
+      'form, never worth.</span>';
+  }
+
+  ta.addEventListener('input', render);
+  $$('#ch-time button', root).forEach(function(b){
+    b.addEventListener('click', function(){
+      $$('#ch-time button', root).forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      timebox = parseInt(b.dataset.v, 10);
+      render();
+    });
+  });
+  $$('[data-ch]', root).forEach(function(b){
+    b.addEventListener('click', function(){
+      ta.value = PRESETS[b.dataset.ch];
+      render();
+    });
+  });
+  render();
+})();
+
+/* ============================================================
+   4 · DECISION TREE — is this a compliance blocker?
+   ============================================================ */
+var COMP_NODES = {
+  start: {
+    q: 'You have found something wrong. Before you argue about severity: which authority judges it?',
+    hint: 'Compliance questions are decided outside your triage board. Naming the right authority is most of the work.',
+    choices: [
+      { t:'A numbered platform requirement covers it', sub:'Suspend/resume, save integrity, glyphs, sign-out, trophies, age gate, storage removal', go:'cert', lbl:'Platform requirement' },
+      { t:'It changes what data we collect, store or send', sub:'A new field, a new endpoint, a log line, a third-party SDK', go:'data', lbl:'Data' },
+      { t:'It changes what content or monetization the game contains', sub:'New content, a store, randomness for money, chat, user-generated content', go:'content', lbl:'Content' },
+      { t:'It is an accessibility failure', sub:'A player cannot perceive, reach or operate something', go:'a11y', lbl:'Accessibility' },
+      { t:'None of these \u2014 an ordinary functional defect', sub:'It just does not work the way the spec says', go:'ordinary', lbl:'Ordinary defect' }
+    ]
+  },
+  cert: { leaf:true, title:'Submission blocker. Quote the number.',
+    body:'<p>Certification is pass/fail against a numbered document, judged by the platform holder, ' +
+      'and repro rate is not an argument they accept. File it with the requirement identifier in ' +
+      'the title, attach the repro and the platform, and mark it a submission blocker rather than ' +
+      'arguing severity.</p><p class="tool">Title: [XR-###] Save corrupted when console enters ' +
+      'rest mode during autosave</p><p>The practical reason this matters more than being right: a ' +
+      'failed submission costs the resubmission window on top of the fix, which is usually more ' +
+      'schedule than the fix you were trying to defer.</p>' },
+  data: {
+    q: 'What kind of data is involved?',
+    hint: 'Some categories carry obligations that start the moment you know.',
+    choices: [
+      { t:'A child\u2019s account, a payment instrument, precise location, or credentials', go:'dataHot', lbl:'Sensitive category' },
+      { t:'Ordinary account or gameplay data', go:'dataShipped', lbl:'Ordinary data' }
+    ]
+  },
+  dataHot: { leaf:true, title:'Escalate today, then file.',
+    body:'<p>COPPA obligations attach on actual knowledge that a user is under 13. Card data is ' +
+      'PCI scope. Precise geolocation is a sensitive category under CPRA. Credentials in a log ' +
+      'are compromised by definition. None of these are things you schedule.</p><p>Your job is a ' +
+      'fast, accurate escalation with scope attached: which field, since which build, how many ' +
+      'records, who can read them, and whether it is still happening. Then file the engineering ' +
+      'defect. Do not make the legal judgment yourself and do not sit on it overnight.</p>' },
+  dataShipped: {
+    q: 'Has the data already been collected in production?',
+    hint: 'This is the line between a defect and an incident.',
+    choices: [
+      { t:'Yes \u2014 it is live and records exist', go:'incident', lbl:'Already collected' },
+      { t:'No \u2014 caught before ship', go:'preship', lbl:'Caught pre-ship' }
+    ]
+  },
+  incident: { leaf:true, title:'Incident, not a bug.',
+    body:'<p>The data exists, in a system with its own access list and retention schedule, ' +
+      'possibly a third party\u2019s. Fixing forward does nothing about what was already ' +
+      'collected, and a normal severity field cannot carry the sentence "personal data is ' +
+      'currently flowing to a vendor."</p><p>Notify whoever owns privacy at the studio the same ' +
+      'day with the scope. Then fix the source, fix the pipeline, and verify by re-auditing a ' +
+      'real capture \u2014 not by reading the diff.</p>' },
+  preship: { leaf:true, title:'Compliance blocker before ship \u2014 file it with the field named.',
+    body:'<p>Cheap to fix and expensive to ship, which is the definition of a pre-ship blocker. ' +
+      'Name the specific field and the specific principle in the ticket: "sends ' +
+      '<code>deviceUniqueIdentifier</code> before consent is answered \u2014 no lawful basis; ' +
+      'replace with per-install GUID and gate on <code>Consent.Granted</code>."</p><p>Add the ' +
+      'assertion to a test so it cannot come back. Consent regressions are re-introduced by ' +
+      'people who never read the original ticket.</p>' },
+  content: {
+    q: 'Does the change touch randomness bought with money, chat, user-generated content, or a store?',
+    hint: 'These four are the triggers that most often move a rating or a platform review.',
+    choices: [
+      { t:'Yes, at least one of them', go:'rating', lbl:'Touches a trigger' },
+      { t:'No \u2014 it is ordinary content', go:'changectl', lbl:'Ordinary content' }
+    ]
+  },
+  rating: { leaf:true, title:'Rating and platform re-review before it ships.',
+    body:'<p>Your rating was issued against a disclosure questionnaire. Adding a paid randomized ' +
+      'reward, opening a chat channel, or accepting user-generated content changes the answers, ' +
+      'and in several jurisdictions the loot-box question is unsettled law rather than settled ' +
+      'policy (Bennett, 2023). Chat and UGC additionally bring moderation and reporting ' +
+      'obligations that platforms verify.</p><p>File it against the disclosure form, not against ' +
+      'the feature. The engineering work may be finished; the compliance work has not started.</p>' },
+  changectl: { leaf:true, title:'Normal change control \u2014 but tag the disclosure form.',
+    body:'<p>Route it as an ordinary content change and record the disclosure tags it touches so ' +
+      'the next reviewer can see the running total. Individually harmless additions accumulate: ' +
+      'the fourth mildly gorier enemy is the one that moves a descriptor, and nobody notices ' +
+      'because each PR looked like the last one.</p>' },
+  a11y: {
+    q: 'Is there a measurable criterion it violates?',
+    hint: 'Contrast ratio, flash rate, remappability, subtitle presence, target size, focus order.',
+    choices: [
+      { t:'Yes \u2014 I can name the criterion and the measurement', go:'a11yHard', lbl:'Measurable' },
+      { t:'No \u2014 it is a friction I observed but cannot measure', go:'a11ySoft', lbl:'Observed only' }
+    ]
+  },
+  a11yHard: { leaf:true, title:'File as a defect against the criterion.',
+    body:'<p>Put the number in the title and the measurement in the body: "Ammo indicator ' +
+      '2.1:1 against background \u2014 WCAG 1.4.11 requires 3:1 for non-text content." A named ' +
+      'criterion with a measurement is not a matter of taste, cannot be closed as ' +
+      '"working as intended", and comes with an obvious fix.</p><p>Photosensitivity is the one ' +
+      'sub-case that escalates on its own: more than three flashes per second above threshold is ' +
+      'a health-and-safety issue, and several platforms treat it as a certification matter.</p>' },
+  a11ySoft: { leaf:true, title:'File as a usability defect with player evidence \u2014 do not inflate it.',
+    body:'<p>"Menu navigation is exhausting with a screen reader" is real and worth fixing, and ' +
+      'calling it a compliance violation you cannot cite will cost you the next argument you need ' +
+      'to win. File it with the strongest evidence you have: a recording of the session, the ' +
+      'number of inputs required versus the sighted path, the charter you ran.</p><p>Then go ' +
+      'looking for the measurable version underneath it. Most "feels bad" accessibility findings ' +
+      'have a criterion hiding in them \u2014 focus order, missing labels, target size \u2014 and ' +
+      'when you find it the ticket gets teeth.</p>' },
+  ordinary: { leaf:true, title:'Ordinary triage \u2014 Topic 1 applies.',
+    body:'<p>Severity from the player outcome, priority from the schedule, exposure recorded ' +
+      'separately, and the two never collapsed into one number.</p><p>One habit worth keeping ' +
+      'from this topic anyway: before you close it, ask whether the same root cause has an ' +
+      'accessibility or privacy sibling. A state that is wrong in the logic is frequently a state ' +
+      'that is unannounced in the UI as well.</p>' }
+};
+if(document.getElementById('tree-comp')){
+  new GDTTree(document.getElementById('tree-comp'), COMP_NODES, 'start');
+}
+
+})();
+</script>
+</body></html>

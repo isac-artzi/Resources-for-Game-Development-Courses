@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Topic 2 &middot; Test Design and Diagramming — Advanced Game Testing and Debugging</title>
+<style id="lesson-kit">
+:root{
+  --bg:#0e1116; --bg2:#161b22; --bg3:#1c232d; --line:#2a3441; --line2:#3a4757;
+  --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#4da3ff; --acc2:#1f6feb;
+  --ok:#3fb950; --warn:#d29922; --crit:#f85149; --info:#a371f7; --teal:#39c5bb;
+  --unity:#5ec8f2; --unreal:#f0a44a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --sh:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 120px}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .crumb{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.topbar .spacer{flex:1}
+.topbar a{color:var(--tx2);text-decoration:none;font-size:13.5px;padding:5px 10px;
+  border-radius:7px;border:1px solid transparent}
+.topbar a:hover{color:var(--tx);background:var(--bg3);border-color:var(--line)}
+.progressbar{position:fixed;top:0;left:0;height:3px;background:var(--acc);
+  width:0;z-index:60;transition:width .12s linear}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero .kicker{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.14;margin:0 0 14px;
+  letter-spacing:-.02em;font-weight:800}
+.hero .lede{font-size:19px;color:var(--tx2);max-width:70ch;margin:0}
+.metarow{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:12.5px;color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+
+/* ---------- typography ---------- */
+h2{font-size:27px;margin:56px 0 6px;letter-spacing:-.015em;font-weight:750;
+  scroll-margin-top:80px}
+h2 .num{color:var(--acc);font-family:var(--mono);font-size:16px;
+  margin-right:11px;font-weight:600}
+h3{font-size:20px;margin:34px 0 6px;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16.5px;margin:24px 0 4px;font-weight:700;color:var(--tx)}
+p{margin:13px 0}
+a{color:var(--acc)}
+ul,ol{margin:13px 0;padding-left:24px}
+li{margin:7px 0}
+li::marker{color:var(--tx3)}
+strong{color:#fff;font-weight:650}
+em{color:var(--tx)}
+code{font-family:var(--mono);font-size:.885em;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;padding:1.5px 6px;color:#bfe3ff}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.subtle{color:var(--tx2)}
+.small{font-size:14px}
+
+/* ---------- callouts ---------- */
+.box{border:1px solid var(--line);border-left:3px solid var(--acc);
+  background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin:22px 0}
+.box .lbl{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:800;color:var(--acc);margin-bottom:7px}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.why{border-left-color:var(--info)}   .box.why .lbl{color:var(--info)}
+.box.warn{border-left-color:var(--warn)}  .box.warn .lbl{color:var(--warn)}
+.box.crit{border-left-color:var(--crit)}  .box.crit .lbl{color:var(--crit)}
+.box.ok{border-left-color:var(--ok)}      .box.ok .lbl{color:var(--ok)}
+.box.field{border-left-color:var(--teal)} .box.field .lbl{color:var(--teal)}
+
+/* ---------- objectives / goals ---------- */
+.goals{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;margin:26px 0}
+.goals h4{margin:0 0 10px;font-size:12px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx3)}
+.goals ol{margin:0;padding-left:20px}
+
+/* ---------- code ---------- */
+.codeblock{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  margin:20px 0;overflow:hidden}
+.codeblock .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);font-size:12.5px;
+  color:var(--tx2);font-family:var(--mono)}
+.codeblock .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);
+  font-size:13.4px;line-height:1.62;color:#d5e2f0}
+.codeblock pre .c{color:#6a7d91;font-style:italic}   /* comment */
+.codeblock pre .k{color:#ff7b9c}                     /* keyword */
+.codeblock pre .t{color:#7ee0c6}                     /* type    */
+.codeblock pre .s{color:#ffcf8f}                     /* string  */
+.codeblock pre .n{color:#c3a6ff}                     /* number  */
+.codeblock pre .f{color:#82c8ff}                     /* func    */
+
+/* annotated code: clickable gutter markers */
+.annot{display:grid;grid-template-columns:1fr;gap:0;margin:22px 0}
+.annot .rows{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.annot .arow{display:grid;grid-template-columns:34px 1fr;align-items:stretch;
+  border-bottom:1px solid rgba(42,52,65,.55)}
+.annot .arow:last-child{border-bottom:0}
+.annot .arow.hasnote{cursor:pointer}
+.annot .arow.hasnote:hover{background:rgba(77,163,255,.07)}
+.annot .gut{display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--tx3);font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--line);user-select:none}
+.annot .arow.hasnote .gut{color:#fff;background:var(--acc2);font-weight:700}
+.annot .arow.open .gut{background:var(--acc)}
+.annot .ln{font-family:var(--mono);font-size:13.3px;line-height:1.65;padding:2px 14px;
+  white-space:pre;overflow-x:auto;color:#d5e2f0}
+.annot .note{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--line);
+  padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease;
+  font-size:14.6px;color:var(--tx2)}
+.annot .arow.open + .note,.annot .note.open{max-height:600px;padding:13px 18px}
+.annot .note b{color:var(--tx)}
+.annot .hint{font-size:12.5px;color:var(--tx3);margin:8px 2px 0}
+
+/* ---------- engine tabs (Unity / Unreal) ---------- */
+.tabs{margin:24px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tabs .tabhd{display:flex;background:var(--bg3);border-bottom:1px solid var(--line)}
+.tabs .tabhd button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:14px;font-weight:650;padding:11px 20px;cursor:pointer}
+.tabs .tabhd button:hover{color:var(--tx2)}
+.tabs .tabhd button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tabs .tabhd button[data-engine="unity"].on{border-bottom-color:var(--unity);color:var(--unity)}
+.tabs .tabhd button[data-engine="unreal"].on{border-bottom-color:var(--unreal);color:var(--unreal)}
+.tabs .tabbody{padding:4px 20px 16px;background:var(--bg2)}
+.tabs .tabpane{display:none}.tabs .tabpane.on{display:block}
+.tabs .tabbody .codeblock{margin:16px -6px}
+
+/* ---------- quiz / check ---------- */
+.check{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin:26px 0}
+.check .q{font-weight:650;margin:0 0 14px}
+.check .opt{display:block;width:100%;text-align:left;background:var(--bg3);
+  border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin:8px 0;
+  color:var(--tx);font:inherit;font-size:15.2px;cursor:pointer;transition:.12s}
+.check .opt:hover{border-color:var(--line2);background:#222b36}
+.check .opt.right{border-color:var(--ok);background:rgba(63,185,80,.11)}
+.check .opt.wrong{border-color:var(--crit);background:rgba(248,81,73,.11)}
+.check .opt .tag{float:right;font-size:12px;font-weight:700;letter-spacing:.06em}
+.check .opt.right .tag{color:var(--ok)}.check .opt.wrong .tag{color:var(--crit)}
+.check .exp{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--tx2)}
+.check .exp.on{display:block}
+.check .exp b{color:var(--tx)}
+.check .exp .ex{margin:9px 0}
+.check .exp .ex .who{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em}
+
+/* ---------- widgets / simulators ---------- */
+.widget{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.widget > .whd{display:flex;align-items:baseline;gap:10px;margin:-2px 0 4px}
+.widget > .whd .wt{font-weight:750;font-size:17px}
+.widget > .whd .wk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--teal);font-weight:800;border:1px solid rgba(57,197,187,.35);
+  border-radius:5px;padding:2px 7px}
+.widget > .wsub{color:var(--tx2);font-size:14.5px;margin:4px 0 16px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;align-items:center;
+  gap:12px;margin:11px 0}
+.ctl label{font-size:14px;color:var(--tx2)}
+.ctl output{font-family:var(--mono);font-size:13.5px;color:var(--acc);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:22px}
+.btn{background:var(--acc2);border:1px solid var(--acc);color:#fff;font:inherit;
+  font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--acc)}
+.btn.ghost{background:var(--bg3);border-color:var(--line2);color:var(--tx2)}
+.btn.ghost:hover{background:#242e3a;color:var(--tx)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:10px;margin:16px 0 0}
+.readout .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px}
+.readout .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.readout .cell .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.readout .cell .v.ok{color:var(--ok)}.readout .cell .v.warn{color:var(--warn)}
+.readout .cell .v.crit{color:var(--crit)}
+.verdict{margin:16px 0 0;padding:13px 16px;border-radius:9px;font-size:14.8px;
+  background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--acc)}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict.crit{border-left-color:var(--crit)}
+canvas{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:9px;margin:16px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;
+  color:var(--tx2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px}
+
+/* ---------- decision tree ---------- */
+.tree{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.tree .path{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  margin:0 0 14px;min-height:17px}
+.tree .path span{color:var(--acc)}
+.tree .qq{font-size:17.5px;font-weight:700;margin:0 0 6px}
+.tree .qh{color:var(--tx2);font-size:14.5px;margin:0 0 14px}
+.tree .choices{display:grid;gap:9px}
+.tree .choices button{text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:12px 15px;color:var(--tx);font:inherit;font-size:15px;
+  cursor:pointer;transition:.12s}
+.tree .choices button:hover{border-color:var(--acc);background:#222c38}
+.tree .choices button .sub{display:block;color:var(--tx3);font-size:13px;margin-top:3px}
+.tree .leaf{border-left:3px solid var(--ok);background:var(--bg3);border-radius:9px;
+  padding:15px 18px}
+.tree .leaf h5{margin:0 0 8px;font-size:16.5px;color:var(--ok)}
+.tree .leaf p{margin:9px 0;font-size:15px}
+.tree .leaf .tool{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:14.6px}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+th{background:var(--bg3);font-weight:700;font-size:13px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--tx2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.017)}
+td code{font-size:.85em}
+
+/* ---------- misc ---------- */
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2.5px 9px;border-radius:999px;vertical-align:1px}
+.pill.s0{background:rgba(248,81,73,.16);color:var(--crit);border:1px solid rgba(248,81,73,.4)}
+.pill.s1{background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pill.s2{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pill.s3{background:rgba(159,176,195,.13);color:var(--tx2);border:1px solid var(--line2)}
+.pill.unity{background:rgba(94,200,242,.14);color:var(--unity);border:1px solid rgba(94,200,242,.4)}
+.pill.unreal{background:rgba(240,164,74,.14);color:var(--unreal);border:1px solid rgba(240,164,74,.4)}
+
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);
+  padding:0 18px;margin:20px 0}
+details.more > summary{cursor:pointer;padding:13px 0;font-weight:650;font-size:15.5px;
+  list-style:none;color:var(--tx)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"▸ ";color:var(--acc);font-weight:800}
+details.more[open] > summary::before{content:"▾ "}
+details.more[open]{padding-bottom:14px}
+details.more > summary:hover{color:var(--acc)}
+
+.deliver{background:linear-gradient(180deg,rgba(77,163,255,.07),transparent);
+  border:1px solid var(--acc2);border-radius:12px;padding:20px 24px;margin:40px 0 0}
+.deliver h3{margin-top:0;color:var(--acc)}
+
+footer.lf{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:13.5px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap}
+footer.lf a{color:var(--tx2);text-decoration:none}
+footer.lf a:hover{color:var(--acc)}
+
+@media (max-width:720px){
+  body{font-size:16px}
+  .ctl{grid-template-columns:1fr;gap:4px}
+  .ctl output{text-align:left}
+  .hero{padding:34px 0 24px}
+}
+@media print{
+  .topbar,.progressbar{display:none}
+  body{background:#fff;color:#111}
+  .widget,.tree,.check,.box,.goals{break-inside:avoid}
+}
+</style>
+<style id="lesson-local">
+/* lesson-specific additions only */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0 22px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.seg button{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button:hover{border-color:var(--line2);color:var(--tx)}
+.seg button.on{background:var(--acc2);border-color:var(--acc);color:#fff;font-weight:650}
+.fld{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:8px;color:var(--tx);font-family:var(--mono);font-size:13.2px;
+  line-height:1.6;padding:9px 12px;margin:4px 0 12px;resize:vertical}
+.fld:focus{outline:none;border-color:var(--acc)}
+.fldlbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);
+  font-weight:700;margin-top:10px;display:block}
+.gradelist{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:6px}
+.gradelist li{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:baseline;
+  font-size:14.2px;background:var(--bg3);border:1px solid var(--line);border-radius:8px;
+  padding:8px 12px;color:var(--tx2)}
+.gradelist li .mk{font-family:var(--mono);font-weight:800}
+.gradelist li.pass{border-left:3px solid var(--ok)}
+.gradelist li.part{border-left:3px solid var(--warn)}
+.gradelist li.fail{border-left:3px solid var(--crit)}
+.gradelist li.pass .mk{color:var(--ok)}.gradelist li.part .mk{color:var(--warn)}
+.gradelist li.fail .mk{color:var(--crit)}
+.gradelist li .pt{font-family:var(--mono);font-size:12.5px;color:var(--tx3)}
+.lcnow{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:4px 0 2px}
+.lcnow .st{font-family:var(--mono);font-size:22px;font-weight:800;color:var(--acc)}
+.lcnow .ow{font-size:13.5px;color:var(--tx3)}
+.lclog{font-family:var(--mono);font-size:12.4px;color:var(--tx3);background:#0a0d12;
+  border:1px solid var(--line);border-radius:8px;padding:10px 13px;margin:14px 0 0;
+  max-height:190px;overflow-y:auto;white-space:pre-wrap;line-height:1.65}
+.lclog b{color:var(--tx2)}
+.dupbar{height:9px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-top:5px}
+.dupbar i{display:block;height:100%;background:var(--acc)}
+.dupbar i.hot{background:var(--crit)}.dupbar i.mid{background:var(--warn)}
+.duprow{background:var(--bg3);border:1px solid var(--line);border-radius:8px;
+  padding:9px 13px;margin:8px 0;font-size:14.2px}
+.duprow .t{font-family:var(--mono);font-size:12.9px;color:var(--tx)}
+.duprow .m{font-size:12.4px;color:var(--tx3);margin-top:3px}
+.readlist{font-size:14.6px;color:var(--tx2)}
+.readlist li b{color:var(--tx)}
+.tight td,.tight th{padding:6px 10px;font-size:13.6px}
+.sm{font-size:13.6px;color:var(--tx2)}
+.kv{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <span class="crumb">Advanced Game Testing and Debugging &middot; Topic 2</span><span class="spacer"></span>
+  <a href="../index.html">Course hub</a>
+  <a href="lesson-01-understanding-bugs.html">&larr; Prev</a>
+  <a href="lesson-03-automated-testing.html">Next &rarr;</a>
+</div></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Topic 2 &middot; Sep 14&ndash;27 &middot; Weeks 2&ndash;3 &middot; Sessions 3&ndash;6</div>
+    <h1>Test Design and Diagramming</h1>
+    <p class="lede">Topic 1 taught you to recognize a defect. This one teaches you to write it down
+    so that a stranger can reproduce it, a tracker can route it, a duplicate detector can find it,
+    and a test can be designed from it &mdash; before anyone writes the code that breaks.</p>
+    <div class="metarow">
+      <span class="chip"><b>Reading:</b> <i>Modern Game Testing</i> ch. 6&ndash;8 + 6 papers</span>
+      <span class="chip"><b>Assignment:</b> Benchmark &mdash; Bug Reporting and Workflow &middot; 100 pts &middot; due Sep 27</span>
+      <span class="chip"><b>Sessions:</b> 3&ndash;6</span>
+      <span class="chip"><b>Est. time:</b> 150 min + reading</span>
+    </div>
+  </header>
+
+  <div class="goals"><h4>By the end you will be able to</h4><ol>
+    <li>Utilize an issue-tracking system to track bugs &mdash; fields, workflows, categories, and status transitions, not just the "Create" button.</li>
+    <li>Analyze the entire life cycle of a bug as a state machine, and say what each transition obligates someone to do.</li>
+    <li>Utilize automated tools to identify and track bugs, including duplicate detection and evidence capture.</li>
+    <li>Explain the importance of reproducibility in debugging, and write repro steps that survive a stranger, a continent, and 2 a.m.</li>
+    <li>Apply data-driven testing methodologies &mdash; equivalence partitioning, boundary values, decision tables, state-transition diagrams &mdash; to produce test tables rather than test guesses.</li>
+  </ol></div>
+
+  <h2><span class="num">1</span>A bug report is a program that a human executes</h2>
+
+  <p>Everything you write in a tracker is read by someone who was not there. That person has a
+  different build, a different machine, a different mental model of the feature, and eleven other
+  tickets open. Your report is the only interface between what you saw and what they will do about
+  it. Treat it as an interface and the standard rules of interface design apply: predictable
+  structure, no ambiguity about who does what, and every field carrying information the caller
+  actually needs.</p>
+
+  <p>The costs of getting this wrong are boring and enormous. An engineer who cannot reproduce your
+  defect in the first ten minutes will either come back to you for clarification &mdash; a round trip
+  that in a distributed team costs a working day &mdash; or close the ticket as Cannot Reproduce,
+  which puts the defect back into the build with a paper trail claiming it isn't there. Neither
+  outcome involves the bug getting fixed. Both outcomes were determined by how you wrote three or
+  four fields.</p>
+
+  <h3>The title is a search key, not a sentence</h3>
+
+  <p>Titles get used in ways new testers never anticipate: scanned in a list of 200 during triage,
+  typed into a search box by someone checking whether the bug is already filed, matched by an
+  automated duplicate detector, pasted into a release-notes draft, and read aloud in a meeting. All
+  five of those uses reward the same thing &mdash; distinctive, front-loaded, searchable
+  vocabulary &mdash; and all five punish narrative.</p>
+
+  <p><strong>PAL</strong> is the format this course requires: <b>Problem</b>, <b>Action</b>,
+  <b>Location</b>, in that order, separated by em dashes or commas. The problem comes first because a
+  triage lead scanning a list is scanning for consequences. The action comes second because that is
+  the search term another tester will use when they hit the same thing. The location comes last
+  because it disambiguates: the same problem in two places is two bugs.</p>
+
+  <div class="tblwrap"><table class="tight">
+    <thead><tr><th style="width:44%">Title</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td><code>Game crashes</code></td><td><b>Useless.</b> Matches every crash ticket in the database and discriminates none of them. Guarantees a duplicate.</td></tr>
+      <tr><td><code>Bug in the save system!!</code></td><td><b>Useless.</b> "Bug" is the one word that appears in 100% of records. Punctuation is not severity.</td></tr>
+      <tr><td><code>When I was in the cargo bay and I quicksaved during the elevator, my save wouldn't load</code></td><td><b>Content is right, form is wrong.</b> Narrative, first person, 96 characters before the consequence appears. Unscannable in a list.</td></tr>
+      <tr><td><code>Save file fails to load &mdash; quicksaving during elevator transition &mdash; Cargo Bay B</code></td><td><b>PAL.</b> Problem, action, location. Searchable on "quicksave", "elevator", "Cargo Bay B", or "save file fails to load".</td></tr>
+      <tr><td><code>Frame time spikes to 61 ms &mdash; first grenade detonation after level load &mdash; Ruined Ward</code></td><td><b>PAL with a number.</b> The number turns a subjective report into a measured one and makes the fix verifiable.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box why"><div class="lbl">Why the title format is a duplicate-prevention mechanism</div>
+  <p>Zhang and colleagues (2023), reviewing the state of duplicate bug report detection, examine how
+  far automated detectors have actually come &mdash; and the honest summary is that the techniques
+  that work in practice still lean heavily on textual similarity between reports. That has a direct
+  consequence for you: a detector, and a human using a search box, can only match on the words you
+  chose. Two testers who both write "Game crashes" produce two records with no distinguishing
+  vocabulary; a detector will either flag them as duplicates of each other <em>and</em> of forty
+  unrelated crashes, or flag nothing. Two testers who both write PAL titles converge on the same rare
+  tokens &mdash; "quicksave", "elevator", "Cargo Bay B" &mdash; and the match is unambiguous. You are
+  not writing prose. You are writing the index.</p></div>
+
+  <h3>Second-person imperative repro steps</h3>
+
+  <p>Repro steps are instructions, so write them in the mood that language reserves for instructions:
+  second-person imperative. "Launch the game." "Load the Cargo Bay B checkpoint." "Press F5 while the
+  elevator is between floors." Not "I launched the game", not "the game was launched", not "you
+  should probably be in the cargo bay first".</p>
+
+  <p>This is not style pedantry, and it is worth being precise about why:</p>
+
+  <ul>
+    <li><strong>Imperative removes the actor ambiguity.</strong> "The elevator was activated" leaves
+    open whether the tester pressed the button, an NPC did, or a script fired. The reader has to
+    guess, and half of them guess differently from you.</li>
+    <li><strong>Past-tense narrative encodes an unrepeatable session.</strong> "I had been playing for
+    about an hour" is not a step anyone can follow. If the hour matters, it is a precondition with a
+    number: "Play for at least 45 minutes, or load the attached save with a 47-minute session timer."</li>
+    <li><strong>Imperative forces atomicity.</strong> It is hard to write two actions in one
+    imperative clause without noticing you have done it. "Open the menu, equip the rifle and quit" is
+    three steps, and the bug might only need two of them.</li>
+    <li><strong>Conditionals expose missing information.</strong> The moment you write "if you're
+    lucky", you have discovered that your repro rate is not 100% and you owe the reader a number.</li>
+  </ul>
+
+  <div class="box why"><div class="lbl">Why the mood matters at 2 a.m. on another continent</div>
+  <p>Do the arithmetic on a co-development studio. Your outsourced QA partner is eleven time zones
+  away; a question you ask at 4 p.m. gets answered while you sleep and lands at 9 a.m. the next day.
+  Each clarification round trip is therefore a calendar day, not five minutes. Suppose 40 tickets a
+  week and an ambiguity rate of 25% &mdash; ten tickets a week each losing a day of engineer
+  attention. That is two engineer-weeks per month spent on the reconstruction of information that
+  the reporter already had and did not write down. Nobody schedules that time, and it comes out of
+  the fix budget.</p></div>
+
+  <h3>Expected and Actual are two fields for one reason</h3>
+
+  <p>Expected is where you name the oracle from Topic 1. Actual is where you record the observable.
+  Keeping them separate does something a single "description" field cannot: it makes the disagreement
+  explicit, which is the only thing that makes the ticket arguable on evidence instead of on
+  authority. If your Expected field cannot cite a requirement, an acceptance criterion, a cert rule,
+  or a defensible implicit standard ("a save file the game wrote must load"), you have found the more
+  interesting problem, and it is a spec gap.</p>
+
+  <p>Both fields should be falsifiable. "Expected: it works correctly" is not falsifiable. "Expected:
+  the checkpoint loads to the elevator lobby with inventory intact, per REQ-SAVE-014" is. "Actual: it
+  breaks" is not. "Actual: loading screen completes, player spawns at world origin (0,0,0) under the
+  level geometry, falls for 3.2 s, respawn never triggers" is.</p>
+
+  <h3>Annotated: a real ticket, field by field</h3>
+
+  <p>Below is a ticket in the form this course requires, exactly as it would be typed into Jira.
+  Click the highlighted lines &mdash; the notes explain <em>why the field is written that way</em>,
+  which is the part a template cannot teach you.</p>
+
+  <div class="annot"><div class="rows">
+    <div class="arow hasnote"><div class="gut">1</div><div class="ln">Summary: Save file fails to load — quicksaving during elevator transition — Cargo Bay B</div></div>
+    <div class="note"><b>PAL, front-loaded, 88 characters.</b> Problem first ("Save file fails to
+      load") so a triage lead scanning 200 rows sees the consequence without reading to the end.
+      Action second, because "quicksav" is the token the next tester will type into search. Location
+      last, because the same failure in the Reactor lift would be a different ticket with a different
+      owner. Notice the absence of "bug", "issue", "broken", and exclamation marks: those words carry
+      zero discriminating information and actively degrade duplicate detection.</div>
+    <div class="arow"><div class="gut">2</div><div class="ln">Project: STRAY-QA        Issue type: Bug        Component: Save/Load</div></div>
+    <div class="arow hasnote"><div class="gut">3</div><div class="ln">Severity: S0 (data loss)          Priority: P1 (this sprint)</div></div>
+    <div class="note"><b>Two fields, two owners, deliberately not equal.</b> Severity is S0 because
+      the outcome for an affected player is a destroyed save. Priority is P1 rather than P0 because
+      the exposure estimate on line 12 is 4% and there is a workaround (do not quicksave in a lift)
+      that QA can communicate to the rest of the team today. A tracker that only has one field for
+      both will force you to lie in it. If yours does, add a custom field before you file your
+      hundredth ticket, not after.</div>
+    <div class="arow hasnote"><div class="gut">4</div><div class="ln">Build: 0.7.3-rc2 (CI #1841)   Commit: 9f4c2ab   Platform: Win 11 26100 / PS5 (both)</div></div>
+    <div class="note"><b>The build ID is what makes the ticket time-travel.</b> A defect without a
+      build number cannot be bisected, cannot be confirmed fixed, and cannot be triaged against
+      "was this in the cert candidate?" The commit SHA lets an engineer check out exactly your tree.
+      "Both" on the platform line is doing real work too: it tells the reader this is not a
+      platform-specific defect, which removes an entire branch of the investigation before it starts.</div>
+    <div class="arow"><div class="gut">5</div><div class="ln">Env: NVIDIA 4070 / driver 566.36, 32 GB, Vulkan; PS5 base, firmware 25.02</div></div>
+    <div class="arow hasnote"><div class="gut">6</div><div class="ln">Preconditions:</div></div>
+    <div class="note"><b>Preconditions are not step 0.</b> They are the state the world must be in
+      before the numbered steps make sense, and separating them tells the reader which parts they can
+      shortcut. An engineer who has a save at Cargo Bay B can skip 20 minutes of play; one who does
+      not knows exactly what to build. Merging preconditions into the steps is the single most common
+      reason a repro takes 40 minutes instead of four.</div>
+    <div class="arow"><div class="gut">7</div><div class="ln">  - Chapter 3 unlocked, autosave enabled (default), quicksave bound to F5</div></div>
+    <div class="arow"><div class="gut">8</div><div class="ln">  - Use attached save 'cargo_b_pre.sav' to skip to the checkpoint</div></div>
+    <div class="arow hasnote"><div class="gut">9</div><div class="ln">Steps to reproduce:</div></div>
+    <div class="note"><b>Second-person imperative, one action per line, no branching.</b> Read the
+      steps below out loud and notice that every one of them is a command you could give a person
+      standing at the keyboard. No "I", no "we", no "it should then", no "try to". Each line is a
+      single observable action, so when the engineer says "it fails at step 4" both of you know
+      precisely which action that was.</div>
+    <div class="arow"><div class="gut">10</div><div class="ln">  1. Launch the game and load 'cargo_b_pre.sav'.</div></div>
+    <div class="arow"><div class="gut">11</div><div class="ln">  2. Walk to the freight elevator on the east wall and press E.</div></div>
+    <div class="arow hasnote"><div class="gut">12</div><div class="ln">  3. While the elevator is between floors (approx. 1.5 s after the doors shut), press F5.</div></div>
+    <div class="note"><b>The timing window is the bug, so the timing window is in the step.</b>
+      "Press F5 during the transition" would leave a reader pressing it at the wrong moment and
+      reporting Cannot Reproduce. Giving the approximate offset, and saying what visual event to
+      count from ("after the doors shut"), turns a race condition into an instruction. When the
+      window is tight enough that a human cannot hit it reliably, say so and attach a video with a
+      frame counter, or provide a console command that forces the state.</div>
+    <div class="arow"><div class="gut">13</div><div class="ln">  4. Wait for the 'Saved' toast, then quit to the main menu.</div></div>
+    <div class="arow"><div class="gut">14</div><div class="ln">  5. Select Continue.</div></div>
+    <div class="arow hasnote"><div class="gut">15</div><div class="ln">Expected: Save loads to the Cargo Bay B lobby with inventory intact (REQ-SAVE-014).</div></div>
+    <div class="note"><b>Expected cites the oracle by identifier.</b> REQ-SAVE-014 is a requirement
+      someone agreed to, so this ticket is no longer one tester's opinion about how saving ought to
+      work. It also creates the traceability link we build in section 7: requirement &rarr; test case
+      &rarr; defect. If you cannot put an identifier here, write the implicit standard explicitly
+      ("a save file the game itself wrote must be loadable") and file a second ticket noting that the
+      area has no written acceptance criteria.</div>
+    <div class="arow hasnote"><div class="gut">16</div><div class="ln">Actual: Load completes; player spawns at (0,0,0) below terrain; falls 3.2 s; no respawn.</div></div>
+    <div class="note"><b>Actual is observable and quantified.</b> Coordinates and a duration, not
+      "the level is broken". The (0,0,0) detail is worth more than the rest of the sentence combined:
+      spawning at world origin is the signature of a transform that was never written or was written
+      as default, which points the engineer at serialization rather than at level geometry. Good
+      Actual fields do diagnostic work for free.</div>
+    <div class="arow hasnote"><div class="gut">17</div><div class="ln">Repro rate: 9/10 attempts (build 0.7.3-rc2); 0/10 with quicksave pressed after doors open.</div></div>
+    <div class="note"><b>A rate, out of a stated number of attempts, plus a negative control.</b>
+      "Intermittent" is not a rate. 9/10 tells triage this is deterministic enough to schedule and
+      tells the fixing engineer they will see it on the first try. The negative control &mdash; the
+      variation that does <em>not</em> fail &mdash; is the most under-used field in bug reporting: it
+      halves the search space before anyone opens a debugger, and it is the difference between a
+      report and an experiment.</div>
+    <div class="arow hasnote"><div class="gut">18</div><div class="ln">Attachments: repro.mp4 (frame counter), Player.log (lines 4120–4180), cargo_b_pre.sav, post_bug.sav</div></div>
+    <div class="note"><b>Evidence, with the log lines already narrowed.</b> Attaching a 40 MB log
+      unread is not evidence, it is homework you assigned to someone else. Citing the line range says
+      you looked. Both saves matter: the pre-state so the engineer can reproduce, the post-state so
+      they can inspect the corrupted artifact directly &mdash; that file is the defect, in
+      hexadecimal.</div>
+    <div class="arow hasnote"><div class="gut">19</div><div class="ln">Notes: First seen in 0.7.3-rc1 (CI #1802). Not reproducible in 0.7.2. Suspect PR #614 (async save).</div></div>
+    <div class="note"><b>A bisection result and a hypothesis, clearly labelled as a hypothesis.</b>
+      "Not reproducible in 0.7.2" is the single most valuable sentence in the ticket: it turns an
+      open-ended search into a diff of 39 CI builds. Naming a suspect PR is fine as long as you label
+      it a suspicion &mdash; being wrong costs nothing, and being right saves an afternoon. What you
+      must not do is state the cause as fact in the Actual field; that is how a wrong hypothesis gets
+      inherited by three later tickets.</div>
+  </div><p class="hint">Click any highlighted line to see why it is written that way.</p></div>
+
+  <h3>Capturing the evidence, per engine</h3>
+
+  <p>The attachment list above assumes you can actually produce those artifacts on demand. Both
+  engines will give them to you; neither will do it by default.</p>
+
+  <div class="tabs"><div class="tabhd">
+      <button data-engine="unity" data-tab="u" class="on">Unity</button>
+      <button data-engine="unreal" data-tab="e">Unreal</button>
+    </div><div class="tabbody">
+    <div class="tabpane on" data-pane="u">
+      <h4>Making a Unity build self-reporting</h4>
+      <ul>
+        <li><b>Stamp the build.</b> Write the CI build number and commit SHA into
+        <code>Application.version</code> or a generated <code>BuildInfo</code> ScriptableObject at
+        build time, then render it in the corner of the pause menu in every non-shipping
+        configuration. A build ID a tester has to ask for is a build ID that ends up missing from
+        the ticket.</li>
+        <li><b>Know where the log lives.</b> <code>Player.log</code> on Windows sits under
+        <code>%USERPROFILE%\AppData\LocalLow\&lt;Company&gt;\&lt;Product&gt;\</code>; on macOS under
+        <code>~/Library/Logs/</code>. Put that path on a slide for your team, because 90% of
+        "I couldn't find the log" is people not knowing this.</li>
+        <li><b>Capture on a key.</b> <code>ScreenCapture.CaptureScreenshot</code> plus a
+        <code>Debug.Log</code> of the current scene, position, seed, and time-since-load, bound to
+        one key, produces a matched screenshot/log pair with no tester discipline required. The Unity
+        Recorder package does the same for video.</li>
+        <li><b>Log the RNG seed at session start</b> &mdash; the Topic 1 rule, cashed in here. A
+        report that carries the seed converts a 1-in-40 defect into a deterministic one.</li>
+        <li><b>Unity Cloud Diagnostics</b> collects crashes and exceptions from playtesters
+        automatically, with stack traces and device metadata. It will not write your repro steps, but
+        it tells you which defects are worth chasing.</li>
+      </ul>
+      <p class="small subtle">In the Editor, <code>Application.consoleLogPath</code> returns the
+      active log path at runtime &mdash; print it in your debug overlay and testers can copy it.</p>
+    </div>
+    <div class="tabpane" data-pane="e">
+      <h4>Making an Unreal build self-reporting</h4>
+      <ul>
+        <li><b>Stamp the build.</b> <code>FApp::GetBuildVersion()</code> and the engine's
+        <code>BuildSettings</code> give you a version string; surface it with a debug HUD or a
+        <code>UE_LOG</code> at startup. Launch with <code>-log</code> to get a live console window in
+        a development build.</li>
+        <li><b>Know where the log lives.</b> <code>&lt;Project&gt;/Saved/Logs/&lt;Project&gt;.log</code>,
+        with the previous run rotated to a timestamped backup. Crash artifacts land in
+        <code>Saved/Crashes/</code> and are what the Crash Reporter uploads.</li>
+        <li><b>Capture on a key.</b> The <code>HighResShot 2</code> console command writes a
+        screenshot to <code>Saved/Screenshots/</code>; <code>stat unit</code> and
+        <code>stat fps</code> overlay the frame timings you will need for any performance ticket;
+        <code>DumpConsoleCommands</code> and <code>obj list</code> capture state.</li>
+        <li><b>Log with categories.</b> <code>DECLARE_LOG_CATEGORY_EXTERN(LogSaveSystem, Log, All)</code>
+        and then <code>UE_LOG(LogSaveSystem, Warning, TEXT("Quicksave requested during transition"))</code>
+        means your attached log excerpt can be filtered to the subsystem instead of pasted whole.
+        <code>-LogCmds="LogSaveSystem Verbose"</code> raises verbosity for one run without a rebuild.</li>
+        <li><b>Session Frontend &rarr; Automation</b> stores test artifacts and screenshots from
+        automated runs; those are attachable evidence too, and they carry the build metadata already.</li>
+      </ul>
+      <p class="small subtle">Blueprint-only teams: <code>Print String</code> with
+      <i>Print to Log</i> enabled still lands in the same file, and the Blueprint debugger's
+      breakpoint-and-watch values are screenshot-able evidence.</p>
+    </div>
+  </div></div>
+
+  <div class="widget" id="w-grader">
+    <div class="whd"><span class="wt">Bug Report Grader</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Edit any field and the score recomputes from the text you actually typed &mdash;
+    the checks are real string analysis (PAL segmentation, imperative-verb detection, build/SHA
+    regexes, evidence keywords), not a hardcoded result. The checklist mirrors what a triage lead
+    scans for in the first fifteen seconds. Start from the weak report and fix it field by field.</p>
+
+    <div class="btnrow" style="margin:0 0 14px">
+      <button class="btn ghost" data-preset="weak">Load a weak report</button>
+      <button class="btn ghost" data-preset="strong">Load a strong report</button>
+      <button class="btn ghost" data-preset="blank">Clear</button>
+    </div>
+
+    <label class="fldlbl" for="tg-title">Summary / title</label>
+    <input class="fld" id="tg-title" type="text" spellcheck="false">
+
+    <div class="grid2">
+      <div>
+        <label class="fldlbl" for="tg-steps">Steps to reproduce (one per line)</label>
+        <textarea class="fld" id="tg-steps" rows="6" spellcheck="false"></textarea>
+      </div>
+      <div>
+        <label class="fldlbl" for="tg-exp">Expected result</label>
+        <textarea class="fld" id="tg-exp" rows="2" spellcheck="false"></textarea>
+        <label class="fldlbl" for="tg-act">Actual result</label>
+        <textarea class="fld" id="tg-act" rows="2" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label class="fldlbl" for="tg-env">Build / commit / platform / hardware</label>
+        <input class="fld" id="tg-env" type="text" spellcheck="false">
+      </div>
+      <div>
+        <label class="fldlbl" for="tg-att">Attachments</label>
+        <input class="fld" id="tg-att" type="text" spellcheck="false">
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <div class="ctl"><label>Severity</label>
+          <div class="seg" id="tg-sev">
+            <button data-v="-1" class="on">not set</button><button data-v="0">S0</button>
+            <button data-v="1">S1</button><button data-v="2">S2</button><button data-v="3">S3</button>
+          </div><output id="tg-sevo">&mdash;</output></div>
+        <div class="ctl"><label>Priority</label>
+          <div class="seg" id="tg-pri">
+            <button data-v="-1" class="on">not set</button><button data-v="0">P0</button>
+            <button data-v="1">P1</button><button data-v="2">P2</button><button data-v="3">P3</button>
+          </div><output id="tg-prio">&mdash;</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Attempts run</label>
+          <input type="range" id="tg-tries" min="1" max="20" value="1"><output id="tg-trieso">1</output></div>
+        <div class="ctl"><label>Attempts that failed</label>
+          <input type="range" id="tg-hits" min="0" max="20" value="1"><output id="tg-hitso">1</output></div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Completeness</div><div class="v" id="tg-score">0</div></div>
+      <div class="cell"><div class="k">Repro rate</div><div class="v" id="tg-rate">&mdash;</div></div>
+      <div class="cell"><div class="k">Imperative steps</div><div class="v" id="tg-imp">0%</div></div>
+      <div class="cell"><div class="k">Triage outcome</div><div class="v" id="tg-band">&mdash;</div></div>
+    </div>
+
+    <ul class="gradelist" id="tg-list"></ul>
+    <div class="verdict" id="tg-verdict">Load a report to begin.</div>
+  </div>
+
+  <p>Load the weak report and repair it one field at a time. Two things are worth noticing while you
+  do. First, the largest single score jump comes from the steps field, because that is the field that
+  determines whether anyone else can see the defect at all. Second, you can reach a respectable score
+  with a report that is still <em>wrong</em> &mdash; completeness is necessary and not sufficient, and
+  no checklist will save a ticket whose Expected field encodes a misunderstanding of the requirement.
+  A grader measures form. You are responsible for content.</p>
+
+  <div class="check">
+    <p class="q">A tester files: <i>"Title: Enemies broken. Steps: play the second mission and fight
+    the drones, sometimes they freeze. Expected: they shouldn't freeze. Actual: they freeze."</i>
+    Which single edit recovers the most value?</p>
+    <button class="opt" data-correct="0">Raise the severity so it gets attention in triage.</button>
+    <button class="opt" data-correct="1">Replace "sometimes" with a rate out of N attempts and the conditions of the failing runs versus the passing ones.</button>
+    <button class="opt" data-correct="0">Attach a video of the freeze so the engineer can see it happen.</button>
+    <div class="exp"><b>Why the rate:</b> "sometimes" is the word that decides this ticket's fate. It
+    tells the engineer the defect may not appear on their first run, which is the exact condition
+    under which tickets get closed as Cannot Reproduce. Turning it into "7/10 runs; all 7 failures
+    occurred when a drone was hit mid-dash, 0/10 when hit while hovering" gives a rate, a trigger
+    hypothesis, and a negative control in one line &mdash; and that line is very likely to name the
+    root cause by itself.
+      <div class="ex"><span class="who">Why raising severity is tempting</span><br>
+      It does get attention, which feels like progress. What arrives with the attention is an engineer
+      who cannot reproduce it, and the second-order effect is that your severity assessments stop being
+      believed. Attention you cannot cash in is a debt.</div>
+      <div class="ex"><span class="who">Why the video is tempting</span><br>
+      Video is genuinely valuable and belongs on the ticket. But a video of an intermittent defect
+      shows that it happened once &mdash; which nobody disputed. It does not tell the engineer how to
+      make it happen, and without the conditions of the passing runs it does not narrow anything.
+      Attach the video <em>and</em> write the rate; if you can only do one, write the rate.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">2</span>The bug life cycle is a state machine, and every edge has an owner</h2>
+
+  <p>Trackers present the life cycle as a list of statuses, which makes it look like a form field. It
+  is not a form field. It is a finite state machine, and the reason to draw it as one is that a state
+  machine forces you to answer three questions per edge that a dropdown lets you skip: what has to be
+  true before this transition is legal, who is obligated to act once it fires, and what typically goes
+  wrong here.</p>
+
+  <div class="tblwrap"><table class="tight">
+    <thead><tr><th>State</th><th>Means</th><th>Whose queue it is in</th><th>Exit obligation</th></tr></thead>
+    <tbody>
+      <tr><td><b>New</b></td><td>Filed, not yet assessed by anyone but the reporter.</td><td>Triage queue</td><td>Someone must look at it within the triage SLA (daily in production, per-sprint in preproduction).</td></tr>
+      <tr><td><b>Triaged</b></td><td>Severity, priority, and component agreed; it is a real, distinct defect.</td><td>Component lead</td><td>Assign an owner or explicitly defer with a reason recorded.</td></tr>
+      <tr><td><b>Assigned</b></td><td>A named human owns the fix. Not "the gameplay team".</td><td>That human</td><td>Start it or hand it back. An Assigned ticket nobody has touched in two weeks is a lie about capacity.</td></tr>
+      <tr><td><b>In Progress</b></td><td>Someone is actively working it.</td><td>Same human</td><td>Produce a fix, a root-cause note, or an escalation. Silence is not an exit.</td></tr>
+      <tr><td><b>Fixed</b></td><td>Code is merged. <em>Nothing has been proven.</em></td><td>Build pipeline</td><td>Record the commit and the build the fix first appears in, or verification cannot start.</td></tr>
+      <tr><td><b>In Verification</b></td><td>QA is re-running the original steps against a build that contains the fix.</td><td>Original reporter, ideally</td><td>Pass &rarr; Closed. Fail &rarr; Reopened, with the new build ID and what you saw this time.</td></tr>
+      <tr><td><b>Closed</b></td><td>Verified fixed in a named build.</td><td>Nobody</td><td>&mdash;</td></tr>
+      <tr><td><b>Reopened</b></td><td>Verification failed, or it came back in a later build.</td><td>Triage queue again</td><td>Treat as new information: was the fix wrong, incomplete, or reverted by a merge?</td></tr>
+      <tr><td><b>Duplicate</b></td><td>Another record describes the same defect.</td><td>Nobody</td><td>Link both ways, and move any evidence the original lacks onto the original.</td></tr>
+      <tr><td><b>Won't Fix / Deferred</b></td><td>A deliberate decision not to fix, with a reason.</td><td>Nobody</td><td>Record who decided and why. "Won't fix" with no rationale is the sentence a postmortem will quote.</td></tr>
+      <tr><td><b>Cannot Reproduce</b></td><td>Someone tried and failed to see it.</td><td>Back to the reporter</td><td>Record what was tried: build, platform, number of attempts, and what was different from the report.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box crit"><div class="lbl">Cannot Reproduce is a process failure, not a verdict</div>
+  <p>CNR does not mean the defect does not exist. It means two configurations disagreed and nobody
+  found out why. Every CNR closure should be read as an unanswered question: which of build, platform,
+  hardware, settings, save state, timing, RNG seed, or account state differed between the reporter's
+  machine and the fixer's? A team with a rising CNR rate does not have unusually careless testers; it
+  has a tooling gap &mdash; no seed logging, no build stamping, no save-file attachment, no repro-rate
+  discipline. The single most useful metric in this section is the ratio of CNR closures to total
+  closures, and the correct response to it climbing is to fix the evidence pipeline, not to lecture the
+  testers.</p></div>
+
+  <p>Two transitions are more dangerous than the rest and deserve naming. <strong>Fixed &rarr;
+  Closed without verification</strong> is the one that puts defects back in the build; "Fixed" is a
+  claim by the person with the strongest incentive to believe it and the least ability to be
+  objective about it. <strong>Reopened</strong> is the one that carries information: a reopen rate
+  above roughly one in ten fixes is usually telling you that fixes are being written against symptoms
+  rather than root causes, which is the Topic 1 lesson resurfacing as a workflow metric.</p>
+
+  <div class="widget" id="w-life">
+    <div class="whd"><span class="wt">Bug Life Cycle</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Walk a ticket through the workflow. Each transition costs real handling time
+    (person-hours) and calendar time, accumulated live, so you can compare the clean path against a
+    path that goes through Cannot Reproduce and a reopen. Cost figures are a teaching model &mdash;
+    plausible studio averages, not measurements &mdash; but the totals are summed from your actual
+    route.</p>
+
+    <div class="lcnow"><span class="st" id="lf-state">New</span><span class="ow" id="lf-owner"></span></div>
+    <p class="sm" id="lf-def"></p>
+    <div class="choices" id="lf-choices" style="display:grid;gap:9px"></div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Transitions</div><div class="v" id="lf-touches">0</div></div>
+      <div class="cell"><div class="k">Handling time</div><div class="v" id="lf-hours">0.0 h</div></div>
+      <div class="cell"><div class="k">Calendar age</div><div class="v" id="lf-days">0 d</div></div>
+      <div class="cell"><div class="k">vs. clean path</div><div class="v" id="lf-mult">&mdash;</div></div>
+    </div>
+
+    <div class="lclog" id="lf-log"></div>
+    <div class="verdict" id="lf-verdict">Pick a transition. The clean path is New &rarr; Triaged &rarr; Assigned &rarr; In Progress &rarr; Fixed &rarr; In Verification &rarr; Closed.</div>
+    <div class="btnrow"><button class="btn ghost" id="lf-reset">File a new ticket</button></div>
+  </div>
+
+  <p>Run the clean path first and note the totals. Then run it again and take the CNR edge, or fail
+  verification once. The handling time roughly doubles and the calendar age grows faster than the
+  handling time, because most of a ticket's life is spent waiting in a queue rather than being worked
+  on. That gap between handling time and calendar age is the thing your workflow design can actually
+  change: shortening queues beats working faster.</p>
+
+  <div class="box why"><div class="lbl">Why a status transition should be hard to fake</div>
+  <p>Neville-Neil's "Four Horsemen of an Ailing Software Project" (2022) is a catalogue of the ways
+  teams substitute the appearance of progress for progress. A workflow is one of the places that
+  substitution happens most easily: if anyone can move a ticket to Fixed, and Closed follows
+  automatically after a week, your database converges on a comforting number of open defects that has
+  no relationship to the state of the build. Configure the tracker so that Closed requires a
+  verification build ID, that Won't Fix requires a rationale field, and that CNR requires the number
+  of attempts and the platform tried. Fields that are mandatory at the transition are the cheapest
+  process enforcement that exists, and unlike a policy document, nobody can forget them.</p></div>
+
+  <div class="check">
+    <p class="q">Your team's dashboard shows 140 tickets closed this month, a record. It also shows 31
+    of those closures were Cannot Reproduce and 18 were reopens of tickets closed the previous month.
+    What is the most defensible reading?</p>
+    <button class="opt" data-correct="0">Throughput is up; CNR and reopens are normal noise in any high-volume month.</button>
+    <button class="opt" data-correct="0">Testers are filing too aggressively; require a second tester to confirm before a ticket can be filed.</button>
+    <button class="opt" data-correct="1">Roughly a third of the closures did not resolve anything, and both numbers point at missing evidence and unverified fixes rather than at productivity.</button>
+    <div class="exp"><b>Why the third option:</b> 31 CNR plus 18 reopens is 49 of 140 closures &mdash;
+    35% &mdash; that either never established what happened or established it wrongly. The closure
+    count went up precisely <em>because</em> those two exits are cheap. CNR points at the evidence
+    pipeline (seeds, build stamps, save files, repro rates); reopens point at fixes verified by their
+    authors or written against symptoms. Both are fixable, and neither is fixed by celebrating the 140.
+      <div class="ex"><span class="who">Why "throughput is up" is tempting</span><br>
+      It is the reading the dashboard is designed to produce, and closure count is the metric most
+      trackers put on the front page. That is exactly why it deserves suspicion: a metric that rises
+      when you do the easy thing will eventually be optimized by doing the easy thing.</div>
+      <div class="ex"><span class="who">Why gatekeeping filing is tempting</span><br>
+      It would reduce CNR &mdash; by suppressing reports, including true ones, and by doubling the
+      cost of filing at the exact moment you want more evidence, not less. Fix the reproduction
+      problem at its source: log seeds, stamp builds, attach saves, and record repro rate out of N.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">3</span>Duplicates, and why your title decides whether they happen</h2>
+
+  <p>Duplicate reports are not a filing annoyance. They split evidence across records so that no
+  single ticket looks serious enough to schedule, they cause the same defect to be triaged three times
+  by three people, and they corrupt every count you might want to draw a conclusion from. Zhang and
+  colleagues (2023) survey where automated duplicate detection actually stands and find the field is
+  less solved than the published accuracy numbers suggest &mdash; which means the practical burden
+  stays with the person writing the title.</p>
+
+  <p>The widget below implements a genuine detector, at small scale: it tokenizes your title, drops
+  stop words, weights each remaining term by inverse document frequency across the existing ticket
+  corpus, and ranks the corpus by cosine similarity. This is the classical text-retrieval approach
+  that most real duplicate-detection tooling still builds on. Type a vague title and a PAL title for
+  the same defect and compare what comes back.</p>
+
+  <div class="widget" id="w-dup">
+    <div class="whd"><span class="wt">Duplicate Detector</span><span class="wk">Simulator</span></div>
+    <p class="wsub">TF-IDF cosine similarity against a fixed 10-ticket corpus, computed in the page.
+    A term that appears in few existing tickets carries more weight than one that appears in many
+    &mdash; and a term that appears in none of them, like "broken", carries weight that matches
+    nothing. "Pinpointing terms" counts the words in your title that occur in exactly one existing
+    ticket: the words that make a search land on one row instead of forty.</p>
+
+    <label class="fldlbl" for="du-title">Your proposed title</label>
+    <input class="fld" id="du-title" type="text" spellcheck="false">
+    <div class="btnrow" style="margin:0 0 6px">
+      <button class="btn ghost" data-dup="vague">Vague title</button>
+      <button class="btn ghost" data-dup="pal">PAL title, same defect</button>
+      <button class="btn ghost" data-dup="new">Genuinely new defect</button>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Best match</div><div class="v" id="du-top">0%</div></div>
+      <div class="cell"><div class="k">Pinpointing terms</div><div class="v" id="du-rare">0</div></div>
+      <div class="cell"><div class="k">Matches over 25%</div><div class="v" id="du-n">0</div></div>
+    </div>
+
+    <div id="du-results"></div>
+    <div class="verdict" id="du-verdict">Type a title.</div>
+  </div>
+
+  <p>The "vague title" preset produces the pathology worth understanding: weak similarity to many
+  tickets and strong similarity to none, and not one term that points at a single existing ticket. That is the
+  profile that defeats both the automated detector and the human searching before they file, and it is
+  how the same defect ends up in the database four times under four different summaries. The PAL preset
+  produces the opposite profile &mdash; one dominant match, well clear of the rest, built out of three
+  terms that each occur in exactly one ticket &mdash; which is what you want a detector to see.</p>
+
+  <div class="box field"><div class="lbl">In your tracker, this week</div>
+  <p>Before you file anything for the Benchmark assignment, search the existing project backlog using
+  the two or three rarest words from your proposed title, not the whole sentence. Search engines in
+  Jira, Trello, and Bugzilla all do term matching; feeding them a full sentence dilutes the query with
+  common words. If you find a match, do not close yours silently &mdash; link it as a duplicate and
+  move any evidence the original lacks (your save file, your repro rate, your platform) onto the
+  original. A duplicate that donates evidence has done more for the project than a fresh ticket.</p></div>
+
+  <h2><span class="num">4</span>Test design: choosing the few inputs that matter</h2>
+
+  <p>So far this lesson has been about defects you already found. Test design is the other direction:
+  deciding what to try, before you know what is broken, in a way that is defensible when someone asks
+  why you tested those twelve values and not the other four thousand. The techniques below are old,
+  boring, and unreasonably effective, and almost no student project uses any of them.</p>
+
+  <h3>Equivalence partitioning</h3>
+
+  <p>Group inputs into classes whose members the system should treat identically, then test one
+  representative per class. If stamina is valid over 0&ndash;100, then 37 and 62 belong to the same
+  class and testing both buys you nothing. The partitions that matter are the ones you would not have
+  thought to write down: negative stamina, stamina above the cap, stamina as a non-number if the value
+  comes from a config file or a network packet, and the "no value at all" case.</p>
+
+  <p>The technique's real payoff is that it makes your omissions visible. Once you have written the
+  partitions in a table, a reviewer can point at the missing row. Without the table, the missing row
+  is invisible to everyone including you.</p>
+
+  <h3>Boundary value analysis</h3>
+
+  <p>Defects cluster at the edges of partitions, because edges are where humans write
+  <code>&lt;</code> when they meant <code>&lt;=</code>, where clamping is applied on one side and
+  forgotten on the other, and where a float comparison stops behaving like arithmetic. If you test
+  only one value per partition, test the boundary; if you can afford three, test just-below, at, and
+  just-above. In a game the boundaries are everywhere and are rarely documented: max stack size, level
+  cap, currency ceiling, the frame at which a coyote-time window closes, the exact HP where a
+  low-health shader kicks in, the last save slot, the 100th inventory item.</p>
+
+  <div class="widget" id="w-bva">
+    <div class="whd"><span class="wt">Partition &amp; Boundary Generator</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Enter a real game parameter and its range. The tool computes the equivalence
+    partitions, generates the boundary set at your chosen granularity, adds the special values that
+    the type makes possible, and reports how much smaller the resulting suite is than exhaustive
+    enumeration. All arithmetic is done live from your inputs.</p>
+
+    <div class="grid2">
+      <div>
+        <div class="ctl"><label>Parameter name</label>
+          <input class="fld" id="bv-name" type="text" value="stamina" spellcheck="false" style="margin:0"><output>&nbsp;</output></div>
+        <div class="ctl"><label>Valid minimum</label>
+          <input class="fld" id="bv-min" type="number" value="0" step="any" style="margin:0"><output>&nbsp;</output></div>
+        <div class="ctl"><label>Valid maximum</label>
+          <input class="fld" id="bv-max" type="number" value="100" step="any" style="margin:0"><output>&nbsp;</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Smallest meaningful step</label>
+          <input class="fld" id="bv-step" type="number" value="1" step="any" style="margin:0"><output>&nbsp;</output></div>
+        <div class="ctl"><label>Type</label>
+          <div class="seg" id="bv-type">
+            <button data-v="0" class="on">integer</button><button data-v="1">float</button>
+          </div><output id="bv-typeo">integer</output></div>
+        <div class="ctl"><label>Out-of-range policy</label>
+          <div class="seg" id="bv-pol">
+            <button data-v="0" class="on">clamp</button><button data-v="1">reject</button>
+            <button data-v="2">undefined</button>
+          </div><output id="bv-polo">clamp</output></div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Partitions</div><div class="v" id="bv-parts">0</div></div>
+      <div class="cell"><div class="k">Generated cases</div><div class="v" id="bv-cases">0</div></div>
+      <div class="cell"><div class="k">Exhaustive values</div><div class="v" id="bv-exh">0</div></div>
+      <div class="cell"><div class="k">Reduction</div><div class="v" id="bv-red">&mdash;</div></div>
+    </div>
+
+    <div class="tblwrap" id="bv-table"></div>
+    <div class="verdict" id="bv-verdict">Enter a range.</div>
+  </div>
+
+  <p>Set the type to float and watch three rows appear that the integer version does not generate:
+  a value one step below the minimum expressed at sub-step precision, and the two non-finite values
+  that a float can carry. A physics or config path that receives <code>NaN</code> will propagate it
+  silently through every subsequent multiplication until a transform becomes invalid and an object
+  disappears from the world &mdash; a defect that presents as "the boss vanished" and is diagnosed
+  three days later as an unvalidated division in a damage formula.</p>
+
+  <div class="box why"><div class="lbl">Why the "undefined" policy option exists</div>
+  <p>Selecting <b>undefined</b> makes the Expected column say so, and that is the honest output when
+  nobody has decided what should happen at &minus;1 stamina. This is the Topic 1 spec-gap machinery
+  reappearing inside test design: a test case with no defined expected result is not a test, it is a
+  question, and asking it during test design costs a Slack message. Discovering the same ambiguity
+  during certification costs a submission.</p></div>
+
+  <h3>Decision tables</h3>
+
+  <p>When the behavior depends on a combination of conditions rather than a single value, a decision
+  table stops you from testing the combinations you happen to think of. List the conditions as rows,
+  enumerate the combinations as columns, and write the expected action for each. The table below
+  covers a purchase interaction with four conditions; the value is in the columns you would not have
+  written down unprompted.</p>
+
+  <div class="tblwrap"><table class="tight">
+    <thead><tr><th>Condition</th><th>R1</th><th>R2</th><th>R3</th><th>R4</th><th>R5</th><th>R6</th></tr></thead>
+    <tbody>
+      <tr><td>Player has enough currency</td><td>Y</td><td>N</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td></tr>
+      <tr><td>Item in stock</td><td>Y</td><td>Y</td><td>N</td><td>Y</td><td>Y</td><td>Y</td></tr>
+      <tr><td>Inventory has a free slot</td><td>Y</td><td>Y</td><td>Y</td><td>N</td><td>N</td><td>Y</td></tr>
+      <tr><td>Item is stackable onto an existing stack</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>Y</td><td>N</td><td>&mdash;</td></tr>
+      <tr><td>Network confirm returns before timeout</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>N</td></tr>
+      <tr><th>Expected action</th><td>Purchase; debit once</td><td>Refuse; no debit</td><td>Refuse; no debit</td><td>Purchase; stack</td><td>Refuse; explain full</td><td>Roll back; no debit, no item</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>R6 is the column that earns the table. Nobody writes the timeout case from imagination, and it
+  is the one that duplicates currency or items in a live economy. Note also that the table makes the
+  <em>oracle</em> explicit for every combination, which means these six columns convert directly into
+  six automated test cases in Topic 3 with no further design work.</p>
+
+  <h3>State-transition diagrams</h3>
+
+  <p>Games are state machines pretending to be worlds. Every character controller, quest, matchmaking
+  flow, and save system is a set of states with legal transitions, and the defects live in the
+  transitions nobody drew. Draw the diagram, then test it three ways:</p>
+
+  <ul>
+    <li><strong>Valid transitions (0-switch coverage)</strong> &mdash; every arrow in your diagram is
+    exercised at least once. This is the minimum and most teams stop here.</li>
+    <li><strong>Transition pairs (1-switch coverage)</strong> &mdash; every legal pair of consecutive
+    transitions. This finds the bugs where a state is entered correctly from A and incorrectly from B.</li>
+    <li><strong>Sneak paths</strong> &mdash; attempt the transitions that are <em>not</em> in the
+    diagram: quicksave while dying, open the inventory during a cutscene, disconnect mid-purchase,
+    pause during the death animation. This is where softlocks live, and it is the only one of the
+    three that requires imagination rather than bookkeeping.</li>
+  </ul>
+
+  <p>The elevator save bug annotated earlier is a sneak path: <code>Transitioning</code> was never
+  considered a state in which <code>Quicksave</code> could be requested, so nothing wrote the
+  player transform. Drawing the diagram before writing the save system would have surfaced the empty
+  cell in about ninety seconds.</p>
+
+  <div class="tblwrap"><table class="tight">
+    <thead><tr><th>State \ Event</th><th>Quicksave (F5)</th><th>Quit to menu</th><th>Take damage</th></tr></thead>
+    <tbody>
+      <tr><td><b>Grounded</b></td><td>Save</td><td>Prompt, then quit</td><td>Apply damage</td></tr>
+      <tr><td><b>In elevator (transitioning)</b></td><td><span class="pill s0">undefined</span> &mdash; the defect</td><td>Prompt, then quit</td><td>Apply damage</td></tr>
+      <tr><td><b>Cutscene</b></td><td>Blocked (correct)</td><td>Prompt, then quit</td><td>Ignored</td></tr>
+      <tr><td><b>Dying</b></td><td><span class="pill s1">undefined</span></td><td>Prompt, then quit</td><td><span class="pill s1">undefined</span> &mdash; double death?</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>Three empty cells in a four-by-three grid, found by drawing a grid. Pairwise testing &mdash; the
+  technique for when the grid has twelve dimensions instead of two &mdash; is the natural next step,
+  and Topic 5 develops it properly with covering arrays. For now the point is that these tables are
+  the artifact your Benchmark deliverable should show alongside the bug reports: they demonstrate that
+  the defects you filed came from a design, not from wandering.</p>
+
+  <h3>Data-driven test tables</h3>
+
+  <p>Once the cases are in a table, the worst thing you can do is hand-write one test function per
+  row. Data-driven testing keeps the data in a table and the logic in one place, so adding a case is a
+  one-line change and every case gets the same assertions. Start with the table as data &mdash; this
+  is the artifact you can share with a designer, who will happily argue about the numbers and never
+  about your test code:</p>
+
+  <div class="codeblock"><div class="hd"><span class="dot"></span>stamina_cases.yaml &mdash; the test table as data</div><pre>
+<span class="c"># Parameter under test: PlayerStamina.Set(value) — REQ-MOVE-031</span>
+<span class="c"># Policy: clamp to [0,100]. Generated from boundary analysis, reviewed by design 9/18.</span>
+cases:
+  - <span class="t">id</span>: <span class="s">below_min_far</span>    <span class="t">input</span>: <span class="n">-50</span>     <span class="t">expect</span>: <span class="n">0</span>     <span class="t">partition</span>: <span class="s">invalid_low</span>
+  - <span class="t">id</span>: <span class="s">below_min_edge</span>   <span class="t">input</span>: <span class="n">-1</span>      <span class="t">expect</span>: <span class="n">0</span>     <span class="t">partition</span>: <span class="s">boundary_low</span>
+  - <span class="t">id</span>: <span class="s">at_min</span>           <span class="t">input</span>: <span class="n">0</span>       <span class="t">expect</span>: <span class="n">0</span>     <span class="t">partition</span>: <span class="s">boundary_low</span>
+  - <span class="t">id</span>: <span class="s">above_min</span>        <span class="t">input</span>: <span class="n">1</span>       <span class="t">expect</span>: <span class="n">1</span>     <span class="t">partition</span>: <span class="s">valid</span>
+  - <span class="t">id</span>: <span class="s">nominal</span>          <span class="t">input</span>: <span class="n">50</span>      <span class="t">expect</span>: <span class="n">50</span>    <span class="t">partition</span>: <span class="s">valid</span>
+  - <span class="t">id</span>: <span class="s">below_max</span>        <span class="t">input</span>: <span class="n">99</span>      <span class="t">expect</span>: <span class="n">99</span>    <span class="t">partition</span>: <span class="s">boundary_high</span>
+  - <span class="t">id</span>: <span class="s">at_max</span>           <span class="t">input</span>: <span class="n">100</span>     <span class="t">expect</span>: <span class="n">100</span>   <span class="t">partition</span>: <span class="s">boundary_high</span>
+  - <span class="t">id</span>: <span class="s">above_max</span>        <span class="t">input</span>: <span class="n">101</span>     <span class="t">expect</span>: <span class="n">100</span>   <span class="t">partition</span>: <span class="s">invalid_high</span>
+  - <span class="t">id</span>: <span class="s">nan</span>              <span class="t">input</span>: <span class="s">.nan</span>    <span class="t">expect</span>: <span class="s">unchanged</span>  <span class="t">partition</span>: <span class="s">special</span>
+</pre></div>
+
+  <p>Both engines have first-class support for driving a test from a table. The two panes below
+  implement the same nine cases.</p>
+
+  <div class="tabs"><div class="tabhd">
+      <button data-engine="unity" data-tab="u" class="on">Unity</button>
+      <button data-engine="unreal" data-tab="e">Unreal</button>
+    </div><div class="tabbody">
+    <div class="tabpane on" data-pane="u">
+      <p>Unity Test Framework is NUnit, so <code>[TestCase]</code> attributes give you a table with
+      per-row names in the Test Runner. Each row appears as its own result, which matters: a failing
+      row tells you <em>which boundary</em> broke without opening the log.</p>
+      <div class="codeblock"><div class="hd"><span class="dot"></span>StaminaBoundaryTests.cs &mdash; EditMode</div><pre>
+<span class="k">using</span> NUnit.Framework;
+
+[<span class="t">TestFixture</span>]
+<span class="k">public class</span> <span class="t">StaminaBoundaryTests</span>
+{
+    <span class="c">// value           expected   name shown in the Test Runner</span>
+    [<span class="t">TestCase</span>(<span class="n">-50f</span>,   <span class="n">0f</span>,   TestName = <span class="s">"below_min_far"</span>)]
+    [<span class="t">TestCase</span>( <span class="n">-1f</span>,   <span class="n">0f</span>,   TestName = <span class="s">"below_min_edge"</span>)]
+    [<span class="t">TestCase</span>(  <span class="n">0f</span>,   <span class="n">0f</span>,   TestName = <span class="s">"at_min"</span>)]
+    [<span class="t">TestCase</span>(  <span class="n">1f</span>,   <span class="n">1f</span>,   TestName = <span class="s">"above_min"</span>)]
+    [<span class="t">TestCase</span>( <span class="n">50f</span>,  <span class="n">50f</span>,   TestName = <span class="s">"nominal"</span>)]
+    [<span class="t">TestCase</span>( <span class="n">99f</span>,  <span class="n">99f</span>,   TestName = <span class="s">"below_max"</span>)]
+    [<span class="t">TestCase</span>(<span class="n">100f</span>, <span class="n">100f</span>,   TestName = <span class="s">"at_max"</span>)]
+    [<span class="t">TestCase</span>(<span class="n">101f</span>, <span class="n">100f</span>,   TestName = <span class="s">"above_max"</span>)]
+    <span class="k">public void</span> <span class="f">Set_ClampsToValidRange</span>(<span class="t">float</span> input, <span class="t">float</span> expected)
+    {
+        <span class="k">var</span> s = <span class="k">new</span> <span class="t">PlayerStamina</span>(max: <span class="n">100f</span>, current: <span class="n">50f</span>);  <span class="c">// plain C#, no scene</span>
+        s.<span class="f">Set</span>(input);
+        Assert.<span class="f">That</span>(s.Current, Is.<span class="f">EqualTo</span>(expected).Within(<span class="n">0.0001f</span>));
+    }
+
+    [<span class="t">Test</span>]
+    <span class="k">public void</span> <span class="f">Set_NaN_LeavesValueUnchanged</span>()          <span class="c">// the special case</span>
+    {
+        <span class="k">var</span> s = <span class="k">new</span> <span class="t">PlayerStamina</span>(max: <span class="n">100f</span>, current: <span class="n">50f</span>);
+        s.<span class="f">Set</span>(<span class="t">float</span>.NaN);
+        Assert.<span class="f">That</span>(s.Current, Is.<span class="f">EqualTo</span>(<span class="n">50f</span>));   <span class="c">// NaN must never reach the model</span>
+    }
+}</pre></div>
+      <p><code>Is.EqualTo(expected).Within(0.0001f)</code> is not decoration: comparing floats with
+      <code>==</code> is the precision defect from Topic 1, and it belongs in a test even more than in
+      gameplay code, because a test that fails intermittently on the last bit trains the team to
+      ignore red. Note also that <code>PlayerStamina</code> is a plain class, not a
+      <code>MonoBehaviour</code> &mdash; that seam is what lets these nine cases run in milliseconds
+      in EditMode, and it is the subject of Topic 3.</p>
+    </div>
+    <div class="tabpane" data-pane="e">
+      <p>Unreal's Automation framework gives you the same shape. A complex automation test enumerates
+      its own parameter list via <code>GetTests</code>, so each row appears separately in the Session
+      Frontend and can be run individually from the command line.</p>
+      <div class="codeblock"><div class="hd"><span class="dot"></span>StaminaBoundaryTest.cpp</div><pre>
+<span class="c">// One entry per boundary case: {input, expected, name}</span>
+<span class="k">static const</span> <span class="t">TArray</span>&lt;<span class="t">TTuple</span>&lt;<span class="t">float</span>, <span class="t">float</span>, <span class="t">FString</span>&gt;&gt; StaminaCases = {
+    { <span class="n">-50.f</span>,   <span class="n">0.f</span>, <span class="s">TEXT("below_min_far")</span>  },
+    {  <span class="n">-1.f</span>,   <span class="n">0.f</span>, <span class="s">TEXT("below_min_edge")</span> },
+    {   <span class="n">0.f</span>,   <span class="n">0.f</span>, <span class="s">TEXT("at_min")</span>         },
+    {   <span class="n">1.f</span>,   <span class="n">1.f</span>, <span class="s">TEXT("above_min")</span>      },
+    {  <span class="n">50.f</span>,  <span class="n">50.f</span>, <span class="s">TEXT("nominal")</span>        },
+    {  <span class="n">99.f</span>,  <span class="n">99.f</span>, <span class="s">TEXT("below_max")</span>      },
+    { <span class="n">100.f</span>, <span class="n">100.f</span>, <span class="s">TEXT("at_max")</span>         },
+    { <span class="n">101.f</span>, <span class="n">100.f</span>, <span class="s">TEXT("above_max")</span>      }
+};
+
+IMPLEMENT_COMPLEX_AUTOMATION_TEST(FStaminaBoundaryTest,
+    <span class="s">"Project.Gameplay.Stamina.Boundaries"</span>,
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+<span class="k">void</span> FStaminaBoundaryTest::<span class="f">GetTests</span>(<span class="t">TArray</span>&lt;<span class="t">FString</span>&gt;&amp; OutBeautified,
+                                    <span class="t">TArray</span>&lt;<span class="t">FString</span>&gt;&amp; OutCommands) <span class="k">const</span>
+{
+    <span class="k">for</span> (<span class="t">int32</span> i = <span class="n">0</span>; i &lt; StaminaCases.Num(); ++i)
+    {
+        OutBeautified.<span class="f">Add</span>(StaminaCases[i].Get&lt;<span class="n">2</span>&gt;());   <span class="c">// readable row name</span>
+        OutCommands.<span class="f">Add</span>(FString::FromInt(i));           <span class="c">// row index as the command</span>
+    }
+}
+
+<span class="k">bool</span> FStaminaBoundaryTest::<span class="f">RunTest</span>(<span class="k">const</span> <span class="t">FString</span>&amp; Parameters)
+{
+    <span class="k">const</span> <span class="t">int32</span> Index = FCString::<span class="f">Atoi</span>(*Parameters);
+    <span class="k">const</span> <span class="k">auto</span>&amp; Case = StaminaCases[Index];
+
+    FPlayerStamina Stamina(<span class="c">/*Max=*/</span><span class="n">100.f</span>, <span class="c">/*Current=*/</span><span class="n">50.f</span>);
+    Stamina.<span class="f">Set</span>(Case.Get&lt;<span class="n">0</span>&gt;());
+
+    TestNearlyEqual(Case.Get&lt;<span class="n">2</span>&gt;(), Stamina.GetCurrent(), Case.Get&lt;<span class="n">1</span>&gt;(), <span class="n">0.0001f</span>);
+    <span class="k">return true</span>;
+}</pre></div>
+      <p>Run the whole table headless with
+      <code>UnrealEditor-Cmd.exe Project.uproject -ExecCmds="Automation RunTests Project.Gameplay.Stamina; Quit" -unattended -nullrhi</code>,
+      which is precisely the command your CI will use in Topic 3. If you prefer the BDD style, the
+      same table drops into a <code>DEFINE_SPEC</code> block with a <code>for</code> loop around
+      <code>It(...)</code> &mdash; one <code>It</code> per row, same result.</p>
+    </div>
+  </div></div>
+
+  <div class="check">
+    <p class="q">Your inventory holds 100 items. You have time to run four tests on the "add item"
+    path. Which four?</p>
+    <button class="opt" data-correct="0">Add 1, add 25, add 50, add 75 items &mdash; even coverage across the whole valid range.</button>
+    <button class="opt" data-correct="1">Add to an empty inventory, to one holding 99, to one holding 100, and to one holding 100 where the item stacks onto an existing stack.</button>
+    <button class="opt" data-correct="0">Add 100 items in a loop, then 200, then 500, then 1000 &mdash; stress the system to find where it breaks.</button>
+    <div class="exp"><b>Why the second set:</b> 0, 99, 100, and the stackable-at-full case are the
+    boundary and the one combination where two conditions interact. 25, 50, and 75 are all the same
+    equivalence class as each other &mdash; if adding to a 25-item inventory works, adding to a
+    50-item one exercises identical code. The fourth case is the decision-table insight: "full" and
+    "stackable" together produce behavior that neither condition produces alone, and it is the case
+    that duplicates items in a live build.
+      <div class="ex"><span class="who">Why even spacing is tempting</span><br>
+      It looks like coverage and it is easy to justify in a status update. It systematically avoids
+      the boundaries, which is where the off-by-one lives. Even spacing is what you do when you have
+      not decided what a partition is.</div>
+      <div class="ex"><span class="who">Why stress testing is tempting</span><br>
+      Stress is a real and necessary trigger &mdash; it is one of the six defect triggers in Topic 3.
+      But with only four tests, spending all of them past the boundary tells you nothing about
+      whether the boundary itself is correct, and "it broke at 500" is not actionable if you never
+      established that 100 works.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">5</span>Traceability: requirement &rarr; test case &rarr; defect</h2>
+
+  <p>Three artifacts, two links, and a discipline that takes about five minutes a week. Each
+  requirement has at least one test case; each test case has an identifier; each defect names the
+  requirement and the test case that caught it, or notes that no test case existed &mdash; which is
+  itself the finding.</p>
+
+  <div class="tblwrap"><table class="tight">
+    <thead><tr><th>Requirement</th><th>Test case</th><th>Technique</th><th>Defect</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><span class="kv">REQ-SAVE-014</span> Quicksave restores position and inventory</td><td><span class="kv">TC-SAVE-014-a</span> quicksave while grounded</td><td>State transition, valid</td><td>&mdash;</td><td>Pass</td></tr>
+      <tr><td><span class="kv">REQ-SAVE-014</span></td><td><span class="kv">TC-SAVE-014-b</span> quicksave mid-elevator</td><td>State transition, <b>sneak path</b></td><td><span class="kv">STRAY-2291</span></td><td>Open <span class="pill s0">S0</span></td></tr>
+      <tr><td><span class="kv">REQ-MOVE-031</span> Stamina is clamped to 0&ndash;100</td><td><span class="kv">TC-MOVE-031-a..h</span> boundary table</td><td>Boundary values</td><td><span class="kv">STRAY-2244</span> (above_max)</td><td>Closed 0.7.3</td></tr>
+      <tr><td><span class="kv">REQ-SHOP-007</span> Purchases debit exactly once</td><td><span class="kv">TC-SHOP-007-R1..R6</span></td><td>Decision table</td><td><span class="kv">STRAY-2310</span> (R6 timeout)</td><td>In verification</td></tr>
+      <tr><td><span class="kv">REQ-SHOP-009</span> Refunds restore currency within 60 s</td><td><b>none</b></td><td>&mdash;</td><td>&mdash;</td><td><span class="pill s1">Untested</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The last row is the reason the table exists. A requirement with no test case is invisible in
+  every other view of the project: it does not appear in a pass rate, it does not appear in a bug
+  count, and it will not appear in anyone's memory during a release meeting. One column of "none"
+  entries is a more honest coverage report than any percentage.</p>
+
+  <p>Traceability also runs backwards, and that direction is the one that pays during a live
+  incident. When a defect arrives from players, the link tells you which requirement it violates,
+  which test should have caught it, and therefore whether you have a code defect or a test-design
+  defect. Those two have different fixes. Every escaped defect should end with a new or corrected
+  test case, named in the ticket &mdash; otherwise the same class of bug escapes again with a
+  different symptom.</p>
+
+  <h2><span class="num">6</span>Metrics that help, and metrics that rot a team</h2>
+
+  <p>Once your tracker is well-structured, it becomes a measurement instrument, which is where the
+  danger starts. Phillips (2022), writing on measuring agile project performance, and Neville-Neil
+  (2022) on ailing projects both circle the same failure: teams measure what the tool reports rather
+  than what they need to know, and then people optimize the report. Any metric attached to individual
+  performance stops measuring the thing and starts measuring the incentive.</p>
+
+  <div class="tblwrap"><table class="tight">
+    <thead><tr><th style="width:34%">Metric</th><th>What it tells you</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td><b>Escaped-defect rate</b><br><span class="sm">defects found by players &divide; total defects found</span></td><td>How well the whole testing system works, which is the actual question. Segment it by severity: one escaped S0 outweighs forty escaped S3s.</td><td><span class="pill s2">Use it</span></td></tr>
+      <tr><td><b>Repro rate on filed defects</b></td><td>Evidence quality. If the median filed defect reproduces 4/10, your reports need better preconditions and seeds.</td><td><span class="pill s2">Use it</span></td></tr>
+      <tr><td><b>CNR ratio</b><br><span class="sm">CNR closures &divide; all closures</span></td><td>A direct readout of the evidence pipeline. Rising means missing build IDs, seeds, saves, or configuration data.</td><td><span class="pill s2">Use it</span></td></tr>
+      <tr><td><b>Reopen rate</b></td><td>Fix quality and verification rigor. Above ~10% suggests symptom fixes or self-verified closures.</td><td><span class="pill s2">Use it</span></td></tr>
+      <tr><td><b>Time in state</b><br><span class="sm">median age in New, in Assigned</span></td><td>Where the workflow is actually stuck. Usually the answer is a queue, not a person.</td><td><span class="pill s2">Use it</span></td></tr>
+      <tr><td><b>Duplicate rate</b></td><td>Title quality and search habits &mdash; a tooling and training signal, not a discipline problem.</td><td><span class="pill s2">Use it</span></td></tr>
+      <tr><td><b>Bugs filed per tester</b></td><td>Nothing about quality. Rewards splitting one defect into five tickets and filing cosmetic issues over hard ones.</td><td><span class="pill s0">Do not</span></td></tr>
+      <tr><td><b>Bugs closed per engineer</b></td><td>Rewards closing the easy ones and marking hard ones Won't Fix. Punishes the engineer who spends four days on the desync.</td><td><span class="pill s0">Do not</span></td></tr>
+      <tr><td><b>Open-defect count alone</b></td><td>Moves when you change filing policy. Without severity segmentation it is a number that feels like information.</td><td><span class="pill s1">Careful</span></td></tr>
+      <tr><td><b>Test count / line coverage</b></td><td>Rewards writing many trivial tests. See Topic 1 on why coverage is not the coverage you want in a game.</td><td><span class="pill s1">Careful</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box why"><div class="lbl">Why per-person counts are worse than no metric</div>
+  <p>Suppose a lead announces that testers are measured on tickets filed. The rational response is to
+  file the same texture seam eleven times, once per room. Ticket count rises, duplicate rate rises,
+  triage time rises, and the hard defect &mdash; the intermittent desync that would have taken two
+  days of focused investigation and produced one ticket &mdash; never gets looked at, because
+  investigating it costs the tester their standing. Nothing in that chain requires anyone to act in
+  bad faith. The metric did all of it. Measure the system (escaped defects, CNR ratio, time in state);
+  never measure the individual with a number that the individual controls directly.</p></div>
+
+  <div class="check">
+    <p class="q">Which pair of numbers best tells a producer whether the project's QA is working?</p>
+    <button class="opt" data-correct="0">Total open defects and total defects closed this sprint.</button>
+    <button class="opt" data-correct="0">Automated test count and line coverage percentage.</button>
+    <button class="opt" data-correct="1">Escaped-defect rate segmented by severity, and median time in state for the slowest state.</button>
+    <div class="exp"><b>Why the third pair:</b> escaped defects by severity answers "is the testing
+    system catching what matters before players do", and it cannot be improved by filing or closing
+    more tickets. Median time in state answers "where does work actually stall", and it points at a
+    structural fix &mdash; a queue, a missing owner, a verification bottleneck &mdash; rather than at
+    a person. Together they cover outcome and process without creating an incentive anyone can game
+    cheaply.
+      <div class="ex"><span class="who">Why open/closed counts are tempting</span><br>
+      They are on the tracker's default dashboard and they move every day, which makes them feel
+      like a pulse. Both are dominated by filing and closing policy: a triage sweep that bulk-closes
+      stale S3s produces a spectacular week and changes nothing about the build.</div>
+      <div class="ex"><span class="who">Why test count and coverage are tempting</span><br>
+      They sound rigorous and they are easy to automate into a report. Both measure the volume of
+      testing rather than its yield, and both are trivially inflated. A suite of 900 tests that never
+      touches the save system is worse than 40 tests that do, because it produces confidence.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">7</span>The bug won't reproduce &mdash; what now?</h2>
+
+  <p>This is the highest-frequency hard moment in the job, and the difference between a junior and a
+  senior tester is almost entirely what happens in the next twenty minutes. The tree below is the
+  order of operations that costs the least: cheap, high-yield checks first, machine-borrowing last.
+  Work it against a real defect from your own project before Session 4.</p>
+
+  <div class="tree" id="tree2"><p class="path"></p><div class="body"></div></div>
+
+  <div class="box why"><div class="lbl">Why the first question is about the build, not the bug</div>
+  <p>Because it is free and it is right often enough to pay for itself many times over. Two people
+  disagreeing about whether a defect exists while running different builds is the most common
+  non-defect in QA, and it burns an hour every time. Verifying the build ID and the platform before
+  investigating anything else is the reproducibility equivalent of checking that the machine is
+  plugged in &mdash; slightly insulting, frequently correct.</p></div>
+
+  <h2><span class="num">8</span>The reading, and what to take from each</h2>
+
+  <details class="more"><summary>Reading list with a specific question to answer for each</summary>
+    <ul class="readlist">
+      <li><b>Finska, <i>Modern Game Testing</i>, ch. 6&ndash;8.</b> The core reference for this topic:
+      report anatomy, tracker configuration, and workflow design. Question: which fields does the book
+      treat as mandatory that your current tracker template does not even have?</li>
+      <li><b>Andrew (2024), "Maximize Efficiency with the Perfect Ticket Template in Jira."</b>
+      Practical and opinionated. Question: build the template for your Benchmark project, then list
+      three fields you added that the article does not mention and justify each with a defect you have
+      actually seen.</li>
+      <li><b>Gorton (2022), "Trello vs Monday.com."</b> A tool comparison, useful for the criteria
+      rather than the verdict. Question: for a five-person student team shipping in twelve weeks, which
+      three capabilities actually decide the choice &mdash; and does the answer change if the team is
+      distributed across time zones?</li>
+      <li><b>Zhang et al. (2023), "Duplicate Bug Report Detection: How Far Are We?"</b> Question: given
+      what they find about textual-similarity approaches, what does that imply about the way <em>you</em>
+      should phrase a title? Answer it in one concrete rule you can apply to every ticket you file.</li>
+      <li><b>Phillips (2022), "Measuring Agile Project Performance."</b> Question: pick one metric it
+      endorses and describe precisely how a stressed team would game it.</li>
+      <li><b>Neville-Neil (2022), "The Four Horsemen of an Ailing Software Project."</b> Question: which
+      horseman is visible in your team's tracker right now, and what field or workflow rule would make
+      it harder to hide?</li>
+      <li><b>Vanègue et al. (2023), "Debugging Video Games: A Systematic Mapping."</b> A map of what the
+      research community has actually studied about game debugging. Question: find one area they
+      identify as under-studied that matches a problem you have hit, and say what evidence you could
+      collect this semester.</li>
+    </ul>
+  </details>
+
+  <div class="deliver">
+    <h3>Bring to the assignment</h3>
+    <p><b>Benchmark &mdash; Bug Reporting and Workflow</b> &middot; 100 points &middot; due Sep 27
+    &middot; three bug reports in PAL format entered into a live tracker, plus a 3&ndash;5 minute
+    video. Assesses competency <b>1.5: Apply data-driven testing methodologies and bug tracking to
+    determine defects in game software.</b></p>
+    <p>Every section of this lesson maps onto a piece of that deliverable. Arrive with:</p>
+    <ul>
+      <li><b>Three defects, each with a PAL title</b> &mdash; problem, action, location. Run each title
+      through the Duplicate Detector logic by hand first: what are its two rarest, most discriminating
+      terms? If you cannot name them, rewrite the title.</li>
+      <li><b>Repro steps in second-person imperative</b>, one action per line, preconditions listed
+      separately, and any timing window stated with a number. Read them aloud; every line must be a
+      command you could give a person at the keyboard.</li>
+      <li><b>Expected and Actual as separate fields</b>, Expected citing a requirement identifier or an
+      explicitly stated implicit standard, Actual quantified and observable.</li>
+      <li><b>Repro rate out of N attempts, plus one negative control</b> &mdash; the variation that
+      does <em>not</em> fail. Run it ten times and write the number down. This single field is what
+      separates the A reports from the B reports.</li>
+      <li><b>Attachments as evidence</b>: video, log excerpt with the line range cited, save file,
+      build ID, commit SHA, platform, GPU/driver, OS, and the RNG seed if the system uses randomness.
+      Use the per-engine capture list in section 1 to make these available before you start testing,
+      not after.</li>
+      <li><b>Severity and priority set separately</b>, with a one-line justification for each. At least
+      one of your three should have severity and priority that diverge; explain why in the video.</li>
+      <li><b>A configured workflow, not a default one</b>: show your status transitions, who owns each
+      state, and at least two mandatory fields you added at a transition (for example, a verification
+      build ID required to reach Closed, and an attempts-and-platform note required to reach Cannot
+      Reproduce). Demonstrate a real transition on screen, including one ticket you deliberately move
+      to Reopened.</li>
+      <li><b>One test-design artifact</b> &mdash; a boundary table, a decision table, or a
+      state-transition grid &mdash; for the feature one of your defects lives in, with the empty cell
+      or missing partition circled. This is the "data-driven testing methodologies" half of the
+      competency, and it is the part students most often skip.</li>
+      <li><b>A traceability row</b> for each defect: requirement &rarr; test case &rarr; defect. If no
+      test case existed, say so on camera. That admission scores better than an invented one.</li>
+    </ul>
+    <p class="small subtle">Session 5 is a tracker workshop: bring a project with real defects in it,
+    and a tracker account you can screen-share. Session 6 is the benchmark work session &mdash; the
+    test-design artifact is what you should have furthest along by then.</p>
+  </div>
+
+  <footer class="lf"><a href="../index.html">&larr; Course hub</a><span>Advanced Game Testing and Debugging</span></footer>
+</div>
+
+<script id="lesson-kit-js">
+/* ---------- reading progress ---------- */
+(function(){
+  var b=document.createElement('div'); b.className='progressbar';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(b);});
+  addEventListener('scroll',function(){
+    var h=document.documentElement, m=h.scrollHeight-h.clientHeight;
+    b.style.width=(m>0?(h.scrollTop/m*100):0)+'%';
+  },{passive:true});
+})();
+
+/* ---------- engine tabs ---------- */
+function GDTtabs(root){
+  root.querySelectorAll('.tabhd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      root.querySelectorAll('.tabhd button').forEach(function(b){b.classList.remove('on')});
+      root.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('on')});
+      btn.classList.add('on');
+      var pane=root.querySelector('.tabpane[data-pane="'+btn.dataset.tab+'"]');
+      if(pane) pane.classList.add('on');
+    });
+  });
+}
+
+/* ---------- annotated code ---------- */
+function GDTannot(root){
+  root.querySelectorAll('.arow.hasnote').forEach(function(row){
+    row.addEventListener('click',function(){
+      var note=row.nextElementSibling;
+      var open=row.classList.contains('open');
+      row.classList.toggle('open',!open);
+      if(note&&note.classList.contains('note')) note.classList.toggle('open',!open);
+    });
+  });
+}
+
+/* ---------- knowledge check ---------- */
+function GDTcheck(root){
+  var done=false;
+  root.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      if(done) return; done=true;
+      var correct = opt.dataset.correct==='1';
+      root.querySelectorAll('.opt').forEach(function(o){
+        if(o.dataset.correct==='1'){o.classList.add('right');
+          o.insertAdjacentHTML('beforeend','<span class="tag">CORRECT</span>');}
+        else if(o===opt){o.classList.add('wrong');
+          o.insertAdjacentHTML('beforeend','<span class="tag">NOT QUITE</span>');}
+        o.style.cursor='default';
+      });
+      var exp=root.querySelector('.exp'); if(exp) exp.classList.add('on');
+    });
+  });
+}
+
+/* ---------- decision tree ----------
+   Usage: new GDTTree(document.getElementById('t1'), NODES, 'start')
+   NODES = { start:{q:'', hint:'', choices:[{t:'',sub:'',go:'nodeId'}]},
+             leafId:{leaf:true, title:'', body:'<p>…</p>'} }              */
+function GDTTree(root,nodes,startId){
+  var pathEl=root.querySelector('.path'), body=root.querySelector('.body');
+  var trail=[];
+  function render(id){
+    var n=nodes[id]; if(!n) return;
+    pathEl.innerHTML = trail.length? trail.map(function(t){return '<span>'+t+'</span>'}).join(' &rsaquo; ') : '&nbsp;';
+    if(n.leaf){
+      body.innerHTML='<div class="leaf"><h5>'+n.title+'</h5>'+n.body+'</div>'+
+        '<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>';
+    }else{
+      body.innerHTML='<p class="qq">'+n.q+'</p>'+(n.hint?'<p class="qh">'+n.hint+'</p>':'')+
+        '<div class="choices">'+n.choices.map(function(c,i){
+          return '<button data-go="'+c.go+'" data-lbl="'+(c.lbl||c.t).replace(/"/g,'&quot;')+'">'+c.t+
+                 (c.sub?'<span class="sub">'+c.sub+'</span>':'')+'</button>';}).join('')+'</div>'+
+        (trail.length?'<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>':'');
+    }
+    body.querySelectorAll('[data-go]').forEach(function(b){
+      b.addEventListener('click',function(){trail.push(b.dataset.lbl); render(b.dataset.go);});
+    });
+    var rs=body.querySelector('[data-restart]');
+    if(rs) rs.addEventListener('click',function(){trail=[]; render(startId);});
+  }
+  render(startId);
+}
+
+/* ---------- auto-wire everything ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.tabs').forEach(GDTtabs);
+  document.querySelectorAll('.annot').forEach(GDTannot);
+  document.querySelectorAll('.check').forEach(GDTcheck);
+});
+
+/* ---------- small helpers for simulators ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(n,d){return Number(n).toFixed(d===undefined?1:d)}
+function lerp(a,b,t){return a+(b-a)*t}
+/* deterministic pseudo-random so demos are reproducible for a class */
+function rng(seed){var s=seed||1;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296;}}
+</script>
+<script id="lesson-widgets">
+/* ============================================================
+   Advanced Game Testing and Debugging · Topic 2 · lesson-specific widgets
+   Every number below is computed from the controls or from the
+   text the student typed. Models are simplified and labelled;
+   the arithmetic is real.
+   ============================================================ */
+(function(){
+'use strict';
+
+/* ---------- shared helpers ---------- */
+function segment(container, onPick){
+  var btns = $$('button', container);
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){
+      btns.forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      onPick(parseInt(b.dataset.v, 10), b.textContent);
+    });
+  });
+  return function(v){
+    btns.forEach(function(x){ x.classList.toggle('on', parseInt(x.dataset.v,10) === v); });
+  };
+}
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============================================================
+   WIDGET 1 — Bug Report Grader
+   ============================================================ */
+function initGrader(){
+  var root = document.getElementById('w-grader');
+  if(!root) return;
+
+  var VERBS = ('launch load open press select walk run move enter exit quit save wait click tap '+
+    'equip use start restart navigate go hold release set choose drag drop jump attack close '+
+    'resume pause repeat observe note verify connect disconnect build install apply toggle switch '+
+    'spawn teleport reload aim fire shoot craft purchase buy sell complete trigger activate '+
+    'disable enable type sprint crouch interact minimize suspend unplug plug rotate zoom skip '+
+    'confirm cancel accept decline import export copy paste kill respawn').split(' ');
+  var VAGUE = /(\bbug\b|\bissue\b|broken|weird|glitch|does ?n[o']?t work|not working|sometimes|random(ly)?|please fix|!!)/i;
+
+  var st = { sev:-1, pri:-1, tries:1, hits:1 };
+  var setSev = segment(document.getElementById('tg-sev'), function(v){ st.sev = v; update(); });
+  var setPri = segment(document.getElementById('tg-pri'), function(v){ st.pri = v; update(); });
+
+  ['tg-title','tg-steps','tg-exp','tg-act','tg-env','tg-att'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', update);
+  });
+  ['tries','hits'].forEach(function(k){
+    var el = document.getElementById('tg-'+k);
+    el.addEventListener('input', function(){ st[k] = parseInt(el.value,10); update(); });
+  });
+
+  var PRESETS = {
+    blank: { title:'', steps:'', exp:'', act:'', env:'', att:'', sev:-1, pri:-1, tries:1, hits:1 },
+    weak: {
+      title:'Game crashes sometimes',
+      steps:'I was playing the cargo level for a while and then it crashed\nnot sure exactly what I did, maybe the elevator?',
+      exp:"it shouldn't crash",
+      act:'it crashed',
+      env:'PC',
+      att:'',
+      sev:-1, pri:-1, tries:1, hits:1
+    },
+    strong: {
+      title:'Save file fails to load — quicksaving during elevator transition — Cargo Bay B',
+      steps:"1. Launch the game and load 'cargo_b_pre.sav'.\n"+
+            '2. Walk to the freight elevator on the east wall and press E.\n'+
+            '3. While the elevator is between floors (approx. 1.5 s after the doors shut), press F5.\n'+
+            "4. Wait for the 'Saved' toast, then quit to the main menu.\n"+
+            '5. Select Continue.',
+      exp:'Save loads to the Cargo Bay B lobby with inventory intact, per REQ-SAVE-014.',
+      act:'Load completes; player spawns at (0,0,0) below terrain; falls 3.2 s; no respawn triggers.',
+      env:'Build 0.7.3-rc2 (CI #1841), commit 9f4c2ab, Windows 11 26100, NVIDIA 4070 driver 566.36, Vulkan',
+      att:'repro.mp4 (frame counter), Player.log lines 4120-4180, cargo_b_pre.sav, post_bug.sav',
+      sev:0, pri:1, tries:10, hits:9
+    }
+  };
+
+  $$('[data-preset]', root).forEach(function(b){
+    b.addEventListener('click', function(){
+      var p = PRESETS[b.dataset.preset];
+      document.getElementById('tg-title').value = p.title;
+      document.getElementById('tg-steps').value = p.steps;
+      document.getElementById('tg-exp').value   = p.exp;
+      document.getElementById('tg-act').value   = p.act;
+      document.getElementById('tg-env').value   = p.env;
+      document.getElementById('tg-att').value   = p.att;
+      st.sev = p.sev; st.pri = p.pri; st.tries = p.tries; st.hits = p.hits;
+      setSev(p.sev); setPri(p.pri);
+      document.getElementById('tg-tries').value = p.tries;
+      document.getElementById('tg-hits').value  = p.hits;
+      update();
+    });
+  });
+
+  function firstWord(line){
+    var m = line.replace(/^\s*(\d+[.)]|[-*•])\s*/, '').trim().toLowerCase().match(/^[a-z-]+/);
+    return m ? m[0] : '';
+  }
+
+  function analyze(){
+    var title = document.getElementById('tg-title').value.trim();
+    var steps = document.getElementById('tg-steps').value;
+    var exp   = document.getElementById('tg-exp').value.trim();
+    var act   = document.getElementById('tg-act').value.trim();
+    var env   = document.getElementById('tg-env').value.trim();
+    var att   = document.getElementById('tg-att').value.trim();
+    var out = [], impPct = 0;
+
+    /* --- title, 20 --- */
+    var segs = title.split(/\s*(?:—|–|\||\s-\s)\s*/).filter(function(s){ return s.trim().length; });
+    if(segs.length < 3){
+      var csegs = title.split(/\s*,\s*/).filter(function(s){ return s.trim().length; });
+      if(csegs.length > segs.length) segs = csegs;
+    }
+    var p = 0, ask = [];
+    if(segs.length >= 3) p += 8;
+    else if(segs.length === 2){ p += 3; ask.push('a third PAL segment (location)'); }
+    else if(title.length) ask.push('PAL structure: problem — action — location');
+    if(title.length >= 25 && title.length <= 110) p += 4;
+    else if(title.length) ask.push(title.length < 25 ? 'a title with enough terms to be searchable' : 'a shorter title (under ~110 chars)');
+    if(title.length && !VAGUE.test(title)) p += 4; else if(title.length) ask.push('removal of non-discriminating words (bug, issue, broken, sometimes)');
+    if(title.length && !/^(when|if|the game|there is)\b/i.test(title) && !/\b(i|my|we|me)\b/i.test(title)) p += 4;
+    else if(title.length) ask.push('a title that is a search key, not a first-person sentence');
+    out.push({ n:'Title is PAL: problem — action — location', p:p, max:20, ask:ask });
+
+    /* --- steps, 22 --- */
+    var lines = steps.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length; });
+    p = 0; ask = [];
+    var n = lines.length;
+    if(n >= 3) p += 6; else { p += n * 2; if(n) ask.push('at least three atomic steps'); }
+    var impCount = 0;
+    lines.forEach(function(l){ if(VERBS.indexOf(firstWord(l)) !== -1) impCount++; });
+    impPct = n ? impCount / n : 0;
+    p += 10 * impPct;
+    if(n && impPct < 0.8) ask.push('every step rewritten as a second-person imperative ("Launch…", "Press…")');
+    if(n && !/\b(i|we|my|our|me)\b/i.test(steps)) p += 3;
+    else if(n) ask.push('removal of first-person narration');
+    if(/\d/.test(steps)) p += 3; else if(n) ask.push('concrete values: keys, timings, coordinates, counts');
+    out.push({ n:'Steps are imperative, atomic, and specific', p:p, max:22, ask:ask });
+
+    /* --- expected / actual, 16 --- */
+    p = 0; ask = [];
+    if(exp.length >= 20) p += 4; else ask.push('an Expected result long enough to be falsifiable');
+    if(act.length >= 20) p += 4; else ask.push('an Actual result describing what was observed');
+    if(exp.length && act.length && exp.toLowerCase() !== act.toLowerCase()) p += 4;
+    if(/(req-|\breq\b|acceptance|spec|trc|tcr|per\s)/i.test(exp)) p += 2;
+    else if(exp.length) ask.push('an oracle in Expected: a requirement ID or an explicit standard');
+    if(/\d/.test(act)) p += 2; else if(act.length) ask.push('numbers in Actual: coordinates, durations, counts');
+    out.push({ n:'Expected and Actual are separate and falsifiable', p:p, max:16, ask:ask });
+
+    /* --- environment, 14 --- */
+    p = 0; ask = [];
+    var hasBuild = /(\b\d+\.\d+(\.\d+)?)|build\s*#?\s*[\w.-]+|ci\s*#\s*\d+/i.test(env);
+    var hasSha   = /\b(?=[0-9a-f]{7,40}\b)(?=.*[a-f])[0-9a-f]{7,40}\b/i.test(env);
+    var hasPlat  = /(win(dows)?|mac(os)?|linux|ps5|ps4|xbox|series [sx]|switch|android|ios|steam ?deck|editor|pc)\b/i.test(env);
+    var hasHw    = /(nvidia|amd|radeon|intel|geforce|driver|firmware|vulkan|dx1[12]|directx|metal|arm|adreno|mali)/i.test(env);
+    if(hasBuild) p += 6; else ask.push('a build ID or version number');
+    if(hasSha)   p += 3; else ask.push('the commit SHA');
+    if(hasPlat)  p += 3; else ask.push('the platform');
+    if(hasHw)    p += 2; else ask.push('GPU / driver / OS detail');
+    out.push({ n:'Build, commit, platform and hardware recorded', p:p, max:14, ask:ask });
+
+    /* --- attachments, 12 --- */
+    p = 0; ask = [];
+    var kinds = 0;
+    if(/(video|\.mp4|clip|capture|screenshot|\.png|\.jpg|recording|gif)/i.test(att)) kinds++;
+    else ask.push('a video or screenshot');
+    if(/(log|\.txt|stack ?trace|callstack|crash ?dump|\.dmp)/i.test(att)) kinds++;
+    else ask.push('a log excerpt with the line range cited');
+    if(/(\.sav|save ?file|savegame|profile|\.json|config|seed)/i.test(att)) kinds++;
+    else ask.push('the save file, config, or RNG seed');
+    p = Math.min(12, kinds * 4);
+    out.push({ n:'Evidence attached (media, log, state)', p:p, max:12, ask:ask });
+
+    /* --- severity & priority, 10 --- */
+    p = 0; ask = [];
+    if(st.sev >= 0) p += 5; else ask.push('a severity value');
+    if(st.pri >= 0) p += 5; else ask.push('a priority value, set separately from severity');
+    out.push({ n:'Severity and priority both set, as two fields', p:p, max:10, ask:ask });
+
+    /* --- repro rate, 6 --- */
+    p = 0; ask = [];
+    if(st.tries >= 5) p += 6;
+    else if(st.tries >= 3) p += 3;
+    if(st.tries < 5) ask.push('a repro rate measured over at least five attempts');
+    out.push({ n:'Repro rate measured out of N attempts', p:p, max:6, ask:ask });
+
+    return { rows: out, impPct: impPct };
+  }
+
+  function update(){
+    if(st.hits > st.tries){ st.hits = st.tries; document.getElementById('tg-hits').value = st.hits; }
+    document.getElementById('tg-trieso').textContent = st.tries;
+    document.getElementById('tg-hitso').textContent  = st.hits;
+    document.getElementById('tg-sevo').textContent = st.sev < 0 ? '—' : 'S' + st.sev;
+    document.getElementById('tg-prio').textContent = st.pri < 0 ? '—' : 'P' + st.pri;
+
+    var a = analyze();
+    var total = 0, maxTotal = 0, asks = [];
+    a.rows.forEach(function(r){ total += r.p; maxTotal += r.max; asks = asks.concat(r.ask); });
+    var score = Math.round(total);
+
+    var list = document.getElementById('tg-list');
+    list.innerHTML = a.rows.map(function(r){
+      var ratio = r.p / r.max;
+      var cls = ratio >= 0.85 ? 'pass' : (ratio >= 0.4 ? 'part' : 'fail');
+      var mk  = ratio >= 0.85 ? '✓' : (ratio >= 0.4 ? '~' : '✕');
+      return '<li class="' + cls + '"><span class="mk">' + mk + '</span><span>' + r.n +
+             (r.ask.length ? '<br><span class="pt">needs: ' + esc(r.ask.join('; ')) + '</span>' : '') +
+             '</span><span class="pt">' + Math.round(r.p) + '/' + r.max + '</span></li>';
+    }).join('');
+
+    document.getElementById('tg-score').textContent = score;
+    document.getElementById('tg-imp').textContent = Math.round(a.impPct * 100) + '%';
+    document.getElementById('tg-rate').textContent = st.hits + '/' + st.tries;
+
+    var band, bandCls, verdict;
+    if(score >= 85){
+      band = 'Assignable'; bandCls = 'ok';
+      verdict = '<b>A triage lead would assign this today.</b> Score ' + score + '/100. ' +
+        'The repro rate of ' + st.hits + '/' + st.tries + ' (' + Math.round(st.hits/st.tries*100) +
+        '%) tells the engineer what to expect on their first run. Remaining polish: ' +
+        (asks.length ? esc(asks.slice(0,2).join('; ')) + '.' : 'none — this is the standard your Benchmark reports should meet.');
+    } else if(score >= 65){
+      band = 'Questions'; bandCls = 'warn';
+      verdict = '<b>This gets triaged, then bounces back with questions.</b> Score ' + score +
+        '/100. Expect the lead to ask for: ' + esc(asks.slice(0,3).join('; ')) +
+        '. Each of those questions is one round trip — a calendar day if your engineer is in another time zone.';
+    } else if(score >= 40){
+      band = 'Bounced'; bandCls = 'crit';
+      verdict = '<b>Returned to the reporter before anyone investigates.</b> Score ' + score +
+        '/100. Missing: ' + esc(asks.slice(0,4).join('; ')) +
+        '. Nothing here is hard to supply; all of it is much harder to supply next week when you have forgotten the session.';
+    } else {
+      band = 'CNR risk'; bandCls = 'crit';
+      verdict = '<b>This is the shape of a ticket that gets closed Cannot Reproduce.</b> Score ' +
+        score + '/100. It records that something happened, not how to make it happen again. ' +
+        'Start with: ' + esc(asks.slice(0,4).join('; ')) + '.';
+    }
+    document.getElementById('tg-band').textContent = band;
+    document.getElementById('tg-band').className = 'v ' + bandCls;
+    document.getElementById('tg-score').className = 'v ' + bandCls;
+    var v = document.getElementById('tg-verdict');
+    v.innerHTML = verdict;
+    v.className = 'verdict ' + (bandCls === 'ok' ? 'ok' : bandCls);
+  }
+
+  update();
+}
+
+/* ============================================================
+   WIDGET 2 — Bug Life Cycle state machine
+   ============================================================ */
+var LC = {
+  new: { name:'New', owner:'in the triage queue',
+    def:'Filed, not yet assessed by anyone except the reporter. The clock on your triage SLA is running.',
+    tr:[
+      { to:'triaged', lbl:'Triage it: agree severity, priority, component', h:0.4, d:1,
+        ob:'Obligates the component lead to assign a named owner or record an explicit deferral.',
+        fail:'Common failure: nobody owns the triage queue, so New becomes a permanent state.' },
+      { to:'duplicate', lbl:'Close as Duplicate of an existing ticket', h:0.2, d:0,
+        ob:'Obligates you to link both records and move any unique evidence onto the original.',
+        fail:'Common failure: closed with no link, so the reporter cannot follow the fix and files again.' },
+      { to:'cnr', lbl:'Close as Cannot Reproduce', h:0.6, d:2,
+        ob:'Obligates you to record build, platform, number of attempts, and what differed from the report.',
+        fail:'Common failure: used as a disposal chute. The defect is still in the build, now with paperwork saying it is not.' }
+    ]},
+  triaged: { name:'Triaged', owner:'with the component lead',
+    def:'Confirmed distinct and real; severity, priority and component agreed.',
+    tr:[
+      { to:'assigned', lbl:'Assign to a named engineer', h:0.2, d:1,
+        ob:'Obligates that person specifically. "The gameplay team" is not an owner.',
+        fail:'Common failure: assigned to a team alias, which means assigned to nobody.' },
+      { to:'wontfix', lbl:"Defer / Won't Fix, with a recorded rationale", h:0.3, d:1,
+        ob:'Obligates the decider to name themselves and the reason in the ticket.',
+        fail:'Common failure: no rationale, so the postmortem quotes this ticket and nobody can defend it.' }
+    ]},
+  assigned: { name:'Assigned', owner:'with a named engineer',
+    def:'A specific human owns the fix and has not started yet.',
+    tr:[
+      { to:'inprogress', lbl:'Start work', h:0.1, d:2,
+        ob:'Obligates the owner to produce a fix, a root cause, or an escalation.',
+        fail:'Common failure: two weeks in Assigned. That is a capacity problem wearing a status label.' },
+      { to:'triaged', lbl:'Hand back — wrong component', h:0.3, d:3,
+        ob:'Obligates you to say which component you think it belongs to and why.',
+        fail:'Common failure: ticket ping-pongs between two components for a week; nobody measures the time lost.' },
+      { to:'cnr', lbl:'Cannot reproduce it on my machine', h:0.8, d:1,
+        ob:'Obligates you to state your build, platform, and attempt count before closing.',
+        fail:'Common failure: closed after one attempt on a different build from the report.' }
+    ]},
+  inprogress: { name:'In Progress', owner:'with the same engineer',
+    def:'Actively being worked. This is the only state where the defect is actually being reduced.',
+    tr:[
+      { to:'fixed', lbl:'Merge a fix', h:4.0, d:2,
+        ob:'Obligates you to record the commit and the first build that contains it.',
+        fail:'Common failure: no build number, so QA cannot tell which build to verify against.' },
+      { to:'wontfix', lbl:'Escalate: not fixable in this milestone', h:1.0, d:2,
+        ob:'Obligates a decision-maker to accept the risk in writing.',
+        fail:'Common failure: escalated verbally, recorded nowhere.' },
+      { to:'cnr', lbl:'Give up — cannot make it happen', h:2.0, d:3,
+        ob:'Obligates you to write down everything you tried, so the next attempt starts further along.',
+        fail:'Common failure: two hours of investigation discarded because nobody wrote it in the ticket.' }
+    ]},
+  fixed: { name:'Fixed', owner:'waiting on the build pipeline',
+    def:'Code is merged. Nothing has been proven yet — this is a claim, not a result.',
+    tr:[
+      { to:'verify', lbl:'Fix lands in a build; hand to QA for verification', h:0.2, d:1,
+        ob:'Obligates QA to re-run the original steps against the named build.',
+        fail:'Common failure: handed over without the build ID, so QA verifies the wrong binary.' },
+      { to:'closed', lbl:'Close it yourself — "I tested it locally"', h:0.1, d:0,
+        ob:'Obligates nobody. That is precisely the problem.',
+        fail:'The most expensive shortcut in this diagram: self-verified closures are how defects re-enter the build and reappear at cert.' }
+    ]},
+  verify: { name:'In Verification', owner:'with QA, ideally the original reporter',
+    def:'Someone is re-running the original repro steps against a build containing the fix.',
+    tr:[
+      { to:'closed', lbl:'Re-run the original steps: passes', h:0.6, d:1,
+        ob:'Obligates you to record the verification build ID in the ticket.',
+        fail:'Common failure: verified by running something similar rather than the written steps.' },
+      { to:'reopened', lbl:'Re-run the original steps: still fails', h:0.6, d:1,
+        ob:'Obligates you to attach fresh evidence from the new build, not to re-use the old.',
+        fail:'Common failure: reopened with the original attachments, so the engineer debugs last month.' }
+    ]},
+  reopened: { name:'Reopened', owner:'back in the triage queue',
+    def:'The fix did not hold, or the defect returned in a later build. New information, not a repeat.',
+    tr:[
+      { to:'triaged', lbl:'Re-triage with the new build information', h:0.4, d:2,
+        ob:'Obligates triage to ask whether the fix was wrong, incomplete, or reverted by a merge.',
+        fail:'Common failure: re-assigned to the same person with no analysis, producing the same partial fix.' }
+    ]},
+  cnr: { name:'Cannot Reproduce', owner:'back with the reporter',
+    def:'Two configurations disagreed and nobody found out why. An unanswered question, not a verdict.',
+    tr:[
+      { to:'new', lbl:'Reporter attaches save, seed and log, and re-files', h:1.2, d:3,
+        ob:'Obligates the reporter to close the evidence gap that caused the CNR in the first place.',
+        fail:'Common failure: the reporter re-files with the same evidence and the loop repeats.' }
+    ]},
+  closed: { name:'Closed', owner:'— nobody',
+    def:'Verified fixed in a named build. The only clean exit.',
+    tr:[
+      { to:'reopened', lbl:'Defect returns in a later build (regression)', h:0.5, d:14,
+        ob:'Obligates someone to ask why no test was added when it was fixed the first time.',
+        fail:'Common failure: filed as a brand new ticket, so the recurrence is invisible in the data.' }
+    ]},
+  duplicate: { name:'Duplicate', owner:'— nobody', terminal:true,
+    def:'Linked to the original. Terminal — provided you actually linked it and moved the evidence.' },
+  wontfix: { name:"Won't Fix", owner:'— nobody', terminal:true,
+    def:'A deliberate, recorded decision to accept this defect. Terminal, and reviewable later only if the rationale is in the ticket.' }
+};
+
+function initLife(){
+  var root = document.getElementById('w-life');
+  if(!root) return;
+
+  var CLEAN = [['new','triaged'],['triaged','assigned'],['assigned','inprogress'],
+               ['inprogress','fixed'],['fixed','verify'],['verify','closed']];
+  var cleanH = 0, cleanD = 0;
+  CLEAN.forEach(function(pair){
+    LC[pair[0]].tr.forEach(function(t){ if(t.to === pair[1]){ cleanH += t.h; cleanD += t.d; } });
+  });
+
+  var cur = 'new', touches = 0, hours = 0, days = 0, log = [];
+
+  function render(){
+    var s = LC[cur];
+    document.getElementById('lf-state').textContent = s.name;
+    document.getElementById('lf-owner').textContent = s.owner;
+    document.getElementById('lf-def').textContent = s.def;
+
+    var box = document.getElementById('lf-choices');
+    if(s.terminal || !s.tr){
+      box.innerHTML = '<p class="sm" style="color:var(--tx3)">Terminal state. File a new ticket to run another route.</p>';
+    } else {
+      box.innerHTML = s.tr.map(function(t, i){
+        return '<button class="btn ghost" data-i="' + i + '" style="text-align:left">' + t.lbl +
+               '<span class="sub" style="display:block;color:var(--tx3);font-size:12.6px;margin-top:3px">' +
+               t.ob + ' &nbsp;·&nbsp; +' + t.h.toFixed(1) + ' h, +' + t.d + ' d</span></button>';
+      }).join('');
+      $$('[data-i]', box).forEach(function(b){
+        b.addEventListener('click', function(){ step(s.tr[parseInt(b.dataset.i,10)]); });
+      });
+    }
+
+    document.getElementById('lf-touches').textContent = touches;
+    document.getElementById('lf-hours').textContent = hours.toFixed(1) + ' h';
+    document.getElementById('lf-days').textContent = days + ' d';
+    var mult = cleanH > 0 ? hours / cleanH : 0;
+    document.getElementById('lf-mult').textContent = touches ? mult.toFixed(2) + '×' : '—';
+    document.getElementById('lf-mult').className = 'v ' + (mult > 1.6 ? 'crit' : (mult > 1.05 ? 'warn' : 'ok'));
+
+    document.getElementById('lf-log').innerHTML = log.length ? log.join('\n') :
+      'No transitions yet. The clean path costs ' + cleanH.toFixed(1) + ' h of handling over ' +
+      cleanD + ' calendar days.';
+    document.getElementById('lf-log').scrollTop = 999999;
+
+    var v = document.getElementById('lf-verdict');
+    if(cur === 'closed'){
+      v.innerHTML = '<b>Closed after ' + hours.toFixed(1) + ' h of handling across ' + touches +
+        ' transitions and ' + days + ' calendar days.</b> The clean path costs ' + cleanH.toFixed(1) +
+        ' h / ' + cleanD + ' d, so this ticket ran at ' + (hours/cleanH).toFixed(2) +
+        '× the floor. Note the gap between handling time and calendar age: most of a ticket’s ' +
+        'life is spent waiting in a queue, which is the part workflow design can actually shorten.';
+      v.className = 'verdict ok';
+    } else if(cur === 'cnr'){
+      v.innerHTML = '<b>Cannot Reproduce is not an answer.</b> ' + hours.toFixed(1) + ' h have been ' +
+        'spent and the defect is still in the build, now with a record claiming otherwise. The exit ' +
+        'from here is evidence: seed, save file, build ID, attempt count. Fix the pipeline that let a ' +
+        'ticket reach an engineer without them.';
+      v.className = 'verdict crit';
+    } else if(cur === 'duplicate'){
+      v.innerHTML = '<b>Duplicate closed cheaply — 0.2 h.</b> That is the payoff of a searchable ' +
+        'PAL title: the cheapest transition in the entire diagram, but only if the link is recorded ' +
+        'and unique evidence is moved to the original.';
+      v.className = 'verdict ok';
+    } else if(cur === 'wontfix'){
+      v.innerHTML = '<b>Accepted, not fixed.</b> This is a legitimate outcome and a dangerous one: it ' +
+        'is only defensible six months from now if the rationale and the decider are in the ticket.';
+      v.className = 'verdict warn';
+    } else if(cur === 'reopened'){
+      v.innerHTML = '<b>Reopened.</b> Handling time is now ' + hours.toFixed(1) + ' h against a clean-path ' +
+        cleanH.toFixed(1) + ' h. A reopen rate above roughly 10% of fixes usually means fixes are being ' +
+        'written against symptoms rather than root causes — the Topic 1 lesson resurfacing as a ' +
+        'workflow metric.';
+      v.className = 'verdict warn';
+    } else {
+      v.innerHTML = 'Current cost: <b>' + hours.toFixed(1) + ' h</b> over <b>' + days +
+        ' calendar days</b>. Clean path floor: ' + cleanH.toFixed(1) + ' h / ' + cleanD + ' d.';
+      v.className = 'verdict';
+    }
+  }
+
+  function step(t){
+    touches++; hours += t.h; days += t.d;
+    log.push('<b>' + LC[cur].name + ' → ' + LC[t.to].name + '</b>  (+' + t.h.toFixed(1) +
+             ' h, +' + t.d + ' d)\n   ' + t.fail);
+    cur = t.to;
+    render();
+  }
+
+  document.getElementById('lf-reset').addEventListener('click', function(){
+    cur = 'new'; touches = 0; hours = 0; days = 0; log = []; render();
+  });
+
+  render();
+}
+
+/* ============================================================
+   WIDGET 3 — Duplicate detector (TF-IDF cosine)
+   ============================================================ */
+function initDup(){
+  var root = document.getElementById('w-dup');
+  if(!root) return;
+
+  var CORPUS = [
+    'STRAY-2291  Save file fails to load — quicksaving during elevator transition — Cargo Bay B',
+    'STRAY-2118  Save file corrupts — quicksave spammed during autosave — Reactor Lift',
+    'STRAY-1904  Crash on startup — launching with a controller connected — Main Menu',
+    'STRAY-2203  Frame time spikes to 61 ms — first grenade detonation after level load — Ruined Ward',
+    'STRAY-2277  Inventory duplicates item — dropping while the shop confirm dialog is open — Trader Post',
+    'STRAY-2044  Subtitles overlap — two speakers talking at once — Chapter 2 intro',
+    'STRAY-2260  Player falls through terrain — sprinting into the ramp seam — Cargo Bay B',
+    'STRAY-2185  Audio cuts out — alt-tabbing during the boss intro — Ruined Ward',
+    'STRAY-2301  Quest cannot advance — killing the courier before speaking to him — Trader Post',
+    'STRAY-1988  Crash on level load — loading a save made in patch 0.7.1 — any level'
+  ];
+  var STOP = ('the a an and or of to in on at is are was were it its with while when for from by '+
+    'after before into during that this as be been has have do does not no if then than there their '+
+    'them he him she her they you your our we us i my me').split(' ');
+
+  function stem(w){
+    if(w.length > 5 && /ing$/.test(w)) w = w.slice(0, -3);
+    if(w.length > 4 && /ies$/.test(w)) return w.slice(0, -3) + 'y';
+    if(w.length > 4 && /(ches|shes|xes|sses)$/.test(w)) return w.slice(0, -2);
+    if(w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) return w.slice(0, -1);
+    return w;
+  }
+  function tok(s){
+    return s.toLowerCase().replace(/stray-\d+/g, ' ').replace(/[^a-z0-9]+/g, ' ')
+      .split(' ')
+      .filter(function(w){ return w.length > 1 && STOP.indexOf(w) === -1; })
+      .map(stem);
+  }
+
+  var docs = CORPUS.map(tok);
+  var N = docs.length;
+  var df = {};
+  docs.forEach(function(d){
+    var seen = {};
+    d.forEach(function(w){ if(!seen[w]){ seen[w] = 1; df[w] = (df[w] || 0) + 1; } });
+  });
+  function idf(w){ return Math.log(1 + N / (1 + (df[w] || 0))); }
+  function vec(t){
+    var tf = {};
+    t.forEach(function(w){ tf[w] = (tf[w] || 0) + 1; });
+    var v = {}, norm = 0;
+    Object.keys(tf).forEach(function(w){
+      var x = (1 + Math.log(tf[w])) * idf(w);
+      v[w] = x; norm += x * x;
+    });
+    return { v:v, norm:Math.sqrt(norm) || 1 };
+  }
+  var dvecs = docs.map(vec);
+
+  function cos(a, b){
+    var dot = 0;
+    Object.keys(a.v).forEach(function(w){ if(b.v[w]) dot += a.v[w] * b.v[w]; });
+    return dot / (a.norm * b.norm);
+  }
+
+  var PRE = {
+    vague: 'Save file crash',
+    pal:   'Save file fails to load — quicksave during elevator ride — Cargo Bay B',
+    new:   'Muzzle flash renders behind the weapon — firing while aiming down sights — Ruined Ward'
+  };
+  $$('[data-dup]', root).forEach(function(b){
+    b.addEventListener('click', function(){
+      document.getElementById('du-title').value = PRE[b.dataset.dup];
+      update();
+    });
+  });
+  document.getElementById('du-title').addEventListener('input', update);
+
+  function update(){
+    var q = document.getElementById('du-title').value;
+    var qt = tok(q);
+    var results = [];
+    if(qt.length){
+      var qv = vec(qt);
+      results = dvecs.map(function(dv, i){ return { i:i, s:cos(qv, dv) }; })
+                     .sort(function(a, b){ return b.s - a.s; });
+    }
+    var pin = 0, unknown = 0, seen = {};
+    qt.forEach(function(w){
+      if(seen[w]) return; seen[w] = 1;
+      var d = df[w] || 0;
+      if(d === 1) pin++;
+      if(d === 0) unknown++;
+    });
+
+    var top = results.length ? results[0].s : 0;
+    var over = results.filter(function(r){ return r.s >= 0.25; }).length;
+    document.getElementById('du-top').textContent  = Math.round(top * 100) + '%';
+    document.getElementById('du-top').className = 'v ' + (top >= 0.55 ? 'crit' : (top >= 0.3 ? 'warn' : 'ok'));
+    document.getElementById('du-rare').textContent = pin;
+    document.getElementById('du-n').textContent    = over;
+
+    document.getElementById('du-results').innerHTML = results.slice(0, 5).map(function(r){
+      var pct = Math.round(r.s * 100);
+      var cls = r.s >= 0.55 ? 'hot' : (r.s >= 0.3 ? 'mid' : '');
+      return '<div class="duprow"><div class="t">' + esc(CORPUS[r.i]) + '</div>' +
+             '<div class="dupbar"><i class="' + cls + '" style="width:' + Math.max(1, pct) + '%"></i></div>' +
+             '<div class="m">cosine similarity ' + (r.s).toFixed(3) + '</div></div>';
+    }).join('');
+
+    var v = document.getElementById('du-verdict');
+    if(!qt.length){ v.innerHTML = 'Type a title.'; v.className = 'verdict'; return; }
+    if(top >= 0.55){
+      v.innerHTML = '<b>Almost certainly a duplicate.</b> Top match at ' + Math.round(top*100) +
+        '%. Do not file: link to the existing record and move any evidence it lacks — your save ' +
+        'file, your repro rate, your platform — onto it. A duplicate that donates evidence is worth ' +
+        'more to the project than a fresh ticket.';
+      v.className = 'verdict crit';
+    } else if(top >= 0.28 || over >= 3){
+      v.innerHTML = '<b>Ambiguous — ' + over + ' ticket(s) match above 25% and none of them ' +
+        'decisively.</b> This is the vague-title pathology: the words you chose are shared by ' +
+        'several unrelated defects, so neither a detector nor a human searching before filing can ' +
+        'resolve it. ' +
+        (pin === 0 ? 'Not one of your terms occurs in exactly one existing ticket, so there is ' +
+                     'nothing here for a search to land on. ' : '') +
+        'Rewrite it in PAL form — the specific action and the specific location — and run it again.';
+      v.className = 'verdict warn';
+    } else {
+      v.innerHTML = '<b>Looks new.</b> Best match ' + Math.round(top*100) + '%, with ' + unknown +
+        ' term(s) that appear nowhere in the existing backlog. Low similarity plus distinctive ' +
+        'vocabulary is what a file-worthy title looks like — and those unfamiliar terms are exactly ' +
+        'the ones the next tester will search for when they hit the same thing.';
+      v.className = 'verdict ok';
+    }
+  }
+
+  document.getElementById('du-title').value = PRE.pal;
+  update();
+}
+
+/* ============================================================
+   WIDGET 4 — Partition & boundary generator
+   ============================================================ */
+function initBVA(){
+  var root = document.getElementById('w-bva');
+  if(!root) return;
+
+  var st = { type:0, pol:0 };
+  segment(document.getElementById('bv-type'), function(v, t){
+    st.type = v; document.getElementById('bv-typeo').textContent = t; update();
+  });
+  segment(document.getElementById('bv-pol'), function(v, t){
+    st.pol = v; document.getElementById('bv-polo').textContent = t; update();
+  });
+  ['bv-name','bv-min','bv-max','bv-step'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', update);
+  });
+
+  function decimalsOf(x){
+    var s = String(x);
+    var i = s.indexOf('.');
+    return i === -1 ? 0 : Math.min(6, s.length - i - 1);
+  }
+
+  function update(){
+    var name = document.getElementById('bv-name').value.trim() || 'value';
+    var min  = parseFloat(document.getElementById('bv-min').value);
+    var max  = parseFloat(document.getElementById('bv-max').value);
+    var step = parseFloat(document.getElementById('bv-step').value);
+    var v = document.getElementById('bv-verdict');
+
+    if(!isFinite(min) || !isFinite(max) || !isFinite(step) || step <= 0 || max <= min){
+      document.getElementById('bv-table').innerHTML = '';
+      ['bv-parts','bv-cases','bv-exh','bv-red'].forEach(function(id){
+        document.getElementById(id).textContent = '—';
+      });
+      v.innerHTML = 'Enter a valid range: minimum below maximum, step greater than zero.';
+      v.className = 'verdict warn';
+      return;
+    }
+    if(st.type === 0){ step = Math.max(1, Math.round(step)); min = Math.round(min); max = Math.round(max); }
+    var dec = st.type === 0 ? 0 : Math.max(decimalsOf(step), decimalsOf(min), decimalsOf(max), 1);
+    function f(x){ return Number(x).toFixed(dec); }
+
+    var rows = [], seenVals = {};
+    function add(val, part, kind){
+      var key = String(val);
+      if(seenVals[key]) return;
+      seenVals[key] = 1;
+      rows.push({ val:val, part:part, kind:kind });
+    }
+    add(min - 10 * step, 'invalid — far below', 'lo');
+    add(min - step,      'invalid — one step below minimum', 'lo');
+    add(min,             'boundary — minimum', 'ok');
+    add(min + step,      'valid — one step above minimum', 'ok');
+    var mid = min + Math.round(((max - min) / 2) / step) * step;
+    add(mid,             'valid — nominal', 'ok');
+    add(max - step,      'valid — one step below maximum', 'ok');
+    add(max,             'boundary — maximum', 'ok');
+    add(max + step,      'invalid — one step above maximum', 'hi');
+    add(max + 10 * step, 'invalid — far above', 'hi');
+    if(0 < min || 0 > max) add(0, 'special — zero outside the valid range', 'sp');
+
+    var specials = [];
+    if(st.type === 1){
+      specials.push({ txt:f(min - step / 2), part:'sub-step precision below minimum', kind:'lo' });
+      specials.push({ txt:'NaN',       part:'special — not a number', kind:'sp' });
+      specials.push({ txt:'+Infinity', part:'special — overflow / divide-by-zero result', kind:'sp' });
+      specials.push({ txt:'-Infinity', part:'special — underflow', kind:'sp' });
+    }
+
+    rows.sort(function(a, b){ return a.val - b.val; });
+
+    var POL = ['clamp', 'reject', 'undefined'][st.pol];
+    function expected(r){
+      if(r.kind === 'ok') return name + ' == ' + f(r.val);
+      if(POL === 'clamp')  return name + ' == ' + (r.kind === 'hi' ? f(max) : f(min)) + ' (clamped)';
+      if(POL === 'reject') return 'rejected; ' + name + ' unchanged; warning logged';
+      return '<b style="color:var(--warn)">UNDEFINED — ask design before writing the assertion</b>';
+    }
+    function expectedSpecial(s){
+      if(POL === 'clamp')  return s.txt === 'NaN' ? name + ' unchanged; NaN must never be stored'
+                                                  : name + ' clamped to a finite bound';
+      if(POL === 'reject') return 'rejected; ' + name + ' unchanged; warning logged';
+      return '<b style="color:var(--warn)">UNDEFINED — ask design</b>';
+    }
+
+    var html = '<table class="tight"><thead><tr><th>#</th><th>Input</th><th>Partition</th>' +
+               '<th>Expected result</th></tr></thead><tbody>';
+    var i = 1;
+    rows.forEach(function(r){
+      html += '<tr><td>' + (i++) + '</td><td><code>' + f(r.val) + '</code></td><td>' +
+              r.part + '</td><td>' + expected(r) + '</td></tr>';
+    });
+    specials.forEach(function(s){
+      html += '<tr><td>' + (i++) + '</td><td><code>' + s.txt + '</code></td><td>' +
+              s.part + '</td><td>' + expectedSpecial(s) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('bv-table').innerHTML = html;
+
+    var cases = rows.length + specials.length;
+    var exh = Math.floor((max - min) / step) + 1;
+    var partitions = 3 + (specials.length ? 1 : 0);
+    document.getElementById('bv-parts').textContent = partitions;
+    document.getElementById('bv-cases').textContent = cases;
+    document.getElementById('bv-exh').textContent = exh > 99999 ? exh.toExponential(2) : exh.toLocaleString('en-US');
+    document.getElementById('bv-red').textContent = (exh / cases).toFixed(1) + '×';
+
+    var msg = '<b>' + cases + ' cases instead of ' + exh.toLocaleString('en-US') +
+      ' exhaustive values — a ' + (exh / cases).toFixed(1) + '× reduction that still touches ' +
+      'every partition and both sides of every boundary.</b> ';
+    if(POL === 'undefined'){
+      msg += 'You selected <i>undefined</i>, so four rows have no expected result. That is the honest ' +
+        'output: those are not tests yet, they are questions for design. Ask them now — a Slack ' +
+        'message today, or a certification finding in November.';
+      v.className = 'verdict warn';
+    } else if(st.type === 1){
+      msg += 'Because the type is float, the table includes NaN and the infinities. A physics or config ' +
+        'path that accepts NaN propagates it silently through every later multiplication until a ' +
+        'transform becomes invalid — a defect that presents as "the boss vanished" and is ' +
+        'root-caused three days later in a damage formula.';
+      v.className = 'verdict';
+    } else {
+      msg += 'The two rows most likely to fail in a real build are one step below the minimum and one ' +
+        'step above the maximum, because clamping is very often written on one side and forgotten on ' +
+        'the other. Put those two first when you are short on time.';
+      v.className = 'verdict ok';
+    }
+    v.innerHTML = msg;
+  }
+
+  update();
+}
+
+/* ============================================================
+   DECISION TREE — the bug will not reproduce
+   ============================================================ */
+var TREE_NODES = {
+  start: {
+    q: 'The defect will not reproduce. Before you investigate the bug, check the cheapest thing: are you and the reporter running the same thing?',
+    hint: 'Verify build ID, commit, platform, and graphics API. This is free and it is right often enough to pay for itself many times over.',
+    choices: [
+      { t: 'No — different build, platform, API, or settings preset', lbl: 'Config mismatch',
+        sub: 'Or you cannot tell, because the ticket does not say.', go: 'buildmismatch' },
+      { t: 'Yes — build ID, commit and platform all verified identical', lbl: 'Same build',
+        sub: 'Now the disagreement is real and worth investigating.', go: 'qEvidence' }
+    ]
+  },
+  qEvidence: {
+    q: 'What evidence does the report actually carry?',
+    hint: 'What you do next is decided by what you have, not by what you suspect.',
+    choices: [
+      { t: 'A save file, an RNG seed, or a log covering the failing moment', lbl: 'State artifacts',
+        sub: 'You can put the machine back into the failing state.', go: 'qReplay' },
+      { t: 'Steps and a video, nothing else', lbl: 'Steps + video',
+        sub: 'You can see it happened; you cannot re-enter the state.', go: 'qWindow' },
+      { t: 'Steps only, and they are vague or narrative', lbl: 'Vague steps',
+        sub: 'No rate, no preconditions, no numbers.', go: 'goback' }
+    ]
+  },
+  qReplay: {
+    q: 'Load the attached state and run the steps ten times. Does it fail?',
+    hint: 'Ten, not one. A defect at 2/10 is invisible to a single attempt and entirely real.',
+    choices: [
+      { t: 'Yes — it fails from the attached state', lbl: 'Reproduced',
+        sub: 'Even at a low rate.', go: 'reproduced' },
+      { t: 'No — ten clean runs from the same save and seed', lbl: 'Still clean',
+        sub: 'Same state, same build, different outcome.', go: 'qEnvironment' }
+    ]
+  },
+  qWindow: {
+    q: 'Does the described trigger depend on timing — pressing something during a transition, an animation, a load, or a network round trip?',
+    hint: 'Watch the video frame by frame and count. Timing-dependent defects are the largest single population of Cannot Reproduce closures.',
+    choices: [
+      { t: 'Yes — the failure depends on when the input lands', lbl: 'Timing window',
+        sub: 'A race, a transition, or a frame-coincidence.', go: 'timing' },
+      { t: 'No — the sequence should be deterministic', lbl: 'Should be deterministic',
+        sub: 'Nothing in the steps depends on the clock.', go: 'qEnvironment' }
+    ]
+  },
+  qEnvironment: {
+    q: 'Same build, same steps, different result. What differs between the two machines?',
+    hint: 'Enumerate rather than guess: GPU vendor and driver, OS build, CPU core count, RAM, locale, input device, display refresh, storage type, network conditions, account state, and installed DLC.',
+    choices: [
+      { t: 'Something concrete — hardware, driver, locale, input device, or refresh rate', lbl: 'Config differs',
+        sub: 'You can name the variable.', go: 'config' },
+      { t: 'Nothing we can identify by inspection', lbl: 'Nothing visible',
+        sub: 'Both machines look the same on paper.', go: 'instrument' }
+    ]
+  },
+
+  buildmismatch: { leaf:true, title:'Align the configuration before you spend another minute',
+    body: '<p>Get onto the exact build from the ticket — by CI artifact or by checking out the ' +
+      'commit SHA — on the same platform and graphics API, with the same quality preset and the ' +
+      'same input device. Then retry. Two people disagreeing while running different builds is the ' +
+      'most common non-defect in QA and it burns an hour every time.</p>' +
+      '<p class="tool">If the ticket did not record the build: that is the finding. Fix the template, and stamp the build ID into the pause menu so it can never go missing again.</p>' +
+      '<p>If it now reproduces, you have also learned something valuable: the defect is build-specific, ' +
+      'so bisect between the reporter’s build and yours. Thirty-nine CI builds is five doublings — ' +
+      'about six checkouts to find the change that introduced it.</p>' },
+
+  reproduced: { leaf:true, title:'Reproduced — now nail down the rate and the negative control',
+    body: '<p>Record the rate out of ten in the ticket, then find the variation that does <em>not</em> ' +
+      'fail. Change exactly one thing at a time: press the key half a second later, load the save on a ' +
+      'different platform, disable the mod, use the controller instead of the keyboard.</p>' +
+      '<p>The pair of statements "fails 9/10 doing X, 0/10 doing Y" is worth more than any amount of ' +
+      'further description, because it halves the search space before a debugger is opened. Update the ' +
+      'ticket rather than telling someone in chat — the next person to look at this is not in that ' +
+      'conversation.</p>' },
+
+  timing: { leaf:true, title:'Make the timing deterministic instead of trying to be fast',
+    body: '<p>Do not ask a human to hit a 100 ms window. Remove the human: add a debug console command ' +
+      'that forces the state, or a cheat that pauses the transition, or run the game at a lower fixed ' +
+      'timestep so the window widens in wall-clock terms.</p>' +
+      '<p class="tool">Unity: <code>Time.timeScale = 0.2f</code> to stretch the window; a <code>[UnityTest]</code> that drives the input on an exact frame; log <code>Time.frameCount</code> at both events.</p>' +
+      '<p class="tool">Unreal: <code>slomo 0.2</code>, a console command bound to the state transition, and <code>UE_LOG</code> with <code>GFrameCounter</code> at both events.</p>' +
+      '<p>Then stress the coincidence: load the machine so frames get longer, which makes two events ' +
+      'landing in one frame far more likely. Timing defects reproduce best on the slowest machine you ' +
+      'own, not the fastest.</p>' },
+
+  config: { leaf:true, title:'Bisect the configuration, one variable at a time',
+    body: '<p>You can name the variable, so change it and nothing else. Roll the driver back one ' +
+      'version. Switch the graphics API. Change the locale to one with a comma decimal separator ' +
+      '(this finds more parsing defects than any other single test). Unplug the second monitor. ' +
+      'Switch from SSD to HDD if load order matters.</p>' +
+      '<p>Each answer eliminates a branch, and the eliminated branches go in the ticket. A comment ' +
+      'reading "does not reproduce on driver 552.44; does on 566.36" converts an open-ended hunt into ' +
+      'a vendor bug report with a version range.</p>' +
+      '<p>Set severity from the outcome for the affected player and priority from how many players own ' +
+      'that configuration — the split from Topic 1.</p>' },
+
+  instrument: { leaf:true, title:'Stop reproducing and start instrumenting',
+    body: '<p>When two identical-looking machines disagree, the difference is in state you are not ' +
+      'looking at. Add logging around the suspected subsystem, ship a development build to the ' +
+      'reporter, and have them reproduce it with logs on. You are converting an unreproducible defect ' +
+      'into a data-collection problem, which is tractable.</p>' +
+      '<p class="tool">Log at minimum: RNG seed, frame counter, the state machine’s current state on every transition, and the exact values of the inputs to the suspect function.</p>' +
+      '<p>Do not close it as Cannot Reproduce in the meantime. Park it in a state that keeps it visible ' +
+      '— "Needs instrumentation" or "Awaiting evidence" — with an owner and a date. CNR ends ' +
+      'the conversation; a waiting state keeps it alive at zero cost.</p>' },
+
+  goback: { leaf:true, title:'Go back to the reporter with specific questions, not "cannot repro"',
+    body: '<p>Ask for exactly four things, and ask for them as a list so the reply is easy: the build ID, ' +
+      'the rate out of ten attempts, a save file taken just before the failure, and one condition under ' +
+      'which it does <em>not</em> happen.</p>' +
+      '<p>Then fix the cause rather than the instance. The reason the ticket is vague is that the ' +
+      'template let it be: make build ID a required field, add a repro-rate field, and put the save-file ' +
+      'and log paths in the reporting guide. Every CNR that traces to a missing field is an argument for ' +
+      'a mandatory field, and the tracker will enforce it forever without anyone remembering to.</p>' +
+      '<p class="tool">Never close vague tickets as CNR in bulk. That converts a training problem into a data-integrity problem, and the defects stay in the build either way.</p>' }
+};
+
+/* ---------- boot ---------- */
+document.addEventListener('DOMContentLoaded', function(){
+  initGrader();
+  initLife();
+  initDup();
+  initBVA();
+  var t = document.getElementById('tree2');
+  if(t) new GDTTree(t, TREE_NODES, 'start');
+});
+
+})();
+
+</script>
+</body></html>

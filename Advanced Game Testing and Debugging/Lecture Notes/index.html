@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Advanced Game Testing and Debugging &mdash; Course Hub</title>
+<style id="lesson-kit">
+:root{
+  --bg:#0e1116; --bg2:#161b22; --bg3:#1c232d; --line:#2a3441; --line2:#3a4757;
+  --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#4da3ff; --acc2:#1f6feb;
+  --ok:#3fb950; --warn:#d29922; --crit:#f85149; --info:#a371f7; --teal:#39c5bb;
+  --unity:#5ec8f2; --unreal:#f0a44a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --sh:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 120px}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .crumb{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.topbar .spacer{flex:1}
+.topbar a{color:var(--tx2);text-decoration:none;font-size:13.5px;padding:5px 10px;
+  border-radius:7px;border:1px solid transparent}
+.topbar a:hover{color:var(--tx);background:var(--bg3);border-color:var(--line)}
+.progressbar{position:fixed;top:0;left:0;height:3px;background:var(--acc);
+  width:0;z-index:60;transition:width .12s linear}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero .kicker{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.14;margin:0 0 14px;
+  letter-spacing:-.02em;font-weight:800}
+.hero .lede{font-size:19px;color:var(--tx2);max-width:70ch;margin:0}
+.metarow{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:12.5px;color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+
+/* ---------- typography ---------- */
+h2{font-size:27px;margin:56px 0 6px;letter-spacing:-.015em;font-weight:750;
+  scroll-margin-top:80px}
+h2 .num{color:var(--acc);font-family:var(--mono);font-size:16px;
+  margin-right:11px;font-weight:600}
+h3{font-size:20px;margin:34px 0 6px;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16.5px;margin:24px 0 4px;font-weight:700;color:var(--tx)}
+p{margin:13px 0}
+a{color:var(--acc)}
+ul,ol{margin:13px 0;padding-left:24px}
+li{margin:7px 0}
+li::marker{color:var(--tx3)}
+strong{color:#fff;font-weight:650}
+em{color:var(--tx)}
+code{font-family:var(--mono);font-size:.885em;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;padding:1.5px 6px;color:#bfe3ff}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.subtle{color:var(--tx2)}
+.small{font-size:14px}
+
+/* ---------- callouts ---------- */
+.box{border:1px solid var(--line);border-left:3px solid var(--acc);
+  background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin:22px 0}
+.box .lbl{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:800;color:var(--acc);margin-bottom:7px}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.why{border-left-color:var(--info)}   .box.why .lbl{color:var(--info)}
+.box.warn{border-left-color:var(--warn)}  .box.warn .lbl{color:var(--warn)}
+.box.crit{border-left-color:var(--crit)}  .box.crit .lbl{color:var(--crit)}
+.box.ok{border-left-color:var(--ok)}      .box.ok .lbl{color:var(--ok)}
+.box.field{border-left-color:var(--teal)} .box.field .lbl{color:var(--teal)}
+
+/* ---------- objectives / goals ---------- */
+.goals{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;margin:26px 0}
+.goals h4{margin:0 0 10px;font-size:12px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx3)}
+.goals ol{margin:0;padding-left:20px}
+
+/* ---------- code ---------- */
+.codeblock{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  margin:20px 0;overflow:hidden}
+.codeblock .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);font-size:12.5px;
+  color:var(--tx2);font-family:var(--mono)}
+.codeblock .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);
+  font-size:13.4px;line-height:1.62;color:#d5e2f0}
+.codeblock pre .c{color:#6a7d91;font-style:italic}   /* comment */
+.codeblock pre .k{color:#ff7b9c}                     /* keyword */
+.codeblock pre .t{color:#7ee0c6}                     /* type    */
+.codeblock pre .s{color:#ffcf8f}                     /* string  */
+.codeblock pre .n{color:#c3a6ff}                     /* number  */
+.codeblock pre .f{color:#82c8ff}                     /* func    */
+
+/* annotated code: clickable gutter markers */
+.annot{display:grid;grid-template-columns:1fr;gap:0;margin:22px 0}
+.annot .rows{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.annot .arow{display:grid;grid-template-columns:34px 1fr;align-items:stretch;
+  border-bottom:1px solid rgba(42,52,65,.55)}
+.annot .arow:last-child{border-bottom:0}
+.annot .arow.hasnote{cursor:pointer}
+.annot .arow.hasnote:hover{background:rgba(77,163,255,.07)}
+.annot .gut{display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--tx3);font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--line);user-select:none}
+.annot .arow.hasnote .gut{color:#fff;background:var(--acc2);font-weight:700}
+.annot .arow.open .gut{background:var(--acc)}
+.annot .ln{font-family:var(--mono);font-size:13.3px;line-height:1.65;padding:2px 14px;
+  white-space:pre;overflow-x:auto;color:#d5e2f0}
+.annot .note{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--line);
+  padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease;
+  font-size:14.6px;color:var(--tx2)}
+.annot .arow.open + .note,.annot .note.open{max-height:600px;padding:13px 18px}
+.annot .note b{color:var(--tx)}
+.annot .hint{font-size:12.5px;color:var(--tx3);margin:8px 2px 0}
+
+/* ---------- engine tabs (Unity / Unreal) ---------- */
+.tabs{margin:24px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tabs .tabhd{display:flex;background:var(--bg3);border-bottom:1px solid var(--line)}
+.tabs .tabhd button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:14px;font-weight:650;padding:11px 20px;cursor:pointer}
+.tabs .tabhd button:hover{color:var(--tx2)}
+.tabs .tabhd button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tabs .tabhd button[data-engine="unity"].on{border-bottom-color:var(--unity);color:var(--unity)}
+.tabs .tabhd button[data-engine="unreal"].on{border-bottom-color:var(--unreal);color:var(--unreal)}
+.tabs .tabbody{padding:4px 20px 16px;background:var(--bg2)}
+.tabs .tabpane{display:none}.tabs .tabpane.on{display:block}
+.tabs .tabbody .codeblock{margin:16px -6px}
+
+/* ---------- quiz / check ---------- */
+.check{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin:26px 0}
+.check .q{font-weight:650;margin:0 0 14px}
+.check .opt{display:block;width:100%;text-align:left;background:var(--bg3);
+  border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin:8px 0;
+  color:var(--tx);font:inherit;font-size:15.2px;cursor:pointer;transition:.12s}
+.check .opt:hover{border-color:var(--line2);background:#222b36}
+.check .opt.right{border-color:var(--ok);background:rgba(63,185,80,.11)}
+.check .opt.wrong{border-color:var(--crit);background:rgba(248,81,73,.11)}
+.check .opt .tag{float:right;font-size:12px;font-weight:700;letter-spacing:.06em}
+.check .opt.right .tag{color:var(--ok)}.check .opt.wrong .tag{color:var(--crit)}
+.check .exp{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--tx2)}
+.check .exp.on{display:block}
+.check .exp b{color:var(--tx)}
+.check .exp .ex{margin:9px 0}
+.check .exp .ex .who{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em}
+
+/* ---------- widgets / simulators ---------- */
+.widget{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.widget > .whd{display:flex;align-items:baseline;gap:10px;margin:-2px 0 4px}
+.widget > .whd .wt{font-weight:750;font-size:17px}
+.widget > .whd .wk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--teal);font-weight:800;border:1px solid rgba(57,197,187,.35);
+  border-radius:5px;padding:2px 7px}
+.widget > .wsub{color:var(--tx2);font-size:14.5px;margin:4px 0 16px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;align-items:center;
+  gap:12px;margin:11px 0}
+.ctl label{font-size:14px;color:var(--tx2)}
+.ctl output{font-family:var(--mono);font-size:13.5px;color:var(--acc);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:22px}
+.btn{background:var(--acc2);border:1px solid var(--acc);color:#fff;font:inherit;
+  font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--acc)}
+.btn.ghost{background:var(--bg3);border-color:var(--line2);color:var(--tx2)}
+.btn.ghost:hover{background:#242e3a;color:var(--tx)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:10px;margin:16px 0 0}
+.readout .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px}
+.readout .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.readout .cell .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.readout .cell .v.ok{color:var(--ok)}.readout .cell .v.warn{color:var(--warn)}
+.readout .cell .v.crit{color:var(--crit)}
+.verdict{margin:16px 0 0;padding:13px 16px;border-radius:9px;font-size:14.8px;
+  background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--acc)}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict.crit{border-left-color:var(--crit)}
+canvas{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:9px;margin:16px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;
+  color:var(--tx2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px}
+
+/* ---------- decision tree ---------- */
+.tree{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.tree .path{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  margin:0 0 14px;min-height:17px}
+.tree .path span{color:var(--acc)}
+.tree .qq{font-size:17.5px;font-weight:700;margin:0 0 6px}
+.tree .qh{color:var(--tx2);font-size:14.5px;margin:0 0 14px}
+.tree .choices{display:grid;gap:9px}
+.tree .choices button{text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:12px 15px;color:var(--tx);font:inherit;font-size:15px;
+  cursor:pointer;transition:.12s}
+.tree .choices button:hover{border-color:var(--acc);background:#222c38}
+.tree .choices button .sub{display:block;color:var(--tx3);font-size:13px;margin-top:3px}
+.tree .leaf{border-left:3px solid var(--ok);background:var(--bg3);border-radius:9px;
+  padding:15px 18px}
+.tree .leaf h5{margin:0 0 8px;font-size:16.5px;color:var(--ok)}
+.tree .leaf p{margin:9px 0;font-size:15px}
+.tree .leaf .tool{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:14.6px}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+th{background:var(--bg3);font-weight:700;font-size:13px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--tx2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.017)}
+td code{font-size:.85em}
+
+/* ---------- misc ---------- */
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2.5px 9px;border-radius:999px;vertical-align:1px}
+.pill.s0{background:rgba(248,81,73,.16);color:var(--crit);border:1px solid rgba(248,81,73,.4)}
+.pill.s1{background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pill.s2{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pill.s3{background:rgba(159,176,195,.13);color:var(--tx2);border:1px solid var(--line2)}
+.pill.unity{background:rgba(94,200,242,.14);color:var(--unity);border:1px solid rgba(94,200,242,.4)}
+.pill.unreal{background:rgba(240,164,74,.14);color:var(--unreal);border:1px solid rgba(240,164,74,.4)}
+
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);
+  padding:0 18px;margin:20px 0}
+details.more > summary{cursor:pointer;padding:13px 0;font-weight:650;font-size:15.5px;
+  list-style:none;color:var(--tx)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"▸ ";color:var(--acc);font-weight:800}
+details.more[open] > summary::before{content:"▾ "}
+details.more[open]{padding-bottom:14px}
+details.more > summary:hover{color:var(--acc)}
+
+.deliver{background:linear-gradient(180deg,rgba(77,163,255,.07),transparent);
+  border:1px solid var(--acc2);border-radius:12px;padding:20px 24px;margin:40px 0 0}
+.deliver h3{margin-top:0;color:var(--acc)}
+
+footer.lf{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:13.5px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap}
+footer.lf a{color:var(--tx2);text-decoration:none}
+footer.lf a:hover{color:var(--acc)}
+
+@media (max-width:720px){
+  body{font-size:16px}
+  .ctl{grid-template-columns:1fr;gap:4px}
+  .ctl output{text-align:left}
+  .hero{padding:34px 0 24px}
+}
+@media print{
+  .topbar,.progressbar{display:none}
+  body{background:#fff;color:#111}
+  .widget,.tree,.check,.box,.goals{break-inside:avoid}
+}
+</style>
+<style id="lesson-local">
+.hubnav{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 0}
+.hubnav a{font-size:13.5px;color:var(--tx2);text-decoration:none;background:var(--bg3);
+  border:1px solid var(--line);border-radius:999px;padding:5px 13px}
+.hubnav a:hover{color:var(--tx);border-color:var(--acc)}
+
+.paths{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:24px 0}
+@media (max-width:820px){.paths{grid-template-columns:1fr}}
+.path-card{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px 22px}
+.path-card.teach{border-left:3px solid var(--acc)}
+.path-card.solo{border-left:3px solid var(--teal)}
+.path-card h3{margin-top:4px}
+.path-card.teach h3{color:var(--acc)}
+.path-card.solo h3{color:var(--teal)}
+.path-card ul{margin:10px 0 0;padding-left:20px;font-size:15px;color:var(--tx2)}
+.path-card li{margin:8px 0}
+.path-card li b{color:var(--tx)}
+
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+@media (max-width:820px){.cards{grid-template-columns:1fr}}
+.tcard{display:grid;grid-template-columns:52px 1fr;background:var(--bg2);
+  border:1px solid var(--line2);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
+.tcard .tnum{display:flex;align-items:flex-start;justify-content:center;padding-top:20px;
+  background:var(--bg3);border-right:1px solid var(--line);font-family:var(--mono);
+  font-size:22px;font-weight:700;color:var(--acc)}
+.tcard .tbody{padding:16px 20px 18px}
+.tcard h3{margin:0 0 4px;font-size:18.5px;line-height:1.28}
+.tcard h3 a{color:var(--tx);text-decoration:none}
+.tcard h3 a:hover{color:var(--acc)}
+.tcard .tmeta{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.05em}
+.tcard .tlede{font-size:14.8px;color:var(--tx2);margin:11px 0 13px}
+.tcard .tasg{font-size:14px;color:var(--tx2);border-top:1px solid var(--line);padding-top:11px}
+.tcard .tdue{font-family:var(--mono);font-size:12.5px;color:var(--warn)}
+.tcard .tbtn{display:inline-block;margin-top:14px;text-decoration:none;font-size:13.5px;padding:6px 13px}
+
+td .atitle{font-size:12.5px;color:var(--tx3)}
+td .adesc{font-size:13px;color:var(--tx3)}
+.shiftrow{background:rgba(210,153,34,.06)}
+.shift{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);
+  border:1px solid rgba(210,153,34,.4);border-radius:4px;padding:1px 5px;margin-left:5px}
+
+.datepick{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 4px}
+.datepick input[type=date]{background:var(--bg3);border:1px solid var(--line2);color:var(--tx);
+  font:inherit;font-size:15px;padding:9px 13px;border-radius:9px;color-scheme:dark}
+.wamres{margin-top:16px}
+.wamres .empty{color:var(--tx3);font-size:14.5px}
+.wamgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.wamgrid .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;padding:12px 14px}
+.wamgrid .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700;margin-bottom:5px}
+.wamgrid .cell .v{font-size:15px;line-height:1.45}
+.wamgrid .cell .v a{text-decoration:none}
+.wamgrid .cell .v a:hover{text-decoration:underline}
+.wamlinks{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.wamlinks a{text-decoration:none;font-size:13.5px;padding:7px 14px;border-radius:8px;
+  background:var(--bg3);border:1px solid var(--line2);color:var(--tx2)}
+.wamlinks a:hover{border-color:var(--acc);color:var(--tx)}
+.reslist{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:20px 0}
+.reslist .r{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px 17px}
+.reslist .r .rk{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);font-weight:700}
+.reslist .r .rv{font-size:15.5px;font-weight:650;margin-top:4px}
+.reslist .r .rn{font-size:13.5px;color:var(--tx2);margin-top:5px}
+</style>
+</head><body>
+
+<div class="topbar"><div class="inner">
+  <span class="crumb">Advanced Game Testing and Debugging &middot; Course Hub</span><span class="spacer"></span>
+  <a href="#how">How to use</a>
+  <a href="#topics">Topics</a>
+  <a href="#calendar">Calendar</a>
+  <a href="#due">Due dates</a>
+  <a href="#whereami">Where am I?</a>
+</div></div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="kicker">Advanced Game Testing and Debugging &middot; 4 credits &middot; Sep 8 &ndash; Dec 20, 2026</div>
+    <h1>Advanced Game Testing and Debugging</h1>
+    <p class="lede">Eight interactive lessons and thirty class activities covering defect analysis,
+    test design, automation, profiling, optimization, memory, ethics and compliance, and a mobile
+    capstone. Run it as a twice-weekly on-ground course, or work the whole thing yourself as a
+    self-paced independent study &mdash; every lesson stands alone without an instructor in the room.</p>
+    <div class="metarow">
+      <span class="chip"><b>Instructor:</b> Isac Artzi</span>
+      <span class="chip"><b>Term:</b> Sep 8 &ndash; Dec 20, 2026</span>
+      <span class="chip"><b>Sessions:</b> 30 &middot; twice weekly</span>
+    </div>
+    <div class="hubnav">
+      <a href="#how">How to use this site</a>
+      <a href="#topics">The eight topics</a>
+      <a href="#calendar">30-session calendar</a>
+      <a href="#due">Assignment due dates</a>
+      <a href="#resources">Required resources</a>
+      <a href="#whereami">Where am I?</a>
+    </div>
+  </header>
+
+  <h2 id="how"><span class="num">1</span>How to use this</h2>
+  <p>Everything here is two kinds of file. The <b>lessons</b> are self-contained HTML &mdash; open one
+  in any browser, including straight off a USB stick with no network. Nothing to install, no CDN, no
+  accounts; the simulators, decision trees and knowledge checks run locally. The <b>activities</b> are
+  plain markdown, written to be read in VS Code beside the project you are testing.</p>
+
+  <div class="paths">
+    <div class="path-card teach">
+      <h3>Teaching the class</h3>
+      <ul>
+        <li><b>One lesson per topic.</b> Topic 1 runs one week; topics 2&ndash;8 run two weeks each.
+        Assign the lesson as pre-class reading or project it and work the widgets live &mdash; the
+        simulators are built to be driven from the front of the room.</li>
+        <li><b>Two activities per week</b>, one per meeting. Each of the 30 sessions has exactly one
+        activity, keyed to that day's focus; see the <a href="#calendar">calendar</a> for which lands where.</li>
+        <li><b>Every activity feeds the graded assignment</b> for its topic. Nothing is busywork &mdash;
+        each one produces an artifact the student reuses in the deliverable due at the end of the topic.</li>
+        <li><b>Activities carry no points.</b> They list deliverables only, posted to Padlet, so you can
+        grade participation however your section does it.</li>
+      </ul>
+    </div>
+    <div class="path-card solo">
+      <h3>Independent study</h3>
+      <ul>
+        <li><b>Work the lessons in order.</b> Each builds on the previous one: taxonomy &rarr; reporting
+        &rarr; automation &rarr; measurement &rarr; optimization &rarr; memory &rarr; ethics &rarr; capstone.
+        Budget roughly 110&ndash;190 minutes per lesson plus the reading.</li>
+        <li><b>Do the activities solo or with one partner.</b> Where an activity calls for a team, run
+        it with a partner or take both roles yourself in sequence &mdash; the artifact is what matters.</li>
+        <li><b>Post deliverables to Padlet</b> (or any shared board) so there is a dated record of the
+        work; several assignments ask you to reference it.</li>
+        <li><b>Use your own project, a provided sample, or any game you can run.</b> No activity requires
+        a specific engine build.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box field">
+    <div class="lbl">Balanced engine coverage</div>
+    <p>Every tooling section that differs by engine has both a Unity pane (C#, Unity Test Framework,
+    Unity Profiler, Memory Profiler, Addressables) and an Unreal pane (C++/Blueprint, Automation Spec,
+    Gauntlet, Unreal Insights, LLM). You can run the course in either engine, or both.</p>
+  </div>
+
+  <h2 id="topics"><span class="num">2</span>The eight topics</h2>
+  <p class="subtle">Each lesson is a single HTML file with runnable simulators, annotated code walkthroughs,
+  a diagnostic decision tree, and knowledge checks. Click a title to open it.</p>
+  <div class="cards">
+    <article class="tcard">
+      <div class="tnum">1</div>
+      <div class="tbody">
+        <h3><a href="lessons/lesson-01-understanding-bugs.html">Understanding Bugs</a></h3>
+        <div class="tmeta">Sep 8 &ndash; 13 &middot; Week 1 &middot; Sessions 1&ndash;2</div>
+        <p class="tlede">The vocabulary that lets a room full of tired people agree on what is broken, how broken it is, and what gets fixed before Friday.</p>
+        <div class="tasg"><b>Assignment:</b> Bug Investigation and Prioritization<br><span class="tdue">Due Sep 13 &middot; 90 pts</span></div>
+        <a class="btn tbtn" href="lessons/lesson-01-understanding-bugs.html">Open lesson &rarr;</a>
+      </div>
+    </article>
+    <article class="tcard">
+      <div class="tnum">2</div>
+      <div class="tbody">
+        <h3><a href="lessons/lesson-02-test-design-diagramming.html">Test Design and Diagramming</a></h3>
+        <div class="tmeta">Sep 14 &ndash; 27 &middot; Weeks 2&ndash;3 &middot; Sessions 3&ndash;6</div>
+        <p class="tlede">Write a defect down so a stranger can reproduce it, a tracker can route it, a duplicate detector can find it, and a test can be designed from it.</p>
+        <div class="tasg"><b>Assignment:</b> Benchmark &mdash; Bug Reporting and Workflow<span class="pill s0" style="margin-left:6px">Benchmark &middot; comp. 1.5</span><br><span class="tdue">Due Sep 27 &middot; 100 pts</span></div>
+        <a class="btn tbtn" href="lessons/lesson-02-test-design-diagramming.html">Open lesson &rarr;</a>
+      </div>
+    </article>
+    <article class="tcard">
+      <div class="tnum">3</div>
+      <div class="tbody">
+        <h3><a href="lessons/lesson-03-automated-testing.html">Automated Testing Strategies and Methods</a></h3>
+        <div class="tmeta">Sep 28 &ndash; Oct 11 &middot; Weeks 4&ndash;5 &middot; Sessions 7&ndash;10</div>
+        <p class="tlede">Write tests a machine can run, in code that was never designed to be tested, and wire them to a pipeline that fails loudly enough to matter.</p>
+        <div class="tasg"><b>Assignment:</b> Benchmark &mdash; Unit Testing and Defect Trigger Coverage<span class="pill s0" style="margin-left:6px">Benchmark &middot; comp. 1.1</span><br><span class="tdue">Due Oct 11 &middot; 100 pts</span></div>
+        <a class="btn tbtn" href="lessons/lesson-03-automated-testing.html">Open lesson &rarr;</a>
+      </div>
+    </article>
+    <article class="tcard">
+      <div class="tnum">4</div>
+      <div class="tbody">
+        <h3><a href="lessons/lesson-04-performance-profiling.html">Advanced Performance Profiling</a></h3>
+        <div class="tmeta">Oct 12 &ndash; 25 &middot; Weeks 6&ndash;7 &middot; Sessions 11&ndash;14</div>
+        <p class="tlede">Stop reporting average FPS. Measure in milliseconds, report distributions, and instrument your own code instead of guessing.</p>
+        <div class="tasg"><b>Assignment:</b> Performance Profiling Techniques<br><span class="tdue">Due Oct 25 &middot; 100 pts + Midterm 100</span></div>
+        <a class="btn tbtn" href="lessons/lesson-04-performance-profiling.html">Open lesson &rarr;</a>
+      </div>
+    </article>
+    <article class="tcard">
+      <div class="tnum">5</div>
+      <div class="tbody">
+        <h3><a href="lessons/lesson-05-optimization-techniques.html">Advanced Optimization Techniques</a></h3>
+        <div class="tmeta">Oct 26 &ndash; Nov 8 &middot; Weeks 8&ndash;9 &middot; Sessions 15&ndash;18</div>
+        <p class="tlede">Do the arithmetic before the work, pick the layer with a ceiling high enough to matter, and prove your clever flags do not misbehave in combination.</p>
+        <div class="tasg"><b>Assignment:</b> Multi-Layered Game Optimization<br><span class="tdue">Due Nov 8 &middot; 100 pts</span></div>
+        <a class="btn tbtn" href="lessons/lesson-05-optimization-techniques.html">Open lesson &rarr;</a>
+      </div>
+    </article>
+    <article class="tcard">
+      <div class="tnum">6</div>
+      <div class="tbody">
+        <h3><a href="lessons/lesson-06-memory-management.html">Memory Management in Games</a></h3>
+        <div class="tmeta">Nov 9 &ndash; 22 &middot; Weeks 10&ndash;11 &middot; Sessions 19&ndash;22</div>
+        <p class="tlede">Frame time degrades; memory does not. See the ceiling coming, and prove with numbers that you moved it.</p>
+        <div class="tasg"><b>Assignment:</b> Memory Optimization<br><span class="tdue">Due Nov 22 &middot; 100 pts</span></div>
+        <a class="btn tbtn" href="lessons/lesson-06-memory-management.html">Open lesson &rarr;</a>
+      </div>
+    </article>
+    <article class="tcard">
+      <div class="tnum">7</div>
+      <div class="tbody">
+        <h3><a href="lessons/lesson-07-ethics-compliance.html">Ethics and Compliance in Testing</a></h3>
+        <div class="tmeta">Nov 23 &ndash; Dec 6 &middot; Weeks 12&ndash;13 &middot; Sessions 23&ndash;26</div>
+        <p class="tlede">The requirements where the oracle is a person &mdash; accessibility, compliance, privacy, security &mdash; and why almost all of it is still testable.</p>
+        <div class="tasg"><b>Assignment:</b> Ethical and Compliance Testing with a Christian Worldview<br><span class="tdue">Due Dec 6 &middot; 100 pts</span></div>
+        <a class="btn tbtn" href="lessons/lesson-07-ethics-compliance.html">Open lesson &rarr;</a>
+      </div>
+    </article>
+    <article class="tcard">
+      <div class="tnum">8</div>
+      <div class="tbody">
+        <h3><a href="lessons/lesson-08-applied-mobile-project.html">Applied Testing Project: Mobile Optimization</a></h3>
+        <div class="tmeta">Dec 7 &ndash; 20 &middot; Weeks 14&ndash;15 &middot; Sessions 27&ndash;30</div>
+        <p class="tlede">Take a project that runs on your desktop, prove what it does on a phone, change two things, and prove the change with numbers a stranger could reproduce.</p>
+        <div class="tasg"><b>Assignment:</b> Mobile Game Optimization<br><span class="tdue">Due Dec 20 &middot; 100 pts + Final 110</span></div>
+        <a class="btn tbtn" href="lessons/lesson-08-applied-mobile-project.html">Open lesson &rarr;</a>
+      </div>
+    </article>
+  </div>
+
+  <h2 id="calendar"><span class="num">3</span>The 30-session calendar</h2>
+  <p>Two meetings a week, Tuesday and Thursday. Each row links the topic's lesson and the markdown
+  activity for that session.</p>
+  <div class="box warn">
+    <div class="lbl">Thanksgiving</div>
+    <p>There is no class on <b>Thursday Nov 26</b>. Week 12's second meeting shifts to <b>Tuesday Dec 1</b>,
+    which is why sessions 24 and 25 share that date &mdash; run session 24 asynchronously if a single
+    meeting is too much, or fold its checklist work into session 25.</p>
+  </div>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th style="width:44px">#</th><th style="width:112px">Date</th><th style="width:52px">Week</th>
+    <th style="width:52px">Topic</th><th>Focus</th><th style="width:290px">Activity</th></tr></thead>
+    <tbody>
+    <tr><td><b>1</b></td><td>Tue Sep 8</td><td>1</td><td><a href="lessons/lesson-01-understanding-bugs.html">T1</a></td><td>Course launch, bug taxonomy</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A01-bug-taxonomy-safari.md"><code>A01-bug-taxonomy-safari.md</code></a><br><span class="atitle">Bug Taxonomy Safari</span></td></tr>
+    <tr><td><b>2</b></td><td>Thu Sep 10</td><td>1</td><td><a href="lessons/lesson-01-understanding-bugs.html">T1</a></td><td>Severity/priority triage; prep for the Bug Investigation video</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A02-friday-ship-triage.md"><code>A02-friday-ship-triage.md</code></a><br><span class="atitle">The Friday Ship Meeting</span></td></tr>
+    <tr><td><b>3</b></td><td>Tue Sep 15</td><td>2</td><td><a href="lessons/lesson-02-test-design-diagramming.html">T2</a></td><td>Anatomy of a bug report; PAL</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A03-patch-notes-autopsy.md"><code>A03-patch-notes-autopsy.md</code></a><br><span class="atitle">Patch Notes Autopsy</span></td></tr>
+    <tr><td><b>4</b></td><td>Thu Sep 17</td><td>2</td><td><a href="lessons/lesson-02-test-design-diagramming.html">T2</a></td><td>Repro steps &amp; reproducibility</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A04-blind-repro-relay.md"><code>A04-blind-repro-relay.md</code></a><br><span class="atitle">Blind Repro Relay</span></td></tr>
+    <tr><td><b>5</b></td><td>Tue Sep 22</td><td>3</td><td><a href="lessons/lesson-02-test-design-diagramming.html">T2</a></td><td>Tracker workflows &amp; life cycle</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A05-tracker-bake-off.md"><code>A05-tracker-bake-off.md</code></a><br><span class="atitle">Tracker Bake-Off and the Life Cycle Drive</span></td></tr>
+    <tr><td><b>6</b></td><td>Thu Sep 24</td><td>3</td><td><a href="lessons/lesson-02-test-design-diagramming.html">T2</a></td><td>Test design techniques; benchmark work session</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A06-red-team-test-design.md"><code>A06-red-team-test-design.md</code></a><br><span class="atitle">Red Team, Blue Team: Break the Parameter</span></td></tr>
+    <tr><td><b>7</b></td><td>Tue Sep 29</td><td>4</td><td><a href="lessons/lesson-03-automated-testing.html">T3</a></td><td>Why automate; test pyramid for games</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A07-regression-tax.md"><code>A07-regression-tax.md</code></a><br><span class="atitle">The Regression Tax</span></td></tr>
+    <tr><td><b>8</b></td><td>Thu Oct 1</td><td>4</td><td><a href="lessons/lesson-03-automated-testing.html">T3</a></td><td>Writing the first unit test; seams &amp; DI</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A08-seam-surgery.md"><code>A08-seam-surgery.md</code></a><br><span class="atitle">Seam Surgery, Then Break My Test</span></td></tr>
+    <tr><td><b>9</b></td><td>Tue Oct 6</td><td>5</td><td><a href="lessons/lesson-03-automated-testing.html">T3</a></td><td>Six defect triggers</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A09-trigger-gauntlet.md"><code>A09-trigger-gauntlet.md</code></a><br><span class="atitle">The Trigger Gauntlet</span></td></tr>
+    <tr><td><b>10</b></td><td>Thu Oct 8</td><td>5</td><td><a href="lessons/lesson-03-automated-testing.html">T3</a></td><td>CI pipelines &amp; flaky tests</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A10-flaky-forensics.md"><code>A10-flaky-forensics.md</code></a><br><span class="atitle">Flaky Test Forensics and the First Red Build</span></td></tr>
+    <tr><td><b>11</b></td><td>Tue Oct 13</td><td>6</td><td><a href="lessons/lesson-04-performance-profiling.html">T4</a></td><td>Frame budget &amp; frame-time literacy</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A11-sealed-prediction.md"><code>A11-sealed-prediction.md</code></a><br><span class="atitle">The Sealed Prediction</span></td></tr>
+    <tr><td><b>12</b></td><td>Thu Oct 15</td><td>6</td><td><a href="lessons/lesson-04-performance-profiling.html">T4</a></td><td>Profiler tour, both engines</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A12-profiler-teach-back.md"><code>A12-profiler-teach-back.md</code></a><br><span class="atitle">Profiler Teach-Back</span></td></tr>
+    <tr><td><b>13</b></td><td>Tue Oct 20</td><td>7</td><td><a href="lessons/lesson-04-performance-profiling.html">T4</a></td><td>Custom instrumentation &amp; benchmark scenes</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A13-benchmark-scene-forge.md"><code>A13-benchmark-scene-forge.md</code></a><br><span class="atitle">Benchmark Scene Forge</span></td></tr>
+    <tr><td><b>14</b></td><td>Thu Oct 22</td><td>7</td><td><a href="lessons/lesson-04-performance-profiling.html">T4</a></td><td>Niche profiling areas; midterm review</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A14-symptom-clinic.md"><code>A14-symptom-clinic.md</code></a><br><span class="atitle">The Symptom Clinic</span></td></tr>
+    <tr><td><b>15</b></td><td>Tue Oct 27</td><td>8</td><td><a href="lessons/lesson-05-optimization-techniques.html">T5</a></td><td>Measure first; Amdahl; algorithmic wins</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A15-hypothesis-market.md"><code>A15-hypothesis-market.md</code></a><br><span class="atitle">The Hypothesis Market</span></td></tr>
+    <tr><td><b>16</b></td><td>Thu Oct 29</td><td>8</td><td><a href="lessons/lesson-05-optimization-techniques.html">T5</a></td><td>Physics &amp; logic optimization</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A16-broadphase-tournament.md"><code>A16-broadphase-tournament.md</code></a><br><span class="atitle">Physics Tournament: Most Agents on the Budget Line</span></td></tr>
+    <tr><td><b>17</b></td><td>Tue Nov 3</td><td>9</td><td><a href="lessons/lesson-05-optimization-techniques.html">T5</a></td><td>Asset &amp; technical-art optimization</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A17-asset-autopsy.md"><code>A17-asset-autopsy.md</code></a><br><span class="atitle">Asset Autopsy and the Blind A/B</span></td></tr>
+    <tr><td><b>18</b></td><td>Thu Nov 5</td><td>9</td><td><a href="lessons/lesson-05-optimization-techniques.html">T5</a></td><td>Code patterns; combinatorial validation</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A18-archaeology-and-pairwise.md"><code>A18-archaeology-and-pairwise.md</code></a><br><span class="atitle">Code Archaeology, Then Defend Your Matrix</span></td></tr>
+    <tr><td><b>19</b></td><td>Tue Nov 10</td><td>10</td><td><a href="lessons/lesson-06-memory-management.html">T6</a></td><td>Memory model &amp; budgets</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A19-budget-negotiation.md"><code>A19-budget-negotiation.md</code></a><br><span class="atitle">The Budget Negotiation</span></td></tr>
+    <tr><td><b>20</b></td><td>Thu Nov 12</td><td>10</td><td><a href="lessons/lesson-06-memory-management.html">T6</a></td><td>Leaks &amp; retention bugs</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A20-leak-hunt.md"><code>A20-leak-hunt.md</code></a><br><span class="atitle">Thirty-Minute Leak Hunt</span></td></tr>
+    <tr><td><b>21</b></td><td>Tue Nov 17</td><td>11</td><td><a href="lessons/lesson-06-memory-management.html">T6</a></td><td>Fragmentation &amp; pooling</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A21-constraint-challenge.md"><code>A21-constraint-challenge.md</code></a><br><span class="atitle">Cut Forty Percent, Keep It Shippable</span></td></tr>
+    <tr><td><b>22</b></td><td>Thu Nov 19</td><td>11</td><td><a href="lessons/lesson-06-memory-management.html">T6</a></td><td>GC tuning &amp; snapshot diffing</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A22-snapshot-detective.md"><code>A22-snapshot-detective.md</code></a><br><span class="atitle">Snapshot Detective and the Allocation Rate Cut</span></td></tr>
+    <tr><td><b>23</b></td><td>Tue Nov 24</td><td>12</td><td><a href="lessons/lesson-07-ethics-compliance.html">T7</a></td><td>Accessibility as a testable requirement</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A23-constrained-playthrough.md"><code>A23-constrained-playthrough.md</code></a><br><span class="atitle">The Constrained Play-Through</span></td></tr>
+    <tr class="shiftrow"><td><b>24</b></td><td>Tue Dec 1 <span class="shift">shifted</span></td><td>12</td><td><a href="lessons/lesson-07-ethics-compliance.html">T7</a></td><td>Compliance, ratings, certification &mdash; shifted from Nov 26 (Thanksgiving)</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A24-compliance-audit-walkthrough.md"><code>A24-compliance-audit-walkthrough.md</code></a><br><span class="atitle">Write the Checklist, Then Fail Your Own Build</span></td></tr>
+    <tr><td><b>25</b></td><td>Tue Dec 1</td><td>13</td><td><a href="lessons/lesson-07-ethics-compliance.html">T7</a></td><td>Privacy &amp; security testing</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A25-adversarial-security-pairing.md"><code>A25-adversarial-security-pairing.md</code></a><br><span class="atitle">Adversarial Security Pairing</span></td></tr>
+    <tr><td><b>26</b></td><td>Thu Dec 3</td><td>13</td><td><a href="lessons/lesson-07-ethics-compliance.html">T7</a></td><td>Exploratory testing, bias, ethics &amp; worldview</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A26-charter-and-severity-debate.md"><code>A26-charter-and-severity-debate.md</code></a><br><span class="atitle">Charters, Then the Severity Debate</span></td></tr>
+    <tr><td><b>27</b></td><td>Tue Dec 8</td><td>14</td><td><a href="lessons/lesson-08-applied-mobile-project.html">T8</a></td><td>Mobile is a different machine; the test plan</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A27-first-contact-plan-swap.md"><code>A27-first-contact-plan-swap.md</code></a><br><span class="atitle">First Contact With the Phone, Then Swap Plans</span></td></tr>
+    <tr><td><b>28</b></td><td>Thu Dec 10</td><td>14</td><td><a href="lessons/lesson-08-applied-mobile-project.html">T8</a></td><td>Device matrix &amp; profiling on device</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A28-device-lab-rotation.md"><code>A28-device-lab-rotation.md</code></a><br><span class="atitle">Device Lab Rotation</span></td></tr>
+    <tr><td><b>29</b></td><td>Tue Dec 15</td><td>15</td><td><a href="lessons/lesson-08-applied-mobile-project.html">T8</a></td><td>Optimization sprint &amp; measurement discipline</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A29-thermal-knee-sprint.md"><code>A29-thermal-knee-sprint.md</code></a><br><span class="atitle">Find the Knee, Then Move It</span></td></tr>
+    <tr><td><b>30</b></td><td>Thu Dec 17</td><td>15</td><td><a href="lessons/lesson-08-applied-mobile-project.html">T8</a></td><td>Final presentations; portfolio &amp; final exam review</td><td><a href="https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A30-demo-day-and-portfolio.md"><code>A30-demo-day-and-portfolio.md</code></a><br><span class="atitle">Demo Day and the Portfolio Build</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="due"><span class="num">4</span>Assignment due dates at a glance</h2>
+  <p>Eight graded assignments plus a midterm and a final. Two are <b>Benchmark</b> assignments &mdash;
+  programmatic competency assessments that must be submitted even if a student is otherwise passing:
+  Topic 2 assesses competency <b>1.5</b> (data-driven testing methodologies and bug tracking) and
+  Topic 3 assesses competency <b>1.1</b> (proficiency with game-development programming languages).</p>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th style="width:74px">Topic</th><th>Assignment</th><th style="width:110px">Due</th>
+    <th style="width:60px">Points</th><th style="width:132px">Benchmark</th></tr></thead>
+    <tbody>
+    <tr><td>Topic 1</td><td><b>Bug Investigation and Prioritization</b><br><span class="adesc">3&ndash;5 min video: categorize &ge;4 defects, root-cause the top three, justify a priority order.</span></td><td>Sun Sep 13</td><td>90</td><td><span class="subtle">&mdash;</span></td></tr>
+    <tr><td>Topic 2</td><td><b>Benchmark &mdash; Bug Reporting and Workflow</b><br><span class="adesc">Three PAL-format reports with full repro, entered into a real tracker, plus video.</span></td><td>Sun Sep 27</td><td>100</td><td><span class="pill s0">Benchmark 1.5</span></td></tr>
+    <tr><td>Topic 3</td><td><b>Benchmark &mdash; Unit Testing and Defect Trigger Coverage</b><br><span class="adesc">Unit tests covering all six defect triggers, with setup/teardown, logging, CI integration.</span></td><td>Sun Oct 11</td><td>100</td><td><span class="pill s0">Benchmark 1.1</span></td></tr>
+    <tr><td>Topic 4</td><td><b>Performance Profiling Techniques</b><br><span class="adesc">Profile three of eight areas, justify the tool, implement one optimization and measure it.</span></td><td>Sun Oct 25</td><td>100</td><td><span class="subtle">&mdash;</span></td></tr>
+    <tr><td>Topic 4</td><td><b>Midterm Exam</b><br><span class="adesc">90 minutes. Covers Topics 1&ndash;4.</span></td><td>Sun Oct 25</td><td>100</td><td><span class="subtle">&mdash;</span></td></tr>
+    <tr><td>Topic 5</td><td><b>Multi-Layered Game Optimization</b><br><span class="adesc">Optimize logic/physics, assets, and code patterns; before/after profiling data for each layer.</span></td><td>Sun Nov 8</td><td>100</td><td><span class="subtle">&mdash;</span></td></tr>
+    <tr><td>Topic 6</td><td><b>Memory Optimization</b><br><span class="adesc">Document and fix &ge;2 memory issues with measurements, plus cross-platform prevention strategies.</span></td><td>Sun Nov 22</td><td>100</td><td><span class="subtle">&mdash;</span></td></tr>
+    <tr><td>Topic 7</td><td><b>Ethical and Compliance Testing with a Christian Worldview</b><br><span class="adesc">Accessibility, compliance, privacy/security testing, exploratory charters, and a 1&ndash;2 page reflection.</span></td><td>Sun Dec 6</td><td>100</td><td><span class="subtle">&mdash;</span></td></tr>
+    <tr><td>Topic 8</td><td><b>Mobile Game Optimization</b><br><span class="adesc">Detailed test plan, on-device profiling, &ge;2 implemented optimizations tracked with data.</span></td><td>Sun Dec 20</td><td>100</td><td><span class="subtle">&mdash;</span></td></tr>
+    <tr><td>Topic 8</td><td><b>Final Exam</b><br><span class="adesc">90 minutes. Cumulative, weighted toward Topics 5&ndash;8.</span></td><td>Sun Dec 20</td><td>110</td><td><span class="subtle">&mdash;</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="resources"><span class="num">5</span>Required resources</h2>
+  <div class="reslist">
+    <div class="r"><div class="rk">Textbook</div><div class="rv">Modern Game Testing</div>
+      <div class="rn">Finska, N. (2023). Packt Publishing. ISBN 9781803244402.</div></div>
+    <div class="r"><div class="rk">Engine</div><div class="rv">Unity 3D</div>
+      <div class="rn">Any recent LTS. Test Framework and Memory Profiler packages installed.</div></div>
+    <div class="r"><div class="rk">Engine</div><div class="rv">Unreal Engine</div>
+      <div class="rn">Automation Spec, Functional Tests, and Unreal Insights.</div></div>
+    <div class="r"><div class="rk">Editor</div><div class="rv">Visual Studio Code</div>
+      <div class="rn">Used to read the activity markdown files and edit test code.</div></div>
+  </div>
+  <p class="small subtle">Per-topic readings &mdash; journal articles and book chapters &mdash; are listed
+  in each lesson's header row. Profiling tools referenced across the course (RenderDoc, Perfetto, Android
+  GPU Inspector, Xcode Instruments, Wireshark, Valgrind) are free and named where they are needed.</p>
+
+  <h2 id="whereami"><span class="num">6</span>Where am I?</h2>
+  <div class="widget" id="wam">
+    <div class="whd"><span class="wt">Semester locator</span><span class="wk">Pick a date</span></div>
+    <p class="wsub">Choose any date in the term. This tells you which topic and session you are in,
+    what is due next, and links the lesson and the activity for that meeting.</p>
+    <div class="datepick">
+      <input type="date" id="wamDate" min="2026-08-24" max="2027-01-15" aria-label="Choose a date in the term">
+      <button class="btn ghost" id="wamToday" type="button">Use today</button>
+      <button class="btn ghost" id="wamClear" type="button">Clear</button>
+    </div>
+    <div class="wamres" id="wamOut"><p class="empty">No date selected yet.</p></div>
+  </div>
+
+  <footer class="lf">
+    <span>Advanced Game Testing and Debugging &middot; Isac Artzi</span>
+    <span>Fall 2026</span>
+  </footer>
+</div>
+
+<script id="lesson-kit-js">
+/* ---------- reading progress ---------- */
+(function(){
+  var b=document.createElement('div'); b.className='progressbar';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(b);});
+  addEventListener('scroll',function(){
+    var h=document.documentElement, m=h.scrollHeight-h.clientHeight;
+    b.style.width=(m>0?(h.scrollTop/m*100):0)+'%';
+  },{passive:true});
+})();
+
+/* ---------- engine tabs ---------- */
+function GDTtabs(root){
+  root.querySelectorAll('.tabhd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      root.querySelectorAll('.tabhd button').forEach(function(b){b.classList.remove('on')});
+      root.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('on')});
+      btn.classList.add('on');
+      var pane=root.querySelector('.tabpane[data-pane="'+btn.dataset.tab+'"]');
+      if(pane) pane.classList.add('on');
+    });
+  });
+}
+
+/* ---------- annotated code ---------- */
+function GDTannot(root){
+  root.querySelectorAll('.arow.hasnote').forEach(function(row){
+    row.addEventListener('click',function(){
+      var note=row.nextElementSibling;
+      var open=row.classList.contains('open');
+      row.classList.toggle('open',!open);
+      if(note&&note.classList.contains('note')) note.classList.toggle('open',!open);
+    });
+  });
+}
+
+/* ---------- knowledge check ---------- */
+function GDTcheck(root){
+  var done=false;
+  root.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      if(done) return; done=true;
+      var correct = opt.dataset.correct==='1';
+      root.querySelectorAll('.opt').forEach(function(o){
+        if(o.dataset.correct==='1'){o.classList.add('right');
+          o.insertAdjacentHTML('beforeend','<span class="tag">CORRECT</span>');}
+        else if(o===opt){o.classList.add('wrong');
+          o.insertAdjacentHTML('beforeend','<span class="tag">NOT QUITE</span>');}
+        o.style.cursor='default';
+      });
+      var exp=root.querySelector('.exp'); if(exp) exp.classList.add('on');
+    });
+  });
+}
+
+/* ---------- decision tree ----------
+   Usage: new GDTTree(document.getElementById('t1'), NODES, 'start')
+   NODES = { start:{q:'', hint:'', choices:[{t:'',sub:'',go:'nodeId'}]},
+             leafId:{leaf:true, title:'', body:'<p>…</p>'} }              */
+function GDTTree(root,nodes,startId){
+  var pathEl=root.querySelector('.path'), body=root.querySelector('.body');
+  var trail=[];
+  function render(id){
+    var n=nodes[id]; if(!n) return;
+    pathEl.innerHTML = trail.length? trail.map(function(t){return '<span>'+t+'</span>'}).join(' &rsaquo; ') : '&nbsp;';
+    if(n.leaf){
+      body.innerHTML='<div class="leaf"><h5>'+n.title+'</h5>'+n.body+'</div>'+
+        '<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>';
+    }else{
+      body.innerHTML='<p class="qq">'+n.q+'</p>'+(n.hint?'<p class="qh">'+n.hint+'</p>':'')+
+        '<div class="choices">'+n.choices.map(function(c,i){
+          return '<button data-go="'+c.go+'" data-lbl="'+(c.lbl||c.t).replace(/"/g,'&quot;')+'">'+c.t+
+                 (c.sub?'<span class="sub">'+c.sub+'</span>':'')+'</button>';}).join('')+'</div>'+
+        (trail.length?'<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>':'');
+    }
+    body.querySelectorAll('[data-go]').forEach(function(b){
+      b.addEventListener('click',function(){trail.push(b.dataset.lbl); render(b.dataset.go);});
+    });
+    var rs=body.querySelector('[data-restart]');
+    if(rs) rs.addEventListener('click',function(){trail=[]; render(startId);});
+  }
+  render(startId);
+}
+
+/* ---------- auto-wire everything ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.tabs').forEach(GDTtabs);
+  document.querySelectorAll('.annot').forEach(GDTannot);
+  document.querySelectorAll('.check').forEach(GDTcheck);
+});
+
+/* ---------- small helpers for simulators ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(n,d){return Number(n).toFixed(d===undefined?1:d)}
+function lerp(a,b,t){return a+(b-a)*t}
+/* deterministic pseudo-random so demos are reproducible for a class */
+function rng(seed){var s=seed||1;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296;}}
+</script>
+<script>
+/* ---------- Where am I? : date-indexed schedule ---------- */
+(function(){
+  var SESSIONS = [
+{
+"n": 1,
+"d": "2026-09-08",
+"disp": "Tue Sep 8",
+"wk": 1,
+"tp": 1,
+"focus": "Course launch, bug taxonomy",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A01-bug-taxonomy-safari.md",
+"at": "Bug Taxonomy Safari"
+},
+{
+"n": 2,
+"d": "2026-09-10",
+"disp": "Thu Sep 10",
+"wk": 1,
+"tp": 1,
+"focus": "Severity/priority triage; prep for the Bug Investigation video",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A02-friday-ship-triage.md",
+"at": "The Friday Ship Meeting"
+},
+{
+"n": 3,
+"d": "2026-09-15",
+"disp": "Tue Sep 15",
+"wk": 2,
+"tp": 2,
+"focus": "Anatomy of a bug report; PAL",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A03-patch-notes-autopsy.md",
+"at": "Patch Notes Autopsy"
+},
+{
+"n": 4,
+"d": "2026-09-17",
+"disp": "Thu Sep 17",
+"wk": 2,
+"tp": 2,
+"focus": "Repro steps & reproducibility",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A04-blind-repro-relay.md",
+"at": "Blind Repro Relay"
+},
+{
+"n": 5,
+"d": "2026-09-22",
+"disp": "Tue Sep 22",
+"wk": 3,
+"tp": 2,
+"focus": "Tracker workflows & life cycle",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A05-tracker-bake-off.md",
+"at": "Tracker Bake-Off and the Life Cycle Drive"
+},
+{
+"n": 6,
+"d": "2026-09-24",
+"disp": "Thu Sep 24",
+"wk": 3,
+"tp": 2,
+"focus": "Test design techniques; benchmark work session",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A06-red-team-test-design.md",
+"at": "Red Team, Blue Team: Break the Parameter"
+},
+{
+"n": 7,
+"d": "2026-09-29",
+"disp": "Tue Sep 29",
+"wk": 4,
+"tp": 3,
+"focus": "Why automate; test pyramid for games",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A07-regression-tax.md",
+"at": "The Regression Tax"
+},
+{
+"n": 8,
+"d": "2026-10-01",
+"disp": "Thu Oct 1",
+"wk": 4,
+"tp": 3,
+"focus": "Writing the first unit test; seams & DI",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A08-seam-surgery.md",
+"at": "Seam Surgery, Then Break My Test"
+},
+{
+"n": 9,
+"d": "2026-10-06",
+"disp": "Tue Oct 6",
+"wk": 5,
+"tp": 3,
+"focus": "Six defect triggers",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A09-trigger-gauntlet.md",
+"at": "The Trigger Gauntlet"
+},
+{
+"n": 10,
+"d": "2026-10-08",
+"disp": "Thu Oct 8",
+"wk": 5,
+"tp": 3,
+"focus": "CI pipelines & flaky tests",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A10-flaky-forensics.md",
+"at": "Flaky Test Forensics and the First Red Build"
+},
+{
+"n": 11,
+"d": "2026-10-13",
+"disp": "Tue Oct 13",
+"wk": 6,
+"tp": 4,
+"focus": "Frame budget & frame-time literacy",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A11-sealed-prediction.md",
+"at": "The Sealed Prediction"
+},
+{
+"n": 12,
+"d": "2026-10-15",
+"disp": "Thu Oct 15",
+"wk": 6,
+"tp": 4,
+"focus": "Profiler tour, both engines",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A12-profiler-teach-back.md",
+"at": "Profiler Teach-Back"
+},
+{
+"n": 13,
+"d": "2026-10-20",
+"disp": "Tue Oct 20",
+"wk": 7,
+"tp": 4,
+"focus": "Custom instrumentation & benchmark scenes",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A13-benchmark-scene-forge.md",
+"at": "Benchmark Scene Forge"
+},
+{
+"n": 14,
+"d": "2026-10-22",
+"disp": "Thu Oct 22",
+"wk": 7,
+"tp": 4,
+"focus": "Niche profiling areas; midterm review",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A14-symptom-clinic.md",
+"at": "The Symptom Clinic"
+},
+{
+"n": 15,
+"d": "2026-10-27",
+"disp": "Tue Oct 27",
+"wk": 8,
+"tp": 5,
+"focus": "Measure first; Amdahl; algorithmic wins",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A15-hypothesis-market.md",
+"at": "The Hypothesis Market"
+},
+{
+"n": 16,
+"d": "2026-10-29",
+"disp": "Thu Oct 29",
+"wk": 8,
+"tp": 5,
+"focus": "Physics & logic optimization",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A16-broadphase-tournament.md",
+"at": "Physics Tournament: Most Agents on the Budget Line"
+},
+{
+"n": 17,
+"d": "2026-11-03",
+"disp": "Tue Nov 3",
+"wk": 9,
+"tp": 5,
+"focus": "Asset & technical-art optimization",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A17-asset-autopsy.md",
+"at": "Asset Autopsy and the Blind A/B"
+},
+{
+"n": 18,
+"d": "2026-11-05",
+"disp": "Thu Nov 5",
+"wk": 9,
+"tp": 5,
+"focus": "Code patterns; combinatorial validation",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A18-archaeology-and-pairwise.md",
+"at": "Code Archaeology, Then Defend Your Matrix"
+},
+{
+"n": 19,
+"d": "2026-11-10",
+"disp": "Tue Nov 10",
+"wk": 10,
+"tp": 6,
+"focus": "Memory model & budgets",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A19-budget-negotiation.md",
+"at": "The Budget Negotiation"
+},
+{
+"n": 20,
+"d": "2026-11-12",
+"disp": "Thu Nov 12",
+"wk": 10,
+"tp": 6,
+"focus": "Leaks & retention bugs",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A20-leak-hunt.md",
+"at": "Thirty-Minute Leak Hunt"
+},
+{
+"n": 21,
+"d": "2026-11-17",
+"disp": "Tue Nov 17",
+"wk": 11,
+"tp": 6,
+"focus": "Fragmentation & pooling",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A21-constraint-challenge.md",
+"at": "Cut Forty Percent, Keep It Shippable"
+},
+{
+"n": 22,
+"d": "2026-11-19",
+"disp": "Thu Nov 19",
+"wk": 11,
+"tp": 6,
+"focus": "GC tuning & snapshot diffing",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A22-snapshot-detective.md",
+"at": "Snapshot Detective and the Allocation Rate Cut"
+},
+{
+"n": 23,
+"d": "2026-11-24",
+"disp": "Tue Nov 24",
+"wk": 12,
+"tp": 7,
+"focus": "Accessibility as a testable requirement",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A23-constrained-playthrough.md",
+"at": "The Constrained Play-Through"
+},
+{
+"n": 24,
+"d": "2026-12-01",
+"disp": "Tue Dec 1",
+"wk": 12,
+"tp": 7,
+"focus": "Compliance, ratings, certification — shifted from Nov 26 (Thanksgiving)",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A24-compliance-audit-walkthrough.md",
+"at": "Write the Checklist, Then Fail Your Own Build"
+},
+{
+"n": 25,
+"d": "2026-12-01",
+"disp": "Tue Dec 1",
+"wk": 13,
+"tp": 7,
+"focus": "Privacy & security testing",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A25-adversarial-security-pairing.md",
+"at": "Adversarial Security Pairing"
+},
+{
+"n": 26,
+"d": "2026-12-03",
+"disp": "Thu Dec 3",
+"wk": 13,
+"tp": 7,
+"focus": "Exploratory testing, bias, ethics & worldview",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A26-charter-and-severity-debate.md",
+"at": "Charters, Then the Severity Debate"
+},
+{
+"n": 27,
+"d": "2026-12-08",
+"disp": "Tue Dec 8",
+"wk": 14,
+"tp": 8,
+"focus": "Mobile is a different machine; the test plan",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A27-first-contact-plan-swap.md",
+"at": "First Contact With the Phone, Then Swap Plans"
+},
+{
+"n": 28,
+"d": "2026-12-10",
+"disp": "Thu Dec 10",
+"wk": 14,
+"tp": 8,
+"focus": "Device matrix & profiling on device",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A28-device-lab-rotation.md",
+"at": "Device Lab Rotation"
+},
+{
+"n": 29,
+"d": "2026-12-15",
+"disp": "Tue Dec 15",
+"wk": 15,
+"tp": 8,
+"focus": "Optimization sprint & measurement discipline",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A29-thermal-knee-sprint.md",
+"at": "Find the Knee, Then Move It"
+},
+{
+"n": 30,
+"d": "2026-12-17",
+"disp": "Thu Dec 17",
+"wk": 15,
+"tp": 8,
+"focus": "Final presentations; portfolio & final exam review",
+"af": "https://github.com/isac-artzi/Resources-for-Game-Development-Courses/blob/main/Advanced%20Game%20Testing%20and%20Debugging/Activities/A30-demo-day-and-portfolio.md",
+"at": "Demo Day and the Portfolio Build"
+}
+];
+  var TOPICS = [
+{
+"n": 1,
+"title": "Understanding Bugs",
+"file": "lessons/lesson-01-understanding-bugs.html",
+"dates": "Sep 8 – 13",
+"asg": "Bug Investigation and Prioritization",
+"due": "Sep 13"
+},
+{
+"n": 2,
+"title": "Test Design and Diagramming",
+"file": "lessons/lesson-02-test-design-diagramming.html",
+"dates": "Sep 14 – 27",
+"asg": "Benchmark — Bug Reporting and Workflow",
+"due": "Sep 27"
+},
+{
+"n": 3,
+"title": "Automated Testing Strategies and Methods",
+"file": "lessons/lesson-03-automated-testing.html",
+"dates": "Sep 28 – Oct 11",
+"asg": "Benchmark — Unit Testing and Defect Trigger Coverage",
+"due": "Oct 11"
+},
+{
+"n": 4,
+"title": "Advanced Performance Profiling",
+"file": "lessons/lesson-04-performance-profiling.html",
+"dates": "Oct 12 – 25",
+"asg": "Performance Profiling Techniques",
+"due": "Oct 25"
+},
+{
+"n": 5,
+"title": "Advanced Optimization Techniques",
+"file": "lessons/lesson-05-optimization-techniques.html",
+"dates": "Oct 26 – Nov 8",
+"asg": "Multi-Layered Game Optimization",
+"due": "Nov 8"
+},
+{
+"n": 6,
+"title": "Memory Management in Games",
+"file": "lessons/lesson-06-memory-management.html",
+"dates": "Nov 9 – 22",
+"asg": "Memory Optimization",
+"due": "Nov 22"
+},
+{
+"n": 7,
+"title": "Ethics and Compliance in Testing",
+"file": "lessons/lesson-07-ethics-compliance.html",
+"dates": "Nov 23 – Dec 6",
+"asg": "Ethical and Compliance Testing with a Christian Worldview",
+"due": "Dec 6"
+},
+{
+"n": 8,
+"title": "Applied Testing Project: Mobile Optimization",
+"file": "lessons/lesson-08-applied-mobile-project.html",
+"dates": "Dec 7 – 20",
+"asg": "Mobile Game Optimization",
+"due": "Dec 20"
+}
+];
+  var ASSIGN = [
+{
+"tp": "Topic 1",
+"name": "Bug Investigation and Prioritization",
+"d": "2026-09-13",
+"disp": "Sun Sep 13",
+"pts": "90",
+"bench": ""
+},
+{
+"tp": "Topic 2",
+"name": "Benchmark — Bug Reporting and Workflow",
+"d": "2026-09-27",
+"disp": "Sun Sep 27",
+"pts": "100",
+"bench": "1.5"
+},
+{
+"tp": "Topic 3",
+"name": "Benchmark — Unit Testing and Defect Trigger Coverage",
+"d": "2026-10-11",
+"disp": "Sun Oct 11",
+"pts": "100",
+"bench": "1.1"
+},
+{
+"tp": "Topic 4",
+"name": "Performance Profiling Techniques",
+"d": "2026-10-25",
+"disp": "Sun Oct 25",
+"pts": "100",
+"bench": ""
+},
+{
+"tp": "Topic 4",
+"name": "Midterm Exam",
+"d": "2026-10-25",
+"disp": "Sun Oct 25",
+"pts": "100",
+"bench": ""
+},
+{
+"tp": "Topic 5",
+"name": "Multi-Layered Game Optimization",
+"d": "2026-11-08",
+"disp": "Sun Nov 8",
+"pts": "100",
+"bench": ""
+},
+{
+"tp": "Topic 6",
+"name": "Memory Optimization",
+"d": "2026-11-22",
+"disp": "Sun Nov 22",
+"pts": "100",
+"bench": ""
+},
+{
+"tp": "Topic 7",
+"name": "Ethical and Compliance Testing with a Christian Worldview",
+"d": "2026-12-06",
+"disp": "Sun Dec 6",
+"pts": "100",
+"bench": ""
+},
+{
+"tp": "Topic 8",
+"name": "Mobile Game Optimization",
+"d": "2026-12-20",
+"disp": "Sun Dec 20",
+"pts": "100",
+"bench": ""
+},
+{
+"tp": "Topic 8",
+"name": "Final Exam",
+"d": "2026-12-20",
+"disp": "Sun Dec 20",
+"pts": "110",
+"bench": ""
+}
+];
+
+  var TERM_START = '2026-09-08', TERM_END = '2026-12-20';
+
+  var dateEl = document.getElementById('wamDate');
+  var outEl  = document.getElementById('wamOut');
+  var todayBtn = document.getElementById('wamToday');
+  var clearBtn = document.getElementById('wamClear');
+  if(!dateEl || !outEl) return;
+
+  function pretty(iso){
+    var p = iso.split('-');
+    var mo = ['January','February','March','April','May','June','July',
+              'August','September','October','November','December'][parseInt(p[1],10)-1];
+    return mo + ' ' + parseInt(p[2],10) + ', ' + p[0];
+  }
+  function days(a,b){
+    var A = Date.UTC(+a.slice(0,4), +a.slice(5,7)-1, +a.slice(8,10));
+    var B = Date.UTC(+b.slice(0,4), +b.slice(5,7)-1, +b.slice(8,10));
+    return Math.round((B-A)/86400000);
+  }
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function topicOf(n){
+    for(var i=0;i<TOPICS.length;i++){ if(TOPICS[i].n===n) return TOPICS[i]; }
+    return null;
+  }
+  function cell(k,v){ return '<div class="cell"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
+
+  function render(iso){
+    if(!iso){ outEl.innerHTML = '<p class="empty">No date selected yet.</p>'; return; }
+
+    var onDay = SESSIONS.filter(function(s){ return s.d === iso; });
+    var past  = SESSIONS.filter(function(s){ return days(s.d, iso) > 0; });
+    var next  = SESSIONS.filter(function(s){ return days(iso, s.d) > 0; });
+    var due   = ASSIGN.filter(function(a){ return days(iso, a.d) >= 0; });
+
+    var html = '';
+    var head, ref, mode;
+
+    if(onDay.length){
+      mode = 'day';
+      ref = onDay[0];
+      head = '<div class="verdict ok"><b>Class day.</b> ' + pretty(iso) + ' is session ' +
+             onDay.map(function(s){ return s.n; }).join(' and ') +
+             ', week ' + ref.wk + ', Topic ' + ref.tp + '.</div>';
+    } else if(!next.length){
+      mode = 'after';
+      var last = SESSIONS[SESSIONS.length-1];
+      ref = last;
+      head = '<div class="verdict ' + (due.length ? '' : 'warn') + '"><b>Past the last meeting.</b> ' +
+             pretty(iso) + ' falls after session 30 (' + last.disp + '). ' +
+             (due.length
+               ? 'Still open: the final exam and the Mobile Game Optimization deliverable, due Dec 20.'
+               : 'The term is closed — everything was due by Dec 20.') + '</div>';
+    } else if(!past.length){
+      mode = 'before';
+      ref = next[0];
+      head = '<div class="verdict"><b>Before the term.</b> ' + pretty(iso) + ' is ' +
+             days(iso, ref.d) + ' day' + (days(iso, ref.d)===1?'':'s') +
+             ' before session 1 on ' + ref.disp + '. Start with Topic 1.</div>';
+    } else {
+      mode = 'between';
+      var prev = past[past.length-1];
+      var nx = next[0];
+      ref = nx;
+      head = '<div class="verdict"><b>Between meetings.</b> ' + pretty(iso) + ' sits after session ' +
+             prev.n + ' (' + prev.disp + ') and ' + days(iso, nx.d) + ' day' +
+             (days(iso, nx.d)===1?'':'s') + ' before session ' + nx.n + ' (' + nx.disp +
+             '). You are inside Topic ' + nx.tp + '.</div>';
+    }
+    html += head;
+
+    var t = topicOf(ref.tp);
+    var g = '<div class="wamgrid">';
+    g += cell('Topic', 'Topic ' + t.n + ' &middot; <a href="' + t.file + '">' + esc(t.title) + '</a>' +
+              '<br><span class="small subtle">' + esc(t.dates) + '</span>');
+    var sessLbl = mode === 'day' ? 'Today\u2019s session'
+                : mode === 'after' ? 'Last session' : 'Next session';
+    var actLbl  = mode === 'day' ? 'Activity today'
+                : mode === 'after' ? 'Last activity' : 'Activity next';
+    g += cell(sessLbl,
+              'Session ' + ref.n + ' &middot; ' + ref.disp + ' &middot; week ' + ref.wk +
+              '<br><span class="small subtle">' + esc(ref.focus) + '</span>');
+    g += cell(actLbl,
+              onDay.length
+                ? onDay.map(function(s){ return '<a href="' + s.af + '">' + esc(s.at) + '</a>'; }).join('<br>')
+                : '<a href="' + ref.af + '">' + esc(ref.at) + '</a>');
+
+    if(due.length){
+      var d0 = due[0];
+      var dd = days(iso, d0.d);
+      var when = dd === 0 ? 'due today' : ('in ' + dd + ' day' + (dd===1?'':'s'));
+      var same = due.filter(function(a){ return a.d === d0.d; });
+      g += cell('Due next',
+                same.map(function(a){ return esc(a.name); }).join('<br>') +
+                '<br><span class="small subtle">' + d0.disp + ' &mdash; ' + when + ' &middot; ' +
+                same.reduce(function(s,a){ return s + parseInt(a.pts,10); },0) + ' pts</span>');
+    } else {
+      g += cell('Due next', 'Nothing outstanding &mdash; all deliverables closed on Dec 20.');
+    }
+    g += '</div>';
+    html += g;
+
+    var links = '<div class="wamlinks">';
+    links += '<a href="' + t.file + '">Open lesson ' + t.n + '</a>';
+    if(onDay.length){
+      onDay.forEach(function(s){ links += '<a href="' + s.af + '">Activity A' + (s.n<10?'0':'') + s.n + '</a>'; });
+    } else {
+      links += '<a href="' + ref.af + '">Activity for session ' + ref.n + '</a>';
+    }
+    links += '<a href="#calendar">Full calendar</a><a href="#due">All due dates</a>';
+    links += '</div>';
+    html += links;
+
+    if(iso === '2026-11-26'){
+      html += '<div class="box warn" style="margin-bottom:0"><div class="lbl">Thanksgiving</div>' +
+              '<p>No class. Week 12\u2019s second meeting shifts to Tuesday Dec 1.</p></div>';
+    }
+    outEl.innerHTML = html;
+  }
+
+  dateEl.addEventListener('change', function(){ render(dateEl.value); });
+  dateEl.addEventListener('input',  function(){ render(dateEl.value); });
+
+  todayBtn.addEventListener('click', function(){
+    var now = new Date();
+    var iso = now.getFullYear() + '-' +
+              ('0' + (now.getMonth()+1)).slice(-2) + '-' +
+              ('0' + now.getDate()).slice(-2);
+    if(iso < TERM_START) iso = TERM_START;
+    if(iso > TERM_END)   iso = TERM_END;
+    dateEl.value = iso;
+    render(iso);
+  });
+  clearBtn.addEventListener('click', function(){ dateEl.value = ''; render(''); });
+})();
+</script>
+</body></html>

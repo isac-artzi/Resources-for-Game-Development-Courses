@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Topic 4 · Advanced Performance Profiling — Advanced Game Testing and Debugging</title>
+<style id="lesson-kit">
+:root{
+  --bg:#0e1116; --bg2:#161b22; --bg3:#1c232d; --line:#2a3441; --line2:#3a4757;
+  --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#4da3ff; --acc2:#1f6feb;
+  --ok:#3fb950; --warn:#d29922; --crit:#f85149; --info:#a371f7; --teal:#39c5bb;
+  --unity:#5ec8f2; --unreal:#f0a44a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --sh:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 120px}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .crumb{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.topbar .spacer{flex:1}
+.topbar a{color:var(--tx2);text-decoration:none;font-size:13.5px;padding:5px 10px;
+  border-radius:7px;border:1px solid transparent}
+.topbar a:hover{color:var(--tx);background:var(--bg3);border-color:var(--line)}
+.progressbar{position:fixed;top:0;left:0;height:3px;background:var(--acc);
+  width:0;z-index:60;transition:width .12s linear}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero .kicker{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.14;margin:0 0 14px;
+  letter-spacing:-.02em;font-weight:800}
+.hero .lede{font-size:19px;color:var(--tx2);max-width:70ch;margin:0}
+.metarow{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:12.5px;color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+
+/* ---------- typography ---------- */
+h2{font-size:27px;margin:56px 0 6px;letter-spacing:-.015em;font-weight:750;
+  scroll-margin-top:80px}
+h2 .num{color:var(--acc);font-family:var(--mono);font-size:16px;
+  margin-right:11px;font-weight:600}
+h3{font-size:20px;margin:34px 0 6px;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16.5px;margin:24px 0 4px;font-weight:700;color:var(--tx)}
+p{margin:13px 0}
+a{color:var(--acc)}
+ul,ol{margin:13px 0;padding-left:24px}
+li{margin:7px 0}
+li::marker{color:var(--tx3)}
+strong{color:#fff;font-weight:650}
+em{color:var(--tx)}
+code{font-family:var(--mono);font-size:.885em;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;padding:1.5px 6px;color:#bfe3ff}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.subtle{color:var(--tx2)}
+.small{font-size:14px}
+
+/* ---------- callouts ---------- */
+.box{border:1px solid var(--line);border-left:3px solid var(--acc);
+  background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin:22px 0}
+.box .lbl{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:800;color:var(--acc);margin-bottom:7px}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.why{border-left-color:var(--info)}   .box.why .lbl{color:var(--info)}
+.box.warn{border-left-color:var(--warn)}  .box.warn .lbl{color:var(--warn)}
+.box.crit{border-left-color:var(--crit)}  .box.crit .lbl{color:var(--crit)}
+.box.ok{border-left-color:var(--ok)}      .box.ok .lbl{color:var(--ok)}
+.box.field{border-left-color:var(--teal)} .box.field .lbl{color:var(--teal)}
+
+/* ---------- objectives / goals ---------- */
+.goals{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;margin:26px 0}
+.goals h4{margin:0 0 10px;font-size:12px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx3)}
+.goals ol{margin:0;padding-left:20px}
+
+/* ---------- code ---------- */
+.codeblock{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  margin:20px 0;overflow:hidden}
+.codeblock .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);font-size:12.5px;
+  color:var(--tx2);font-family:var(--mono)}
+.codeblock .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);
+  font-size:13.4px;line-height:1.62;color:#d5e2f0}
+.codeblock pre .c{color:#6a7d91;font-style:italic}   /* comment */
+.codeblock pre .k{color:#ff7b9c}                     /* keyword */
+.codeblock pre .t{color:#7ee0c6}                     /* type    */
+.codeblock pre .s{color:#ffcf8f}                     /* string  */
+.codeblock pre .n{color:#c3a6ff}                     /* number  */
+.codeblock pre .f{color:#82c8ff}                     /* func    */
+
+/* annotated code: clickable gutter markers */
+.annot{display:grid;grid-template-columns:1fr;gap:0;margin:22px 0}
+.annot .rows{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.annot .arow{display:grid;grid-template-columns:34px 1fr;align-items:stretch;
+  border-bottom:1px solid rgba(42,52,65,.55)}
+.annot .arow:last-child{border-bottom:0}
+.annot .arow.hasnote{cursor:pointer}
+.annot .arow.hasnote:hover{background:rgba(77,163,255,.07)}
+.annot .gut{display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--tx3);font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--line);user-select:none}
+.annot .arow.hasnote .gut{color:#fff;background:var(--acc2);font-weight:700}
+.annot .arow.open .gut{background:var(--acc)}
+.annot .ln{font-family:var(--mono);font-size:13.3px;line-height:1.65;padding:2px 14px;
+  white-space:pre;overflow-x:auto;color:#d5e2f0}
+.annot .note{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--line);
+  padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease;
+  font-size:14.6px;color:var(--tx2)}
+.annot .arow.open + .note,.annot .note.open{max-height:600px;padding:13px 18px}
+.annot .note b{color:var(--tx)}
+.annot .hint{font-size:12.5px;color:var(--tx3);margin:8px 2px 0}
+
+/* ---------- engine tabs (Unity / Unreal) ---------- */
+.tabs{margin:24px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tabs .tabhd{display:flex;background:var(--bg3);border-bottom:1px solid var(--line)}
+.tabs .tabhd button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:14px;font-weight:650;padding:11px 20px;cursor:pointer}
+.tabs .tabhd button:hover{color:var(--tx2)}
+.tabs .tabhd button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tabs .tabhd button[data-engine="unity"].on{border-bottom-color:var(--unity);color:var(--unity)}
+.tabs .tabhd button[data-engine="unreal"].on{border-bottom-color:var(--unreal);color:var(--unreal)}
+.tabs .tabbody{padding:4px 20px 16px;background:var(--bg2)}
+.tabs .tabpane{display:none}.tabs .tabpane.on{display:block}
+.tabs .tabbody .codeblock{margin:16px -6px}
+
+/* ---------- quiz / check ---------- */
+.check{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin:26px 0}
+.check .q{font-weight:650;margin:0 0 14px}
+.check .opt{display:block;width:100%;text-align:left;background:var(--bg3);
+  border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin:8px 0;
+  color:var(--tx);font:inherit;font-size:15.2px;cursor:pointer;transition:.12s}
+.check .opt:hover{border-color:var(--line2);background:#222b36}
+.check .opt.right{border-color:var(--ok);background:rgba(63,185,80,.11)}
+.check .opt.wrong{border-color:var(--crit);background:rgba(248,81,73,.11)}
+.check .opt .tag{float:right;font-size:12px;font-weight:700;letter-spacing:.06em}
+.check .opt.right .tag{color:var(--ok)}.check .opt.wrong .tag{color:var(--crit)}
+.check .exp{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--tx2)}
+.check .exp.on{display:block}
+.check .exp b{color:var(--tx)}
+.check .exp .ex{margin:9px 0}
+.check .exp .ex .who{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em}
+
+/* ---------- widgets / simulators ---------- */
+.widget{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.widget > .whd{display:flex;align-items:baseline;gap:10px;margin:-2px 0 4px}
+.widget > .whd .wt{font-weight:750;font-size:17px}
+.widget > .whd .wk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--teal);font-weight:800;border:1px solid rgba(57,197,187,.35);
+  border-radius:5px;padding:2px 7px}
+.widget > .wsub{color:var(--tx2);font-size:14.5px;margin:4px 0 16px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;align-items:center;
+  gap:12px;margin:11px 0}
+.ctl label{font-size:14px;color:var(--tx2)}
+.ctl output{font-family:var(--mono);font-size:13.5px;color:var(--acc);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:22px}
+.btn{background:var(--acc2);border:1px solid var(--acc);color:#fff;font:inherit;
+  font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--acc)}
+.btn.ghost{background:var(--bg3);border-color:var(--line2);color:var(--tx2)}
+.btn.ghost:hover{background:#242e3a;color:var(--tx)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:10px;margin:16px 0 0}
+.readout .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px}
+.readout .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.readout .cell .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.readout .cell .v.ok{color:var(--ok)}.readout .cell .v.warn{color:var(--warn)}
+.readout .cell .v.crit{color:var(--crit)}
+.verdict{margin:16px 0 0;padding:13px 16px;border-radius:9px;font-size:14.8px;
+  background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--acc)}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict.crit{border-left-color:var(--crit)}
+canvas{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:9px;margin:16px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;
+  color:var(--tx2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px}
+
+/* ---------- decision tree ---------- */
+.tree{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.tree .path{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  margin:0 0 14px;min-height:17px}
+.tree .path span{color:var(--acc)}
+.tree .qq{font-size:17.5px;font-weight:700;margin:0 0 6px}
+.tree .qh{color:var(--tx2);font-size:14.5px;margin:0 0 14px}
+.tree .choices{display:grid;gap:9px}
+.tree .choices button{text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:12px 15px;color:var(--tx);font:inherit;font-size:15px;
+  cursor:pointer;transition:.12s}
+.tree .choices button:hover{border-color:var(--acc);background:#222c38}
+.tree .choices button .sub{display:block;color:var(--tx3);font-size:13px;margin-top:3px}
+.tree .leaf{border-left:3px solid var(--ok);background:var(--bg3);border-radius:9px;
+  padding:15px 18px}
+.tree .leaf h5{margin:0 0 8px;font-size:16.5px;color:var(--ok)}
+.tree .leaf p{margin:9px 0;font-size:15px}
+.tree .leaf .tool{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:14.6px}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+th{background:var(--bg3);font-weight:700;font-size:13px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--tx2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.017)}
+td code{font-size:.85em}
+
+/* ---------- misc ---------- */
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2.5px 9px;border-radius:999px;vertical-align:1px}
+.pill.s0{background:rgba(248,81,73,.16);color:var(--crit);border:1px solid rgba(248,81,73,.4)}
+.pill.s1{background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pill.s2{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pill.s3{background:rgba(159,176,195,.13);color:var(--tx2);border:1px solid var(--line2)}
+.pill.unity{background:rgba(94,200,242,.14);color:var(--unity);border:1px solid rgba(94,200,242,.4)}
+.pill.unreal{background:rgba(240,164,74,.14);color:var(--unreal);border:1px solid rgba(240,164,74,.4)}
+
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);
+  padding:0 18px;margin:20px 0}
+details.more > summary{cursor:pointer;padding:13px 0;font-weight:650;font-size:15.5px;
+  list-style:none;color:var(--tx)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"▸ ";color:var(--acc);font-weight:800}
+details.more[open] > summary::before{content:"▾ "}
+details.more[open]{padding-bottom:14px}
+details.more > summary:hover{color:var(--acc)}
+
+.deliver{background:linear-gradient(180deg,rgba(77,163,255,.07),transparent);
+  border:1px solid var(--acc2);border-radius:12px;padding:20px 24px;margin:40px 0 0}
+.deliver h3{margin-top:0;color:var(--acc)}
+
+footer.lf{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:13.5px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap}
+footer.lf a{color:var(--tx2);text-decoration:none}
+footer.lf a:hover{color:var(--acc)}
+
+@media (max-width:720px){
+  body{font-size:16px}
+  .ctl{grid-template-columns:1fr;gap:4px}
+  .ctl output{text-align:left}
+  .hero{padding:34px 0 24px}
+}
+@media print{
+  .topbar,.progressbar{display:none}
+  body{background:#fff;color:#111}
+  .widget,.tree,.check,.box,.goals{break-inside:avoid}
+}
+</style>
+<style id="lesson-local">
+/* --- Topic 4 local additions --- */
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  font:inherit;font-size:13px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button:hover{border-color:var(--line2);color:var(--tx)}
+.seg button.on{background:var(--acc2);border-color:var(--acc);color:#fff}
+.toggles{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px;margin:14px 0 4px}
+.toggles button{display:block;text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:10px 13px;color:var(--tx2);font:inherit;font-size:14px;cursor:pointer;transition:.12s}
+.toggles button:hover{border-color:var(--line2)}
+.toggles button .sub{display:block;font-size:12.2px;color:var(--tx3);margin-top:2px;font-family:var(--mono)}
+.toggles button.on{border-color:var(--crit);background:rgba(248,81,73,.10);color:var(--tx)}
+.toggles button.on .sub{color:#f0a6a2}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.twocol{grid-template-columns:1fr}}
+.areagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:22px 0}
+.area{background:var(--bg2);border:1px solid var(--line);border-top:3px solid var(--teal);
+  border-radius:10px;padding:14px 17px}
+.area h5{margin:0 0 6px;font-size:16px}
+.area p{margin:6px 0;font-size:14.2px;color:var(--tx2)}
+.area .tools{font-family:var(--mono);font-size:12.6px;color:#bfe3ff;display:block;margin-top:8px;
+  padding-top:8px;border-top:1px solid var(--line)}
+.area.a2{border-top-color:var(--acc)} .area.a3{border-top-color:var(--warn)}
+.area.a4{border-top-color:var(--info)} .area.a5{border-top-color:var(--crit)}
+.area.a6{border-top-color:var(--ok)}   .area.a7{border-top-color:var(--unity)}
+.area.a8{border-top-color:var(--unreal)}
+.mid{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--warn);
+  border-radius:10px;padding:16px 20px;margin:22px 0}
+.mid h4{margin-top:0;color:var(--warn)}
+.readlist{font-size:14.6px;color:var(--tx2)}
+.readlist li b{color:var(--tx)}
+.mono{font-family:var(--mono);font-size:.9em;color:#bfe3ff}
+.tiny{font-size:12.6px;color:var(--tx3);margin:8px 0 0}
+.stack{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin:12px 0 0}
+.stack .s{background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13.4px}
+.stack .s b{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <span class="crumb">Advanced Game Testing and Debugging &middot; Topic 4</span><span class="spacer"></span>
+  <a href="../index.html">Course hub</a>
+  <a href="lesson-03-automated-testing.html">&larr; Prev</a>
+  <a href="lesson-05-optimization-techniques.html">Next &rarr;</a>
+</div></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Topic 4 &middot; Oct 12&ndash;25 &middot; Weeks 6&ndash;7 &middot; Sessions 11&ndash;14</div>
+    <h1>Advanced Performance Profiling</h1>
+    <p class="lede">Average FPS is the number on the store page and the number in every forum
+    argument. It is also the number that lets a game ship with a visible hitch every two seconds.
+    After this lesson you measure in milliseconds, you report distributions, and you instrument
+    your own code instead of guessing.</p>
+    <div class="metarow">
+      <span class="chip"><b>Reading:</b> Politowski et al. (2021); Politowski &amp; Gu&eacute;h&eacute;neuc (2022)</span>
+      <span class="chip"><b>Assignment:</b> Performance Profiling Techniques &middot; due Oct 25</span>
+      <span class="chip"><b>Also:</b> Midterm Exam &middot; 90 min &middot; 100 pts</span>
+      <span class="chip"><b>Sessions:</b> 11&ndash;14 &middot; 200 pts total</span>
+      <span class="chip"><b>Est. time:</b> 130 min + reading</span>
+    </div>
+  </header>
+
+  <div class="goals"><h4>By the end you will be able to</h4><ol>
+    <li>Identify common performance bottlenecks across engines and hardware stacks, and name which
+    stage of the frame pipeline each one lives in.</li>
+    <li>Use profiling tools and techniques to analyze the key metrics &mdash; frame time, percentiles,
+    thread occupancy, GPU time, allocation rate &mdash; rather than a single averaged number.</li>
+    <li>Interpret profiling data to make a defensible optimization decision for a real-time system.</li>
+    <li>Design custom profiling solutions: your own markers, counters, and a repeatable benchmark
+    harness that produces the same numbers tomorrow.</li>
+    <li>Apply advanced profiling techniques across platforms and build configurations, and explain
+    why an editor measurement is not a result.</li>
+    <li>Analyze debugging techniques to determine root causes and evaluate how systems interact
+    inside one 16.6 ms frame.</li>
+  </ol></div>
+
+  <h2><span class="num">1</span>The frame budget is the only currency</h2>
+
+  <p>Everything in this topic reduces to one sentence: <strong>you are given a fixed number of
+  milliseconds per frame and you spend them.</strong> At 60 frames per second you have 16.67 ms.
+  At 120 you have 8.33 ms. At 30 you have 33.3 ms. VR at 90 Hz gives you 11.1 ms and no forgiveness,
+  because a missed frame there is not a stutter, it is nausea. That budget is not just your gameplay
+  code. It has to cover input, animation, physics, AI, culling, command submission, the driver, the
+  compositor, and whatever the operating system decides to do while you are not looking.</p>
+
+  <p>Frame rate is a rate; frame time is a duration. Durations add, rates do not, and this is the
+  single most common reasoning error students bring into a profiling session. Suppose your frame
+  currently takes 12.0 ms &mdash; 83 fps &mdash; and you add a new fog system that costs 4.0 ms. You
+  are now at 16.0 ms, or 62.5 fps. You did not "lose 4 fps." You lost 21. Now take a game already
+  running at 33.3 ms (30 fps) and add the exact same 4.0 ms system: 37.3 ms, or 26.8 fps. The same
+  work cost you 21 fps in one case and 3.2 fps in the other. An FPS delta with no baseline attached
+  is not a measurement, it is a mood.</p>
+
+  <div class="box why"><div class="lbl">Why we insist on milliseconds</div>
+  <p>"We gained 10 fps" is the most common sentence in an optimization write-up and it is nearly
+  content-free. From 30 to 40 fps is 33.3 &rarr; 25.0 ms, a saving of 8.3 ms. From 110 to 120 fps
+  is 9.09 &rarr; 8.33 ms, a saving of 0.76 ms &mdash; eleven times less work for the identical
+  headline. If your report says fps, a reviewer cannot tell whether you removed a system or removed
+  a rounding error. Report the milliseconds you removed, from what baseline, on what hardware.
+  Every graded artifact in this course applies that rule.</p></div>
+
+  <p>The corollary is that you must budget with headroom. If your target is 60 fps and your average
+  frame lands at 16.4 ms, you are not "at 60" &mdash; you are one dense combat encounter, one
+  particle burst, one background OS update away from dropping frames continuously. Studios typically
+  plan against 80&ndash;90% of the nominal budget: about 14 ms of work inside a 16.6 ms frame, with
+  the remainder reserved for spikes, thermal variance, and the slowest hardware in the target tier.
+  Publish the budget as a table with an owner per line, because an unowned line is a line nobody
+  defends when a feature needs 2 ms.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Target</th><th>Frame budget</th><th>Plan to</th><th>What one 3 ms spike costs you</th></tr></thead>
+    <tbody>
+      <tr><td>30 fps (console quality mode)</td><td>33.3 ms</td><td>~28 ms</td><td>9% of the budget &mdash; usually absorbed</td></tr>
+      <tr><td>60 fps (standard)</td><td>16.67 ms</td><td>~14 ms</td><td>18% of the budget &mdash; visible as a hitch if it repeats</td></tr>
+      <tr><td>90 fps (VR)</td><td>11.1 ms</td><td>~9 ms</td><td>27% &mdash; a dropped frame and a reprojection artifact</td></tr>
+      <tr><td>120 fps (high refresh)</td><td>8.33 ms</td><td>~7 ms</td><td>36% &mdash; two dropped frames</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2><span class="num">2</span>Average FPS is a lie</h2>
+
+  <p>Here is a capture. One hundred frames: ninety-nine of them take 10.0 ms, and one takes 100 ms.
+  Total elapsed time is 99 &times; 10 + 100 = 1090 ms for 100 frames, so the honest average is
+  91.7 fps. If instead you convert each frame to an instantaneous fps and average <em>those</em>
+  &mdash; which is what a naive on-screen counter does &mdash; you get (99 &times; 100 + 10) / 100 =
+  99.1 fps. Both numbers are excellent. Both numbers are useless, because the thing a player
+  actually experienced was a tenth-of-a-second freeze, and neither number contains it.</p>
+
+  <p>That is the whole argument for percentiles. Sort every frame time in your capture from fastest
+  to slowest and read off positions instead of the mean:</p>
+
+  <ul>
+    <li><strong>P50 (median)</strong> &mdash; the typical frame. This is what your game usually feels like.</li>
+    <li><strong>P95</strong> &mdash; one frame in twenty is at least this slow. Noticeable roughness lives here.</li>
+    <li><strong>P99, commonly reported as the "1% low"</strong> &mdash; the worst one frame in a
+    hundred. At 60 fps that is roughly one frame every 1.7 seconds, which is well inside the range
+    a human reads as stutter rather than as noise.</li>
+    <li><strong>P99.9, the "0.1% low"</strong> &mdash; the worst frame in a thousand. This is where
+    shader compilation hitches, level-streaming stalls, and full garbage collections hide.</li>
+  </ul>
+
+  <div class="box warn"><div class="lbl">Two definitions, both in circulation</div>
+  <p>"1% low" is used two ways. Some tools report the <em>99th-percentile frame time</em> (the single
+  frame at that rank); others report the <em>mean of the slowest 1% of frames</em>. The second is
+  always the worse-looking number because it averages the tail rather than sampling it. Neither is
+  wrong &mdash; but if you compare your "1% low" against a hardware reviewer's and the definitions
+  differ, you are comparing nothing. State your definition next to your number. The simulator below
+  computes both so you can see the gap.</p></div>
+
+  <p>Percentiles matter because human perception of smoothness is dominated by the worst frames, not
+  the typical one. A rock-steady 40 fps reads as smooth; a 60 fps average with a 90 ms frame every
+  two seconds reads as broken. Frame <em>pacing</em> &mdash; consistency of the interval between
+  presented frames &mdash; is a separate axis again: alternating 8 ms and 25 ms frames averages to
+  16.5 ms and 60 fps and looks like judder, because the on-screen motion advances unevenly. This is
+  why frame-time <em>graphs</em> are non-negotiable in a performance report. A flat line at 15 ms and
+  a sawtooth averaging 15 ms are different products.</p>
+  <div class="widget" id="w-trace">
+    <div class="whd"><span class="wt">Frame-Time Trace Reader</span><span class="wk">Simulator</span></div>
+    <p class="wsub">A synthetic 20-second capture at your chosen target. Toggle pathologies on and
+    off and watch what happens to <b>average FPS</b> versus the <b>1% and 0.1% lows</b>. The series is
+    generated from a seeded PRNG so the numbers are reproducible for the whole class; the
+    percentiles, the average and the dropped-frame count are computed from the actual array of
+    frame times, not from a lookup table. Simplified model, honestly labeled: real captures are
+    messier, but the statistical lesson is identical.</p>
+
+    <div class="twocol">
+      <div>
+        <div class="ctl"><label>Target frame rate</label>
+          <div class="seg" id="tt-target">
+            <button data-v="30">30 fps</button><button data-v="60" class="on">60 fps</button>
+            <button data-v="120">120 fps</button>
+          </div><output id="tt-targeto">60</output></div>
+        <div class="ctl"><label>Baseline CPU+GPU work</label>
+          <input type="range" id="tt-base" min="40" max="98" value="72"><output id="tt-baseo">12.0 ms</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Frame-to-frame jitter</label>
+          <input type="range" id="tt-jit" min="0" max="30" value="8"><output id="tt-jito">0.8 ms</output></div>
+        <div class="ctl"><label>Capture length</label>
+          <input type="range" id="tt-len" min="5" max="40" value="20"><output id="tt-leno">20 s</output></div>
+      </div>
+    </div>
+
+    <div class="toggles" id="tt-path">
+      <button data-p="gc"><b>Garbage collection spike</b>
+        <span class="sub">+11 ms every ~1.2 s &middot; ~1.4% of frames at 60 fps</span></button>
+      <button data-p="shader"><b>Shader compilation hitch</b>
+        <span class="sub">+55 ms &middot; 5 events per capture &middot; ~0.4% of frames</span></button>
+      <button data-p="io"><b>Streaming / I-O stall</b>
+        <span class="sub">3 bursts of 7 consecutive frames at +24 ms &middot; ~1.8%</span></button>
+      <button data-p="vsync"><b>Vsync miss (frame quantization)</b>
+        <span class="sub">over-budget frames round up to the next refresh</span></button>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Average FPS</div><div class="v" id="tt-avg">&mdash;</div></div>
+      <div class="cell"><div class="k">Median frame</div><div class="v" id="tt-p50">&mdash;</div></div>
+      <div class="cell"><div class="k">1% low (P99)</div><div class="v" id="tt-p99">&mdash;</div></div>
+      <div class="cell"><div class="k">0.1% low (P99.9)</div><div class="v" id="tt-p999">&mdash;</div></div>
+      <div class="cell"><div class="k">Worst frame</div><div class="v" id="tt-max">&mdash;</div></div>
+      <div class="cell"><div class="k">Frames over budget</div><div class="v" id="tt-over">&mdash;</div></div>
+    </div>
+
+    <canvas id="tt-canvas" height="430" aria-label="Frame time over time, with budget and percentile markers, plus a sorted frame-time distribution"></canvas>
+    <div class="legend">
+      <span><i style="background:#4da3ff"></i>frame time</span>
+      <span><i style="background:#3fb950"></i>budget line</span>
+      <span><i style="background:#d29922"></i>P99 (1% low)</span>
+      <span><i style="background:#f85149"></i>P99.9 (0.1% low)</span>
+      <span><i style="background:#a371f7"></i>mean frame time</span>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn ghost" data-preset="clean">Clean 60</button>
+      <button class="btn ghost" data-preset="gconly">GC only &mdash; the classic trap</button>
+      <button class="btn ghost" data-preset="firstrun">First run after install</button>
+      <button class="btn ghost" data-preset="openworld">Open-world traversal</button>
+      <button class="btn ghost" data-preset="reseed">Re-seed capture</button>
+    </div>
+
+    <div class="verdict" id="tt-verdict">Toggle a pathology.</div>
+    <p class="tiny">Mean of the slowest 1% of frames (the other common "1% low" convention):
+      <span class="mono" id="tt-alt">&mdash;</span>. Standard deviation of frame time:
+      <span class="mono" id="tt-sd">&mdash;</span>.</p>
+  </div>
+
+  <p>Start from <em>Clean 60</em> and turn on <em>garbage collection spike</em> alone. With the
+  default settings the mean frame time moves from 12.01 ms to 12.15 ms &mdash; the average frame rate
+  slips from 83.3 to 82.3 fps, a 1% change you would never notice in a report &mdash; while the 1%
+  low falls from 74.5 fps to 44.6 fps. That is the entire pedagogical point of this topic in one
+  interaction: <strong>a pathology that touches barely more than one percent of frames is almost
+  invisible in the mean and completely dominant in the tail.</strong> A player does not experience
+  the mean. They experience the tail, roughly once a second, and they call it "the game stutters."</p>
+
+  <p>Now turn GC off and turn on <em>shader compilation hitch</em>. Five events across 1,200 frames
+  is 0.4% &mdash; below the one-in-a-hundred threshold, so the 1% low barely moves (74.5 &rarr; 74.2
+  fps) while the 0.1% low collapses from 72.9 fps to 15.0 fps and the worst frame lands at 67.7 ms.
+  This is exactly the shape of the complaint "the game hitches the first time I see a new enemy," and
+  it is why the fix is a pipeline-state-object warmup pass at load, not a micro-optimization anywhere
+  in your gameplay code. <strong>The percentile that breaks tells you which class of problem you
+  have</strong> before you open a single profiler: a damaged P99 means something frequent and
+  periodic; a healthy P99 with a ruined P99.9 means something rare, large and probably one-time.</p>
+
+  <p>Turn on <em>streaming / I-O stall</em> by itself and note the third signature: the damage is
+  <em>clustered</em>. Seven consecutive slow frames is 117 ms of continuous degradation, which reads
+  to a player as a lurch rather than a tick, and it moves both the 1% low (28.2 fps) and the 0.1% low
+  together. When your P99 and P99.9 collapse by similar amounts, look for bursts, not spikes.</p>
+
+  <p>The <em>vsync miss</em> toggle is worth understanding on its own, because it is the one
+  pathology where the measurement tool changes the physics. With vsync on, the display only accepts a
+  new image at refresh boundaries. A frame that takes 17.2 ms against a 16.67 ms refresh does not
+  present at 17.2 ms &mdash; it waits and presents at 33.3 ms. Being 3% over budget costs you 100% of
+  a frame. Combine it with mild jitter and watch the distribution go bimodal: a cluster at 16.6 and a
+  cluster at 33.3, with almost nothing between. That bimodal histogram is the fingerprint of a
+  game sitting right on the edge of its budget, and the fix is to buy 2 ms of headroom, not to chase
+  the individual spikes.</p>
+
+  <div class="check">
+    <p class="q">Two builds of the same level. Build A: average 58.9 fps, P99 frame time 18.1 ms.
+    Build B: average 61.4 fps, P99 frame time 41.0 ms. Both were captured on the same machine with
+    the same route. Which build ships, and why?</p>
+    <button class="opt" data-correct="0">Build B &mdash; it has the higher average frame rate, which is the metric players and reviewers quote.</button>
+    <button class="opt" data-correct="1">Build A &mdash; its worst-case frames stay near the 16.67 ms budget, so it will feel smooth; B is hitching roughly once a second.</button>
+    <button class="opt" data-correct="0">Neither &mdash; both averages are under 62 fps, so both fail a 60 fps target and the comparison is meaningless.</button>
+    <button class="opt" data-correct="0">Build B, then file a separate low-priority bug for the P99, since the average already meets target.</button>
+    <div class="exp"><b>Why the second option:</b> A's P99 of 18.1 ms means its worst one-in-a-hundred
+      frame overshoots the budget by 1.4 ms &mdash; a frame that arrives one refresh late, occasionally.
+      B's P99 of 41.0 ms means one frame in a hundred takes two and a half times the budget, which at
+      60 fps is a visible hitch roughly every 1.7 seconds. B's higher average tells you its
+      <em>typical</em> frame got faster, which is real but irrelevant to whether the game feels good.
+      <div class="ex"><span class="who">Why the first option is tempting</span><br>
+        Because average FPS is the number everyone publishes, and 61.4 &gt; 58.9 is arithmetic you can
+        do in your head. It is also the number an optimization pass is most likely to improve while
+        making the experience worse &mdash; for example by moving work off the main thread into a
+        burst that stalls once a second.</div>
+      <div class="ex"><span class="who">Why the third option is tempting</span><br>
+        It sounds rigorous. But "fails the target" is not a binary you get to stop at: A is 0.4 ms
+        from target with a clean tail and is a tuning pass away from shipping, while B has a
+        structural problem. Comparisons are for choosing a direction, not for issuing pass/fail.</div>
+      <div class="ex"><span class="who">Why the fourth option is tempting</span><br>
+        It respects both numbers, which feels balanced. But it gets the priority backwards: the P99
+        <em>is</em> the player-facing defect here, and the average is the cosmetic detail. File the
+        hitch as the primary performance bug.</div>
+    </div>
+  </div>
+  <h2><span class="num">3</span>Where the frame actually happens: threads and stages</h2>
+
+  <p>A modern engine does not compute a frame; it runs an assembly line. Understanding the line is
+  what lets you say "this stall originates two stages upstream of where the profiler drew the red
+  bar," which is the difference between a fix and a month of thrashing.</p>
+
+  <div class="stack">
+    <div class="s"><b>Game / main thread</b>Input, gameplay tick, animation, AI, physics dispatch, culling decisions, script.</div>
+    <div class="s"><b>Render thread</b>Turns the visible set into a list of draw commands; state sorting, batching, material setup.</div>
+    <div class="s"><b>RHI thread</b>Translates those commands into actual graphics-API calls (D3D12/Vulkan/Metal) and submits them.</div>
+    <div class="s"><b>GPU</b>Vertex, rasterization, pixel shading, compute, post, present. Runs one to three frames behind the game thread.</div>
+    <div class="s"><b>Worker threads</b>Jobs, decompression, streaming I-O, audio mixing, navmesh, particle simulation.</div>
+  </div>
+
+  <p>These stages are pipelined, so <strong>frame rate is set by the slowest stage, not by the sum
+  of the stages</strong>, while <em>input latency</em> is set roughly by the sum. That is why a game
+  can be 60 fps and still feel sluggish: three frames in flight at 16.6 ms each is 50 ms between
+  your thumb moving and photons changing. When you optimize, be explicit about which one you are
+  buying &mdash; throughput or latency &mdash; because they trade against each other.</p>
+
+  <p>The practical consequence: if your GPU takes 14 ms and your main thread takes 9 ms, cutting
+  3 ms from the main thread changes nothing at all. It buys you idle time on a thread that was
+  already waiting. Students lose whole weekends to this. Identify the bound <em>first</em>.</p>
+
+  <h3>The sixty-second bound test</h3>
+
+  <p>Before you open a deep profiler, four cheap experiments narrow the search to one stage. Each
+  takes under a minute and each is a controlled change with a predicted outcome &mdash; which is the
+  same discipline you applied to reproducing a defect in Topic 2.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Experiment</th><th>If frame time improves</th><th>If nothing changes</th></tr></thead>
+    <tbody>
+      <tr><td>Halve the render resolution (or set resolution scale to 50%)</td>
+        <td><b>GPU-bound</b> on pixel work: fill rate, overdraw, post-processing, bandwidth.</td>
+        <td>Not pixel-bound. Move on &mdash; do not spend a week on shader LOD.</td></tr>
+      <tr><td>Set every material to a trivial unlit shader</td>
+        <td>GPU-bound on <b>shading cost</b> specifically, not on geometry or draw submission.</td>
+        <td>Cost is geometry, draw-call submission, or CPU.</td></tr>
+      <tr><td>Cull most objects (small far plane, or hide half the level)</td>
+        <td><b>Draw-call / submission-bound</b> &mdash; render thread and RHI thread, plus GPU vertex work.</td>
+        <td>Cost is in gameplay, physics, or animation on the main thread.</td></tr>
+      <tr><td>Disable gameplay ticking (pause AI, freeze simulation) with rendering unchanged</td>
+        <td><b>Main-thread / game-logic bound.</b> Now bisect by system.</td>
+        <td>Whatever remains is render, GPU, or a background stall.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>Both engines also hand you the answer directly if you know the marker names. In Unity, a fat
+  <code>Gfx.WaitForPresentOnGfxThread</code> or <code>Gfx.WaitForGfxCommandsFromMainThread</code>
+  block on the main thread means the CPU is parked waiting for the GPU &mdash; you are GPU-bound, and
+  the main thread's own work is not your problem. In Unreal, <code>stat unit</code> prints
+  <span class="mono">Frame / Game / Draw / GPU</span> in one overlay; <em>Frame</em> is roughly the
+  max of the others, and whichever line is closest to <em>Frame</em> is your bound. Learn to read
+  those four numbers before you learn anything else about Unreal profiling.</p>
+
+  <div class="box why"><div class="lbl">Why the wait markers are the most valuable markers</div>
+  <p>New profilers instinctively look for the biggest colored block and attack it. But the biggest
+  block on a GPU-bound frame is frequently a <em>wait</em>, and optimizing a wait is optimizing
+  nothing &mdash; the thread will simply wait longer. Worse, a wait can migrate: remove 2 ms of
+  main-thread work on a GPU-bound frame and the wait grows by 2 ms, so the profile "looks" identical
+  and you conclude your optimization did not work when in fact it did nothing because there was
+  nothing to gain. Read the waits first, decide the bound, then read the work.</p></div>
+  <div class="widget" id="w-budget">
+    <div class="whd"><span class="wt">Frame Budget Allocator</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Assign milliseconds to each stage. The main thread's costs sum; the render
+    thread and GPU run concurrently with it, so the resulting frame time is the <b>maximum</b> of
+    the three lanes, not the total. The verdict names the bound and the first thing to cut.
+    Simplified model: real pipelines have partial serialization and sync points, so treat this as
+    the upper bound of what pipelining can buy you.</p>
+
+    <div class="twocol">
+      <div>
+        <div class="ctl"><label>Gameplay &amp; script</label><input type="range" id="fb-game" min="0" max="200" value="48"><output id="fb-gameo">4.8</output></div>
+        <div class="ctl"><label>Physics</label><input type="range" id="fb-phys" min="0" max="200" value="30"><output id="fb-physo">3.0</output></div>
+        <div class="ctl"><label>Animation &amp; skinning</label><input type="range" id="fb-anim" min="0" max="200" value="24"><output id="fb-animo">2.4</output></div>
+        <div class="ctl"><label>Culling &amp; scene traversal</label><input type="range" id="fb-cull" min="0" max="200" value="18"><output id="fb-cullo">1.8</output></div>
+        <div class="ctl"><label>Audio (main-thread portion)</label><input type="range" id="fb-aud" min="0" max="100" value="7"><output id="fb-audo">0.7</output></div>
+        <div class="ctl"><label>GC / allocator, amortized</label><input type="range" id="fb-gc" min="0" max="120" value="5"><output id="fb-gco">0.5</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Render thread (submission)</label><input type="range" id="fb-rt" min="0" max="250" value="62"><output id="fb-rto">6.2</output></div>
+        <div class="ctl"><label>GPU time</label><input type="range" id="fb-gpu" min="0" max="400" value="140"><output id="fb-gpuo">14.0</output></div>
+        <div class="ctl"><label>Target</label>
+          <div class="seg" id="fb-target">
+            <button data-v="30">30</button><button data-v="60" class="on">60</button>
+            <button data-v="90">90</button><button data-v="120">120</button>
+          </div><output id="fb-targeto">60 fps</output></div>
+        <div class="ctl"><label>Headroom policy</label>
+          <div class="seg" id="fb-head">
+            <button data-v="100">None</button><button data-v="90">10%</button>
+            <button data-v="85" class="on">15%</button><button data-v="80">20%</button>
+          </div><output id="fb-heado">15%</output></div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Main thread</div><div class="v" id="fb-main">&mdash;</div></div>
+      <div class="cell"><div class="k">Render thread</div><div class="v" id="fb-rtv">&mdash;</div></div>
+      <div class="cell"><div class="k">GPU</div><div class="v" id="fb-gpuv">&mdash;</div></div>
+      <div class="cell"><div class="k">Frame time</div><div class="v" id="fb-frame">&mdash;</div></div>
+      <div class="cell"><div class="k">Achieved FPS</div><div class="v" id="fb-fps">&mdash;</div></div>
+      <div class="cell"><div class="k">Headroom used</div><div class="v" id="fb-used">&mdash;</div></div>
+    </div>
+
+    <canvas id="fb-canvas" height="330" aria-label="Stacked bars for main thread, render thread and GPU against the frame budget line"></canvas>
+    <div class="legend" id="fb-legend"></div>
+
+    <div class="btnrow">
+      <button class="btn ghost" data-preset="cpu">CPU-bound open world</button>
+      <button class="btn ghost" data-preset="gpu">GPU-bound at 4K</button>
+      <button class="btn ghost" data-preset="draw">Draw-call flood</button>
+      <button class="btn ghost" data-preset="mobile">Mobile, GC thrashing</button>
+      <button class="btn ghost" data-preset="balanced">Balanced 60</button>
+    </div>
+
+    <div class="verdict" id="fb-verdict">Move a slider.</div>
+    <p class="tiny">Wasted concurrency (lanes idling while the slowest lane finishes):
+      <span class="mono" id="fb-waste">&mdash;</span>. That idle time is where a new feature can live
+      for free &mdash; if you put it on the right lane.</p>
+  </div>
+
+  <p>Load the <em>GPU-bound at 4K</em> preset and then drag every main-thread slider to zero. The
+  frame time does not move. Then drag the GPU slider down by 2 ms and watch it move immediately.
+  That is the sixty-second bound test, performed on a model instead of a build, and it is the
+  reasoning you must be able to narrate out loud in your assignment video: <em>I measured, the GPU
+  lane was the maximum, therefore main-thread work was not the target, therefore I did X.</em></p>
+
+  <p>The <em>wasted concurrency</em> readout is the other half of the lesson. At the default
+  settings the GPU is the pacing lane at 14.0 ms while the main thread finishes in 13.2 ms and the
+  render thread in 6.2 ms &mdash; so there are 0.8 ms of main-thread time and 7.8 ms of render-thread
+  time sitting idle every frame, available at zero frame-rate cost. A designer asking for a more expensive AI update is asking for something you can
+  afford. A tech artist asking for another full-screen post-process pass is not. Being able to answer
+  that question in the meeting, with a number, is most of what a performance engineer is for.</p>
+
+  <div class="check">
+    <p class="q">Your capture shows: main thread 7.2 ms, render thread 6.1 ms, GPU 15.9 ms, measured
+    frame time 16.4 ms at a 60 fps target. A teammate proposes moving pathfinding to a job thread to
+    save 2.5 ms of main-thread time. What do you tell them?</p>
+    <button class="opt" data-correct="0">Do it &mdash; 2.5 ms is 15% of the frame budget and every millisecond helps at the margin.</button>
+    <button class="opt" data-correct="0">Do it, but only after you profile pathfinding with a deep profile to confirm the 2.5 ms figure.</button>
+    <button class="opt" data-correct="1">It will not improve frame rate at all &mdash; the GPU lane is the bound. It is still worth doing if it buys main-thread headroom you intend to spend, but it must not be reported as a frame-rate optimization.</button>
+    <button class="opt" data-correct="0">Reject it &mdash; job threads add synchronization overhead, and the main thread is already well under the GPU time.</button>
+    <div class="exp"><b>Why the third option:</b> Frame time is 16.4 ms and the GPU alone is 15.9 ms.
+      The main thread finishes 8.7 ms before the GPU does. Removing 2.5 ms from a lane that is already
+      idle for 8.7 ms changes the maximum by exactly zero. The work may still be worth doing &mdash;
+      headroom is a real asset, and on a lower-tier device the bound may flip &mdash; but the claim
+      "this optimization improved performance" would be false on this hardware, and a before/after
+      capture would prove it false.
+      <div class="ex"><span class="who">Why the first option is tempting</span><br>
+        "Every millisecond helps" is true when you are summing costs and false when you are taking a
+        maximum. This is precisely the arithmetic error the pipeline model exists to prevent.</div>
+      <div class="ex"><span class="who">Why the second option is tempting</span><br>
+        Verifying the number before acting is good instinct and you should do it eventually &mdash;
+        but it is the wrong first question. Confirming the size of a saving that cannot help you is
+        rigor pointed in the wrong direction. Deep-profiling also inflates small functions
+        (section 5), so 2.5 ms measured that way is probably not 2.5 ms.</div>
+      <div class="ex"><span class="who">Why the fourth option is tempting</span><br>
+        Job overhead is real, and the conclusion happens to be "don't prioritize it." But the reason
+        given is wrong, and wrong reasons generalize badly: it would also lead you to reject
+        jobifying on a machine where the main thread <em>is</em> the bound.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">4</span>Frame rate dropped &mdash; what do you look at first?</h2>
+
+  <p>Walk this tree with a real capture in front of you. Every leaf names the measurement that
+  confirms the diagnosis, because a diagnosis you cannot confirm is a guess with better vocabulary.</p>
+
+  <div class="tree" id="treeBound"><p class="path"></p><div class="body"></div></div>
+  <h2><span class="num">5</span>Sampling, instrumentation, and the observer effect</h2>
+
+  <p>There are two ways to find out where time goes, and they fail in opposite directions.</p>
+
+  <p>A <strong>sampling profiler</strong> interrupts the process a few thousand times a second and
+  records the call stack. It costs almost nothing, it needs no code changes, and it sees every
+  function including third-party and engine code you have no source for. Its weakness is statistical:
+  a function that runs for 40 &micro;s once per frame may be sampled zero times in a short capture,
+  and short captures are what you have when you are chasing a hitch. Superluminal, Intel VTune,
+  Linux <code>perf</code>, Xcode Instruments' Time Profiler and Android Studio's CPU profiler all
+  work this way.</p>
+
+  <p>An <strong>instrumented profiler</strong> records an explicit begin/end timestamp for every
+  marked scope. It captures exact durations and exact call counts, it can nest, and it can carry
+  metadata. Its weakness is coverage and cost: it only sees what somebody marked, and each marker
+  costs real nanoseconds. Unity's Profiler with <code>ProfilerMarker</code>, and Unreal Insights with
+  <code>TRACE_CPUPROFILER_EVENT_SCOPE</code>, are instrumented profilers.</p>
+
+  <p>The practical workflow is both, in order: sample first to find the region, then instrument that
+  region to get exact numbers. Going straight to instrumentation means you only measure the places
+  you already suspected, which is a very efficient way to confirm a wrong hypothesis.</p>
+
+  <div class="box crit"><div class="lbl">The observer effect is not a technicality</div>
+  <p>Unity's <em>Deep Profile</em> instruments every managed method call automatically. It is
+  genuinely useful, and it can inflate total frame time several-fold, with the inflation landing
+  disproportionately on functions that are called very often and return quickly. A tight method
+  called 20,000 times per frame that costs 0.02 &micro;s each will appear as a monster under Deep
+  Profile and as nothing under normal profiling, and the second reading is the true one. The same
+  trap exists in Unreal if you enable every trace channel at once, and in any GPU capture tool:
+  RenderDoc serializes the pipeline to give you deterministic per-draw timings, so RenderDoc's
+  numbers tell you the <em>relative</em> cost of draws, never the real frame time. Use each tool for
+  the question it can answer, and never quote a number from a distorting mode as a result.</p></div>
+
+  <h3>Which build did you measure?</h3>
+
+  <p>An editor measurement is not a result. The editor runs your game inside a host application with
+  its own update loop, its own rendering, an unoptimized script backend, assertion checks, extra
+  allocations, and the profiler's own UI competing for the same CPU. Editor frame times routinely
+  run 30&ndash;100% above the same content in a standalone build, and the inflation is not uniform,
+  so even relative comparisons drift.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Configuration</th><th>What it is good for</th><th>What it lies about</th></tr></thead>
+    <tbody>
+      <tr><td><b>Editor / PIE</b></td><td>Iterating, finding the <em>shape</em> of a problem, using Frame Debugger and visual debuggers.</td><td>Absolute times, allocation counts, load times, anything involving script or asset loading.</td></tr>
+      <tr><td><b>Development / Debug build</b></td><td>Profiling with markers attached, on the real device, with symbols. This is your primary measurement configuration.</td><td>Slightly pessimistic: check code, logging, and trace overhead are compiled in. Expect a few percent.</td></tr>
+      <tr><td><b>Shipping / Release build</b></td><td>The truth about what players get. Final numbers for a report belong here where the tooling allows it.</td><td>Nothing &mdash; but most markers are compiled out, so you get frame times without attribution.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The rule to write on your monitor: <strong>find the problem in the editor, prove it in a
+  development build on the target device, confirm the gain in a shipping build.</strong> Both papers
+  on your reading list for this topic make a version of this argument at the process level &mdash;
+  Politowski, Petrillo and Gu&eacute;h&eacute;neuc's survey of video game testing repeatedly finds
+  that the gap between what the tooling can measure and what the shipped product does is where
+  studios lose control of quality.</p>
+
+  <h2><span class="num">6</span>The profiler tour, both engines</h2>
+
+  <p>Same questions, different menus. Learn the question first and the menu becomes lookup.</p>
+
+  <div class="tabs">
+    <div class="tabhd"><button data-engine="unity" data-tab="u" class="on">Unity</button><button data-engine="unreal" data-tab="e">Unreal</button></div>
+    <div class="tabbody">
+      <div class="tabpane on" data-pane="u">
+        <p><b>Getting a trustworthy capture.</b> Build a Development Build with <em>Autoconnect
+        Profiler</em> and <em>Deep Profiling Support</em> off, run it on the target device, attach the
+        Profiler window to the running player (not to the Editor), and record. Use
+        <code>Profiler.SetAreaEnabled</code> or simply disable modules you do not need &mdash; the
+        Memory and Audio modules cost measurable time to collect.</p>
+        <ul>
+          <li><b>Which lane is the bound?</b> The CPU Usage module's <em>Timeline</em> view, not the
+          Hierarchy. Look for <code>Gfx.WaitForPresentOnGfxThread</code> on the main thread (GPU-bound)
+          versus <code>Gfx.WaitForGfxCommandsFromMainThread</code> on the render thread (main-thread
+          bound). The Timeline is the only view that shows you thread concurrency.</li>
+          <li><b>Where is the CPU time?</b> Hierarchy view sorted by <em>Self ms</em>, not Total ms.
+          Total ms tells you where you are; Self ms tells you what is actually costing.</li>
+          <li><b>Am I allocating?</b> The <em>GC Alloc</em> column in Hierarchy. Any nonzero
+          per-frame value is a future spike; sort by it and fix the top three. Topic 6 goes deep here.</li>
+          <li><b>Why is this draw expensive?</b> Frame Debugger (<em>Window &rsaquo; Analysis &rsaquo;
+          Frame Debugger</em>) steps draw call by draw call and tells you <em>why</em> the previous
+          batch broke &mdash; different material, different shadow-casting flag, dynamic batching
+          limits exceeded.</li>
+          <li><b>Comparing two captures.</b> The <em>Profile Analyzer</em> package. It aggregates
+          markers over a whole capture and gives you median, min, max and per-marker distributions,
+          and it will diff two captures side by side. This is the single most under-used Unity tool
+          for exactly the before/after evidence your assignment requires.</li>
+          <li><b>GPU specifics.</b> The GPU module gives coarse per-pass timings; for real GPU work
+          use RenderDoc, PIX (Windows/Xbox), Nsight (NVIDIA), or Android GPU Inspector on device.</li>
+        </ul>
+      </div>
+      <div class="tabpane" data-pane="e">
+        <p><b>Getting a trustworthy capture.</b> Package a Development build with tracing enabled and
+        run with <code>-trace=cpu,gpu,frame,counters,loadtime</code>, or connect Unreal Insights live
+        via the Session Browser. Console commands do the quick triage before you ever open Insights.</p>
+        <ul>
+          <li><b>Which lane is the bound?</b> <code>stat unit</code> &mdash; four numbers:
+          <em>Frame</em>, <em>Game</em>, <em>Draw</em>, <em>GPU</em>. Frame is approximately the max of
+          the other three. Whichever is closest to Frame owns your problem.
+          <code>stat unitgraph</code> plots them over time, which is your in-engine frame-time graph.</li>
+          <li><b>Where is the CPU time?</b> <code>stat game</code>, <code>stat engine</code>, and then
+          Unreal Insights' Timing view with the CPU track expanded per thread. Insights lets you
+          select a time range and get an aggregated table of every named scope inside it.</li>
+          <li><b>Why is this draw expensive?</b> <code>stat scenerendering</code>,
+          <code>stat rhi</code>, and the <em>Shader Complexity</em> and <em>Quad Overdraw</em> view
+          modes. <code>ProfileGPU</code> (or Ctrl+Shift+comma) dumps a hierarchical GPU pass breakdown
+          for one frame.</li>
+          <li><b>What is hitching?</b> Insights' Frames track: click any tall frame and the timeline
+          jumps to it. The <em>File Activity</em> and <em>Asset Loading</em> tracks show streaming
+          stalls; the <em>Counters</em> track shows your own custom counters over time.</li>
+          <li><b>Memory and allocation.</b> Low Level Memory Tracker (<code>-LLM</code>,
+          <code>stat LLM</code>) and <code>memreport -full</code>. Topic 6 goes deep here.</li>
+          <li><b>Automated capture.</b> <code>Gauntlet</code> can run a scripted route in CI and emit
+          the trace as an artifact, which is how you get frame-time regressions caught by a machine
+          instead of by a reviewer.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <h2><span class="num">7</span>Custom instrumentation: markers you wrote yourself</h2>
+
+  <p>Built-in markers stop at the engine boundary. Your combat resolver, your loot roller, your
+  procedural road mesher &mdash; all of that arrives in the profiler as one undifferentiated block
+  labelled with the name of whatever <code>Tick</code> or <code>Update</code> it happens to live in.
+  Custom instrumentation is how you make your own architecture legible, and objective 4 of this
+  topic is explicitly about designing it. Click any highlighted line for the reasoning behind the
+  decision.</p>
+
+  <div class="tabs">
+    <div class="tabhd"><button data-engine="unity" data-tab="u" class="on">Unity &mdash; ProfilerMarker</button><button data-engine="unreal" data-tab="e">Unreal &mdash; cycle counters &amp; trace scopes</button></div>
+    <div class="tabbody">
+      <div class="tabpane on" data-pane="u">
+<div class="annot"><div class="rows">
+  <div class="arow"><div class="gut">1</div><div class="ln">using Unity.Profiling;</div></div>
+  <div class="arow"><div class="gut">2</div><div class="ln">using UnityEngine;</div></div>
+  <div class="arow"><div class="gut">3</div><div class="ln"></div></div>
+  <div class="arow"><div class="gut">4</div><div class="ln">public sealed class FlockUpdater : MonoBehaviour</div></div>
+  <div class="arow"><div class="gut">5</div><div class="ln">{</div></div>
+  <div class="arow hasnote"><div class="gut">6</div><div class="ln">    static readonly ProfilerMarker k_Query = new ProfilerMarker("Flock.NeighborQuery");</div></div>
+  <div class="note"><b>static readonly, created once.</b> A <code>ProfilerMarker</code> interns its
+    name string with the profiler backend the first time it is constructed. Construct one per call
+    and you pay a managed allocation and a string lookup every single frame &mdash; your measurement
+    tool becomes a source of GC pressure, which is the observer effect in its most embarrassing form.
+    One static instance per named scope, always.</div>
+  <div class="arow"><div class="gut">7</div><div class="ln">    static readonly ProfilerMarker k_Steer = new ProfilerMarker("Flock.Steer");</div></div>
+  <div class="arow hasnote"><div class="gut">8</div><div class="ln">    static readonly ProfilerCounterValue&lt;int&gt; s_Checks = new ProfilerCounterValue&lt;int&gt;(</div></div>
+  <div class="note"><b>A counter, not just a timer.</b> Milliseconds alone cannot tell you whether a
+    system got slower or merely got busier. Recording the unit of work &mdash; neighbour checks here
+    &mdash; lets you compute <em>&micro;s per check</em>, which is the number that stays constant when
+    the level designer doubles the boid count. Almost every "we regressed 2 ms" investigation ends
+    with "no, the content grew"; a counter answers that in ten seconds instead of a day.</div>
+  <div class="arow"><div class="gut">9</div><div class="ln">        ProfilerCategory.Scripts, "Flock.NeighborChecks", ProfilerMarkerDataUnit.Count);</div></div>
+  <div class="arow"><div class="gut">10</div><div class="ln"></div></div>
+  <div class="arow"><div class="gut">11</div><div class="ln">    [SerializeField] Boid[] boids;</div></div>
+  <div class="arow"><div class="gut">12</div><div class="ln"></div></div>
+  <div class="arow"><div class="gut">13</div><div class="ln">    void Update()</div></div>
+  <div class="arow"><div class="gut">14</div><div class="ln">    {</div></div>
+  <div class="arow"><div class="gut">15</div><div class="ln">        s_Checks.Value = 0;</div></div>
+  <div class="arow hasnote"><div class="gut">16</div><div class="ln">        using (k_Query.Auto())</div></div>
+  <div class="note"><b><code>Auto()</code> inside a <code>using</code>, never Begin/End by hand.</b>
+    <code>Auto()</code> returns a struct whose <code>Dispose</code> closes the sample, so the marker
+    closes correctly even if the body throws or returns early. A hand-written
+    <code>Profiler.BeginSample</code> with no matching <code>EndSample</code> on an exception path
+    corrupts the profiler's sample stack for the rest of the frame, and the symptom &mdash; a wildly
+    misattributed hierarchy &mdash; looks like a performance bug rather than an instrumentation bug.
+    That is a bad afternoon.</div>
+  <div class="arow"><div class="gut">17</div><div class="ln">        {</div></div>
+  <div class="arow hasnote"><div class="gut">18</div><div class="ln">            for (int i = 0; i &lt; boids.Length; i++)</div></div>
+  <div class="note"><b>The marker wraps the loop, not the body.</b> Wrapping each iteration would
+    generate one sample per boid: with 2,000 boids that is 2,000 begin/end pairs per frame, and the
+    marker overhead becomes a measurable fraction of the thing you are measuring. Instrument at the
+    granularity of a <em>phase</em>. If you need per-item cost, divide the phase time by the counter.</div>
+  <div class="arow"><div class="gut">19</div><div class="ln">                boids[i].neighbors = Query(boids[i].position, 4f, ref s_Checks);</div></div>
+  <div class="arow"><div class="gut">20</div><div class="ln">        }</div></div>
+  <div class="arow hasnote"><div class="gut">21</div><div class="ln">        using (k_Steer.Auto())</div></div>
+  <div class="note"><b>Two markers, because "Flock" as one block is not a diagnosis.</b> Splitting a
+    system into its phases is what turns the profiler from a thermometer into a map. If
+    <code>Flock.NeighborQuery</code> is 4.1 ms and <code>Flock.Steer</code> is 0.3 ms, you know to go
+    build a spatial hash and not to micro-optimize the steering math. Name them
+    <code>Subsystem.Phase</code> so Profile Analyzer can group them and so a teammate can grep.</div>
+  <div class="arow"><div class="gut">22</div><div class="ln">        {</div></div>
+  <div class="arow"><div class="gut">23</div><div class="ln">            for (int i = 0; i &lt; boids.Length; i++) boids[i].Steer(Time.deltaTime);</div></div>
+  <div class="arow"><div class="gut">24</div><div class="ln">        }</div></div>
+  <div class="arow"><div class="gut">25</div><div class="ln">    }</div></div>
+  <div class="arow"><div class="gut">26</div><div class="ln">}</div></div>
+</div><p class="hint">Click any highlighted line to see why the decision was made that way.</p></div>
+        <p class="small subtle">Markers compile out of non-development builds automatically, so this
+        code costs nothing in a shipping player. <code>Profiler.BeginSample</code> /
+        <code>EndSample</code> still works and is fine for a quick one-off, but it takes a string
+        argument each call and only exists on the main thread &mdash; prefer <code>ProfilerMarker</code>
+        for anything permanent or job-threaded.</p>
+      </div>
+      <div class="tabpane" data-pane="e">
+<div class="annot"><div class="rows">
+  <div class="arow hasnote"><div class="gut">1</div><div class="ln">DECLARE_STATS_GROUP(TEXT("Flock"), STATGROUP_Flock, STATCAT_Advanced);</div></div>
+  <div class="note"><b>Your own stat group means your own console command.</b> Declaring the group
+    gives you <code>stat Flock</code> in the console: an on-screen, always-available, aggregated view
+    of just your subsystem, on device, with no tooling attached. That is worth more during a playtest
+    than any capture, because you can read it while somebody else plays.</div>
+  <div class="arow"><div class="gut">2</div><div class="ln">DECLARE_CYCLE_STAT(TEXT("Flock NeighborQuery"), STAT_FlockQuery, STATGROUP_Flock);</div></div>
+  <div class="arow hasnote"><div class="gut">3</div><div class="ln">DECLARE_DWORD_COUNTER_STAT(TEXT("Flock Checks"), STAT_FlockChecks, STATGROUP_Flock);</div></div>
+  <div class="note"><b>Same reasoning as the Unity counter.</b> A cycle counter says how long; a
+    DWORD counter says how much work. Together they give you cost per unit, which is the only form
+    of the number that survives a content change. Unreal Insights plots counters on their own track,
+    so you can visually line up "checks spiked" against "frame time spiked" in the same view.</div>
+  <div class="arow"><div class="gut">4</div><div class="ln"></div></div>
+  <div class="arow"><div class="gut">5</div><div class="ln">void AFlockManager::Tick(float DeltaSeconds)</div></div>
+  <div class="arow"><div class="gut">6</div><div class="ln">{</div></div>
+  <div class="arow hasnote"><div class="gut">7</div><div class="ln">    TRACE_CPUPROFILER_EVENT_SCOPE(AFlockManager::Tick);</div></div>
+  <div class="note"><b>Trace scope and cycle counter are different tools; use both.</b>
+    <code>SCOPE_CYCLE_COUNTER</code> feeds the <em>stat</em> system: aggregated per frame, cheap,
+    visible on the HUD, no per-occurrence detail. <code>TRACE_CPUPROFILER_EVENT_SCOPE</code> feeds
+    <em>Unreal Insights</em>: every individual occurrence lands on the timeline with a start and end
+    timestamp, which is the only way to see <em>which</em> tick was the 60 ms one. Stats answer "is
+    it expensive on average"; traces answer "what happened at 12.4 seconds".</div>
+  <div class="arow hasnote"><div class="gut">8</div><div class="ln">    SET_DWORD_STAT(STAT_FlockChecks, 0);</div></div>
+  <div class="note"><b>Reset the counter at the top of the frame.</b> DWORD stats are not
+    automatically cleared. Forget this and your "checks per frame" quietly becomes "checks since
+    launch", which climbs forever and looks exactly like a leak. Instrumentation bugs mimic the very
+    defects you are hunting; that is why instrumentation gets code-reviewed like everything else.</div>
+  <div class="arow"><div class="gut">9</div><div class="ln">    {</div></div>
+  <div class="arow"><div class="gut">10</div><div class="ln">        SCOPE_CYCLE_COUNTER(STAT_FlockQuery);</div></div>
+  <div class="arow"><div class="gut">11</div><div class="ln">        for (int32 i = 0; i &lt; Boids.Num(); ++i)</div></div>
+  <div class="arow"><div class="gut">12</div><div class="ln">        {</div></div>
+  <div class="arow"><div class="gut">13</div><div class="ln">            const int32 N = QueryNeighbors(Boids[i]);</div></div>
+  <div class="arow"><div class="gut">14</div><div class="ln">            INC_DWORD_STAT_BY(STAT_FlockChecks, N);</div></div>
+  <div class="arow"><div class="gut">15</div><div class="ln">        }</div></div>
+  <div class="arow"><div class="gut">16</div><div class="ln">    }</div></div>
+  <div class="arow hasnote"><div class="gut">17</div><div class="ln">    TRACE_CPUPROFILER_EVENT_SCOPE_STR("Flock::Steer");</div></div>
+  <div class="note"><b>The <code>_STR</code> variant exists for runtime names &mdash; use it
+    sparingly.</b> The non-<code>_STR</code> macro takes a compile-time literal and costs a pointer
+    store. The <code>_STR</code> form accepts a runtime string, which means string handling inside
+    your hot path. Naming a scope after the currently loaded level is a reasonable use; naming it
+    after the actor you are iterating is how you turn a profiler into a bottleneck.</div>
+  <div class="arow"><div class="gut">18</div><div class="ln">    for (int32 i = 0; i &lt; Boids.Num(); ++i) { Boids[i].Steer(DeltaSeconds); }</div></div>
+  <div class="arow"><div class="gut">19</div><div class="ln">}</div></div>
+</div><p class="hint">Click any highlighted line to see why the decision was made that way.</p></div>
+        <p class="small subtle">Both macro families compile to nothing in a Shipping build unless you
+        explicitly enable stats or tracing, so leaving permanent instrumentation in shipped code is
+        normal practice, not a debt.</p>
+      </div>
+    </div>
+  </div>
+  <h2><span class="num">8</span>"I walked around for a bit" is not data</h2>
+
+  <p>Here is the most common failure in student performance work, and it is not technical. A student
+  profiles, changes something, profiles again, sees a better number, and reports an improvement. The
+  two captures used different routes, different durations, different enemy counts, a differently
+  warmed texture-streaming cache and, forty minutes apart on a laptop, a different thermal state. The
+  measured difference is real. It is also not caused by the change.</p>
+
+  <p>A benchmark is an experiment, and it needs the same controls a unit test needs &mdash; the same
+  controls you built in Topic 3 with seeded RNG and injected clocks, applied to timing instead of
+  logic. Six requirements:</p>
+
+  <ol>
+    <li><strong>A fixed route.</strong> Camera on a spline or a scripted pawn, driven by the clock,
+    with no human input. If a human plays it, the two runs differ by more than your optimization.</li>
+    <li><strong>A fixed seed</strong> for every random system that affects load: spawners, loot,
+    procedural placement, AI decision noise.</li>
+    <li><strong>Warmup that you discard.</strong> The first seconds contain shader and PSO
+    compilation, JIT, texture streaming ramp-up, and cold caches. Those costs are real and worth
+    measuring separately &mdash; they are simply not what you are measuring now.</li>
+    <li><strong>Raw per-frame times, stored.</strong> Not an average. You cannot reconstruct a
+    percentile from a mean, and the percentile is the number that matters.</li>
+    <li><strong>N runs, reported as a median with the spread shown.</strong> Three to five runs.
+    If your run-to-run spread is larger than your claimed improvement, you have not measured an
+    improvement.</li>
+    <li><strong>Recorded conditions.</strong> Device, OS, GPU driver version, build configuration,
+    resolution, quality preset, and thermal state (idle vs. after ten minutes). Report them next to
+    the number or the number is not reproducible.</li>
+  </ol>
+
+  <div class="box why"><div class="lbl">Why the median of runs, and not the best run</div>
+  <p>Reporting the best run is the performance equivalent of rerunning a flaky test until it passes.
+  You will always be able to find one lucky capture, and the person reading your report has no way to
+  know how many you discarded. Median of five, with min and max printed beside it, is honest and
+  takes no extra effort &mdash; the harness below produces it for free. When a studio's optimization
+  claims stop being reproducible, the next thing to stop being reproducible is the ship date.</p></div>
+
+<div class="annot"><div class="rows">
+  <div class="arow"><div class="gut">1</div><div class="ln">public sealed class BenchmarkRunner : MonoBehaviour   // attach to one object in a bench scene</div></div>
+  <div class="arow"><div class="gut">2</div><div class="ln">{</div></div>
+  <div class="arow"><div class="gut">3</div><div class="ln">    [SerializeField] Transform dolly;      // camera rig moved by the clock, never by input</div></div>
+  <div class="arow"><div class="gut">4</div><div class="ln">    [SerializeField] int   runs           = 5;</div></div>
+  <div class="arow"><div class="gut">5</div><div class="ln">    [SerializeField] float warmupSeconds  = 4f;</div></div>
+  <div class="arow"><div class="gut">6</div><div class="ln">    [SerializeField] float captureSeconds = 20f;</div></div>
+  <div class="arow hasnote"><div class="gut">7</div><div class="ln">    readonly float[] frames = new float[40000];   // preallocated, never resized</div></div>
+  <div class="note"><b>Preallocate the sample buffer.</b> A <code>List&lt;float&gt;</code> that grows
+    during capture allocates and eventually triggers a collection &mdash; inside the window you are
+    measuring. Your measuring apparatus would then inject exactly the pathology you are hunting.
+    40,000 floats is 160 KB, allocated once, at startup.</div>
+  <div class="arow"><div class="gut">8</div><div class="ln"></div></div>
+  <div class="arow"><div class="gut">9</div><div class="ln">    void Awake()</div></div>
+  <div class="arow"><div class="gut">10</div><div class="ln">    {</div></div>
+  <div class="arow hasnote"><div class="gut">11</div><div class="ln">        QualitySettings.vSyncCount = 0;</div></div>
+  <div class="note"><b>Vsync off, or you are measuring the monitor.</b> With vsync on, every frame
+    time is quantized to a multiple of the refresh interval, so a 13.9 ms frame and a 16.2 ms frame
+    both record as 16.67 ms and your optimization becomes invisible. Turn it off to measure the true
+    cost of the frame; turn it back on for a separate frame-pacing capture, because pacing is a real
+    and different question.</div>
+  <div class="arow hasnote"><div class="gut">12</div><div class="ln">        Application.targetFrameRate = -1;</div></div>
+  <div class="note"><b>Remove the frame-rate cap too.</b> A cap does the same damage as vsync: it
+    hides all headroom above the cap. If your capture is pinned to the cap you learn only "we are
+    fast enough here," which is worth knowing but is not a measurement you can compare before and
+    after.</div>
+  <div class="arow hasnote"><div class="gut">13</div><div class="ln">        UnityEngine.Random.InitState(20261012);</div></div>
+  <div class="note"><b>One seed for the whole benchmark.</b> Identical spawn positions, identical
+    loot rolls, identical AI tie-breaks. This is the same argument as a seeded unit test in Topic 3,
+    with a different payoff: there it made a failure reproducible, here it makes a
+    <em>measurement</em> reproducible. Print the seed into the CSV so a reader can rerun it.</div>
+  <div class="arow"><div class="gut">14</div><div class="ln">    }</div></div>
+  <div class="arow"><div class="gut">15</div><div class="ln"></div></div>
+  <div class="arow"><div class="gut">16</div><div class="ln">    void Update()</div></div>
+  <div class="arow"><div class="gut">17</div><div class="ln">    {</div></div>
+  <div class="arow hasnote"><div class="gut">18</div><div class="ln">        float now = Time.unscaledTime;</div></div>
+  <div class="note"><b><code>unscaledTime</code> / <code>unscaledDeltaTime</code>, never the scaled
+    versions.</b> <code>Time.deltaTime</code> is multiplied by <code>timeScale</code> and, worse, is
+    <em>clamped</em> to <code>Time.maximumDeltaTime</code> (0.333 s by default). A genuine 400 ms
+    hitch would be recorded as 333 ms &mdash; the tool silently truncating exactly the tail you came
+    to measure. Use the unscaled clock, or better, a <code>Stopwatch</code>.</div>
+  <div class="arow"><div class="gut">19</div><div class="ln">        dolly.position = RouteAt(now - runStart);   // deterministic function of elapsed time</div></div>
+  <div class="arow"><div class="gut">20</div><div class="ln"></div></div>
+  <div class="arow"><div class="gut">21</div><div class="ln">        if (!capturing &amp;&amp; now - runStart &gt;= warmupSeconds) { capturing = true; n = 0; }</div></div>
+  <div class="arow hasnote"><div class="gut">22</div><div class="ln">        if (capturing) frames[n++] = Time.unscaledDeltaTime * 1000f;   // store raw ms</div></div>
+  <div class="note"><b>Store every frame, aggregate later.</b> Running averages are lossy and
+    irreversible. With the raw array you can compute any percentile, plot the trace, spot a periodic
+    spike and measure its period, and re-analyze months later when someone asks a question you did
+    not anticipate. This costs 4 bytes per frame.</div>
+  <div class="arow"><div class="gut">23</div><div class="ln">        if (capturing &amp;&amp; now - runStart &gt;= warmupSeconds + captureSeconds) FinishRun();</div></div>
+  <div class="arow"><div class="gut">24</div><div class="ln">    }</div></div>
+  <div class="arow"><div class="gut">25</div><div class="ln"></div></div>
+  <div class="arow hasnote"><div class="gut">26</div><div class="ln">    static float Percentile(float[] sorted, int count, double p)</div></div>
+  <div class="note"><b>Write the percentile function yourself and state the convention.</b> This is
+    the nearest-rank method: index = ceil(p &times; count) &minus; 1 on the ascending-sorted array.
+    Other conventions interpolate between neighbours and give slightly different answers. Neither is
+    wrong; a report that does not say which one it used is. One line of documentation prevents an
+    argument about a 0.3 ms discrepancy.</div>
+  <div class="arow"><div class="gut">27</div><div class="ln">        =&gt; sorted[Mathf.Clamp((int)System.Math.Ceiling(p * count) - 1, 0, count - 1)];</div></div>
+  <div class="arow"><div class="gut">28</div><div class="ln"></div></div>
+  <div class="arow hasnote"><div class="gut">29</div><div class="ln">    void FinishRun()   // sort a copy, emit one CSV row, cool down, reload scene, repeat</div></div>
+  <div class="note"><b>One CSV row per run, one file per build.</b> Columns: build ID, commit SHA,
+    device, driver, preset, resolution, seed, run index, mean, P50, P95, P99, P99.9, max, frames over
+    budget. That file is your evidence, it diffs in git, it graphs in any spreadsheet, and it is
+    exactly the artifact your assignment asks for. Insert a fixed cool-down between runs (10&ndash;30 s
+    idle) so run 5 is not measuring a hotter chip than run 1.</div>
+  <div class="arow"><div class="gut">30</div><div class="ln">}</div></div>
+</div><p class="hint">Click any highlighted line to see why the decision was made that way.</p></div>
+
+  <p class="small subtle">The Unreal equivalent needs no new architecture: a Level Sequence drives the
+  camera, <code>t.MaxFPS 0</code> and <code>r.VSync 0</code> remove the caps,
+  <code>FApp::GetDeltaTime</code> or a raw <code>FPlatformTime::Seconds</code> pair gives you the
+  frame duration, and the built-in <code>FPSChart</code> / <code>CsvProfiler</code> system
+  (<code>-csvGpuStats</code>, <code>CsvProfile start</code> / <code>stop</code>) already emits a
+  per-frame CSV with hundreds of engine stats in exactly the shape described above. Run it from
+  Gauntlet and you have a nightly performance regression test.</p>
+
+  <div class="check">
+    <p class="q">You add a spatial hash to your neighbour query. Before: median 16.9 ms across five
+    runs, spread 15.8&ndash;18.4 ms. After: median 16.1 ms across five runs, spread 15.2&ndash;17.9 ms.
+    Your custom counter shows neighbour checks fell from 41,000 to 3,800 per frame. What is the
+    correct conclusion?</p>
+    <button class="opt" data-correct="0">A 0.8 ms improvement, confirmed by a 10&times; reduction in checks. Report it and move on.</button>
+    <button class="opt" data-correct="1">The check count proves the algorithm changed, but the run-to-run spread (~2.6 ms) swamps the 0.8 ms median difference &mdash; you cannot yet claim a frame-time win. Instrument the query scope directly and measure that, or raise N until the spread shrinks below the effect.</button>
+    <button class="opt" data-correct="0">The optimization failed; a 10&times; algorithmic reduction should have produced a much larger frame-time gain, so the spatial hash must be buggy.</button>
+    <button class="opt" data-correct="0">Discard both medians and report the best run from each set, since the best run has the least background interference.</button>
+    <div class="exp"><b>Why the second option:</b> Your effect (0.8 ms) is roughly a third of your
+      measurement noise (2.6 ms). That is not evidence of nothing &mdash; it is an absence of
+      evidence, and the two are different claims. The fix is to reduce the noise or to measure a
+      narrower thing: the <code>Flock.NeighborQuery</code> marker's own time is far less noisy than
+      whole-frame time because it excludes everything else in the frame. This is exactly why you
+      instrumented the phase separately in section 7.
+      <div class="ex"><span class="who">Why the first option is tempting</span><br>
+        The counter moved 10&times; and the median moved the right direction, so the story is coherent.
+        Coherent is not the same as demonstrated. If a reviewer reran your benchmark and got 16.6 ms
+        for the "after" build &mdash; well inside your spread &mdash; your report would be indefensible.</div>
+      <div class="ex"><span class="who">Why the third option is tempting</span><br>
+        It correctly notices that 10&times; fewer checks did not produce a large win, which is a real
+        observation worth chasing. But the likely explanation is Amdahl's law (Topic 5): if the query
+        was only 1.5 ms of a 16.9 ms frame, the ceiling on your gain was 1.5 ms no matter how good
+        the algorithm. Nothing here indicates a bug.</div>
+      <div class="ex"><span class="who">Why the fourth option is tempting</span><br>
+        Best-run reasoning sounds like noise reduction. It is selection bias with a technical accent,
+        and it systematically overstates every optimization anyone ever makes.</div>
+    </div>
+  </div>
+  <h2><span class="num">9</span>Eight niche areas, and the right tool for each</h2>
+
+  <p>Your assignment asks you to pick <strong>three</strong> of the following eight, justify a tool
+  for each, profile, analyze, propose optimizations, then implement one and measure it. Here is an
+  honest short treatment of all eight: what actually goes wrong, the metric that proves it, and the
+  tool that produces that metric. Picking a tool because it is famous is not a justification; picking
+  it because it is the only thing that emits the number you need is.</p>
+
+  <div class="areagrid">
+    <div class="area"><h5>1 &middot; Cache usage</h5>
+      <p><b>What goes wrong:</b> data laid out as arrays of fat objects, so every iteration touches a
+      new 64-byte cache line and the CPU spends its life waiting on memory. A loop can be 100%
+      "CPU-bound" while the ALU is idle.</p>
+      <p><b>Metric:</b> L1/L2/LLC miss rate, cycles per instruction, memory-bound stall percentage,
+      bytes touched per useful byte.</p>
+      <p><b>How to prove it:</b> same algorithm, two data layouts (array-of-structs vs
+      struct-of-arrays), identical input, report miss rate and ms for both.</p>
+      <span class="tools">Intel VTune (Memory Access) &middot; AMD uProf &middot; valgrind --tool=cachegrind &middot; perf stat -e cache-misses &middot; Xcode Instruments Counters &middot; Unity Burst Inspector</span></div>
+
+    <div class="area a2"><h5>2 &middot; Network latency &amp; bandwidth</h5>
+      <p><b>What goes wrong:</b> per-actor replication that scales with entity count, unbatched
+      reliable RPCs, sending full state where a delta would do, and code that works on a LAN and
+      falls apart at 120 ms RTT with 2% loss.</p>
+      <p><b>Metric:</b> RTT and jitter, packet loss, bytes/second per client, replicated properties
+      per actor per second, server tick cost per connection.</p>
+      <p><b>How to prove it:</b> impair the link deliberately (clumsy, <code>tc netem</code>,
+      Network Link Conditioner) and plot bandwidth and gameplay correctness against latency.</p>
+      <span class="tools">Wireshark &middot; Unreal Network Profiler + stat net &middot; Unity Netcode Network Profiler module &middot; clumsy / tc netem &middot; Charles</span></div>
+
+    <div class="area a3"><h5>3 &middot; I/O and streaming</h5>
+      <p><b>What goes wrong:</b> synchronous file reads on the game thread, asset bundles opened per
+      request, thousands of tiny files instead of packed archives, decompression on the critical
+      path. Symptom: a 300 ms hitch when you cross an invisible line in the world.</p>
+      <p><b>Metric:</b> cold vs warm load time, bytes read, seek count, main-thread blocked duration,
+      streaming pool residency.</p>
+      <p><b>How to prove it:</b> five cold-start loads and five warm loads, medians reported
+      separately; then the same route with streaming distance halved.</p>
+      <span class="tools">Unreal Insights File Activity + Asset Loading tracks &middot; Perfetto (Android) &middot; Windows Performance Analyzer / ETW &middot; Unity Profiler Loading module + Addressables &middot; strace / iostat</span></div>
+
+    <div class="area a4"><h5>4 &middot; Shader performance</h5>
+      <p><b>What goes wrong:</b> expensive pixel shaders over full-screen quads, overdraw from
+      stacked transparency, branchy uber-shaders with terrible occupancy, and variant explosion that
+      turns into first-encounter compilation hitches.</p>
+      <p><b>Metric:</b> per-pass GPU time, pixels shaded, quad overdraw, register pressure and wave
+      occupancy, shader variant count and compile time.</p>
+      <p><b>How to prove it:</b> capture a frame, sort passes by GPU time, then re-capture with the
+      suspect pass forced to a trivial shader. RenderDoc for structure, PIX/Nsight/RGP for timings.</p>
+      <span class="tools">RenderDoc &middot; PIX &middot; Nsight Graphics &middot; Radeon GPU Profiler &middot; Unity Frame Debugger + Shader variant stats &middot; Unreal ProfileGPU, Shader Complexity &amp; Quad Overdraw views</span></div>
+
+    <div class="area a5"><h5>5 &middot; Physics bottlenecks</h5>
+      <p><b>What goes wrong:</b> mesh colliders where a box would do, collision matrices that let
+      everything test against everything, bodies that never sleep, continuous collision detection
+      enabled globally, and a fixed timestep so small the simulation runs multiple substeps to catch
+      up &mdash; which makes a slow frame slower, a feedback loop known as the death spiral.</p>
+      <p><b>Metric:</b> broadphase pairs, narrowphase contacts, solver iterations, active vs sleeping
+      rigid bodies, physics steps executed per rendered frame.</p>
+      <p><b>How to prove it:</b> plot physics ms against active body count; then against timestep.</p>
+      <span class="tools">Unity Physics Debugger + Profiler Physics module &middot; Unreal stat physics, Chaos Visual Debugger, p.Chaos.* cvars &middot; PhysX Visual Debugger</span></div>
+
+    <div class="area a6"><h5>6 &middot; Threading overhead</h5>
+      <p><b>What goes wrong:</b> jobs too small to pay for their scheduling, a lock held across an
+      allocation, false sharing on adjacent counters, and the classic: eight worker threads that all
+      finish in 0.2 ms and then wait 3 ms for one long job. Parallel is not the same as fast.</p>
+      <p><b>Metric:</b> per-thread occupancy, lock wait time, job queue latency, parallel efficiency
+      = serial time / (threads &times; parallel time).</p>
+      <p><b>How to prove it:</b> a timeline capture showing the gaps, plus a scaling run at 1, 2, 4
+      and 8 workers. If the curve flattens at 3, say so and find the serial section.</p>
+      <span class="tools">Unreal Insights Timing tracks &middot; Unity Profiler Timeline + Jobs/Burst &middot; Superluminal &middot; VTune Threading &middot; Perfetto &middot; Concurrency Visualizer</span></div>
+
+    <div class="area a7"><h5>7 &middot; Audio load</h5>
+      <p><b>What goes wrong:</b> hundreds of simultaneous voices with no virtualization, compressed
+      formats decoded on the fly on a weak CPU, every one-shot streaming from disk, and reverb or
+      convolution buses left on in scenes that do not need them. Audio underruns produce crackle,
+      which players report as "the sound is broken," not as a performance bug.</p>
+      <p><b>Metric:</b> DSP CPU percentage, real vs virtual voice count, buffer underruns, decode
+      cost per format, audio memory and stream count.</p>
+      <p><b>How to prove it:</b> voice count versus DSP CPU curve, then the same scene with a voice
+      limit and a switch from streamed to decompressed-on-load for short one-shots.</p>
+      <span class="tools">Unity Profiler Audio module &middot; FMOD Studio Profiler &middot; Wwise Profiler &middot; Unreal stat audio / stat soundwaves, au.Debug.* , Audio Insights</span></div>
+
+    <div class="area a8"><h5>8 &middot; GC and fragmentation</h5>
+      <p><b>What goes wrong:</b> per-frame managed allocations &mdash; string concatenation, LINQ,
+      boxing, lambdas capturing locals, <code>GetComponent</code> in <code>Update</code> &mdash; that
+      each cost little and together set the collection interval. Then a full collection lands in the
+      middle of a boss fight. Fragmentation is the second act: a heap with plenty of free bytes and
+      no contiguous block big enough.</p>
+      <p><b>Metric:</b> allocation rate in KB/frame, collections per minute, pause duration
+      distribution, heap reserved vs used, largest contiguous free block.</p>
+      <p><b>How to prove it:</b> the GC Alloc column sorted descending, a snapshot diff across a
+      gameplay action, and the frame-time trace showing the periodic spike disappearing after pooling.</p>
+      <span class="tools">Unity Profiler GC Alloc + Memory Profiler snapshot diff &middot; Unreal LLM, stat memory, obj list &middot; Valgrind Massif &middot; Visual Studio Diagnostic Tools</span></div>
+  </div>
+
+  <div class="box field"><div class="lbl">Choosing three</div>
+  <p>Pick areas your project actually exhibits, not the three that sound most advanced. The strongest
+  submissions in this course pair one area you already suspect (you have seen the hitch), one that
+  your engine makes easy to measure well (so you get clean before/after data), and one that forces
+  you to learn a tool you have never opened. If your game is single-player and offline, do not pick
+  network latency to look sophisticated &mdash; you will have nothing to measure and it will show.</p></div>
+
+  <div class="check">
+    <p class="q">A player reports: "The game runs fine, but every time I enter the market district
+    there's a half-second freeze, and only the first time each session." Which measurement do you take
+    first?</p>
+    <button class="opt" data-correct="0">A CPU sampling profile of a normal play session, sorted by self time, to find the expensive function.</button>
+    <button class="opt" data-correct="0">A RenderDoc capture of the market district to find the expensive draw calls.</button>
+    <button class="opt" data-correct="1">A frame-time trace with file-activity and asset-loading tracks enabled, captured across the district transition &mdash; "first time each session" points at one-time work: streaming, asset load, or shader/PSO compilation.</button>
+    <button class="opt" data-correct="0">A memory snapshot before and after entering the district, to see whether the district is leaking.</button>
+    <div class="exp"><b>Why the third option:</b> "Only the first time each session" is the single
+      most informative phrase in the report. It excludes everything that recurs and points directly at
+      one-time costs: reading assets off disk, decompressing them, creating GPU resources, and
+      compiling shader variants or pipeline state objects. A trace with the I/O and loading tracks
+      visible tells you which of those it is in one capture, and the fix differs completely between
+      them &mdash; preload, pack differently, or warm the PSO cache.
+      <div class="ex"><span class="who">Why the first option is tempting</span><br>
+        Sampling is the right default for "the game is slow." It is the wrong default for "the game
+        hitches": a 500 ms event in a five-minute session is 0.17% of the samples, and it will be
+        buried under the aggregate of ordinary work. Hitches need timelines, not aggregates.</div>
+      <div class="ex"><span class="who">Why the second option is tempting</span><br>
+        The market district is presumably a dense area, so expensive draws are plausible &mdash; but
+        draw cost would slow down <em>every</em> frame you are in the district, not just the first.
+        The reporter explicitly told you the steady state is fine.</div>
+      <div class="ex"><span class="who">Why the fourth option is tempting</span><br>
+        Memory is a reasonable suspect for a freeze, since a large allocation can trigger a
+        collection. But a leak would grow over the session and get worse on repeat visits, and the
+        reporter says the opposite happens. Read the repro conditions before choosing the tool.</div>
+    </div>
+  </div>
+  <h2><span class="num">10</span>The midterm: what you will be expected to do</h2>
+
+  <p>The Midterm Exam is 90 minutes and 100 points, and it lands in this topic (session 14 is
+  the review). It covers Topics 1&ndash;4 cumulatively, weighted toward the material you have had to
+  <em>apply</em>. It is not a vocabulary test; a definition you can recite but not use will not earn
+  much. Prepare by being able to do the following, out loud, without notes:</p>
+
+  <div class="mid">
+    <h4>Skills the exam will ask you to demonstrate</h4>
+    <ul>
+      <li><b>Convert between frame rate and frame time, in both directions, and reason about deltas.</b>
+      Given "we went from 45 to 55 fps," state the milliseconds saved (22.2 &rarr; 18.2, so 4.0 ms)
+      and explain why the fps figure alone is not comparable across baselines.</li>
+      <li><b>Read a frame-time distribution and diagnose it.</b> Given an average, a P50, a P99 and a
+      P99.9, say what the player experiences and which class of problem produces that shape. A high
+      P99.9 with a healthy P99 is not the same defect as a uniformly raised P50.</li>
+      <li><b>Identify the bound from a capture summary</b> (main / render / RHI / GPU / I-O) and name
+      the cheapest experiment that would confirm it.</li>
+      <li><b>Separate severity from priority</b> (Topic 1) and apply the S0&ndash;S3 ladder to a
+      described defect, including a performance defect.</li>
+      <li><b>Write a bug report title in PAL format</b> and correct a badly written repro step into
+      second-person imperative (Topic 2). Expect a short-answer item that hands you a bad report and
+      asks what a triage lead would send back.</li>
+      <li><b>Map a test scenario to the correct defect trigger</b> &mdash; Configuration, Startup,
+      Exception, Stress, Normal, Restart &mdash; and explain what a unit test can and cannot cover in
+      a frame-based system (Topic 3).</li>
+      <li><b>Critique an experimental design.</b> You will be shown a before/after performance claim
+      with a flaw in it &mdash; different route, no warmup, one run, editor build, vsync on, or an
+      effect smaller than the run-to-run spread &mdash; and asked to name the flaw and fix the method.</li>
+      <li><b>Choose and justify a profiling tool for a described symptom</b>, in either engine, and
+      state the specific metric you expect it to produce.</li>
+      <li><b>Explain the observer effect</b> with a concrete example, and say which measurement you
+      would trust when two tools disagree.</li>
+    </ul>
+    <p class="small subtle">Format: a mix of short answer, one or two numeric items you can do on
+    paper, a "read this capture and diagnose" item, and one longer written response defending an
+    optimization decision. Bring a calculator; you will not need anything else.</p>
+  </div>
+
+  <p>The most reliable way to prepare is to do the assignment first and the review second. Students
+  who have actually run five benchmark passes and argued with a noisy median answer the experimental
+  design questions without effort, because they have already lived them.</p>
+
+  <h2><span class="num">11</span>The reading, and what to take from each</h2>
+
+  <details class="more"><summary>Reading list with a specific question to answer for each</summary>
+    <ul class="readlist">
+      <li><b>Politowski, Petrillo &amp; Gu&eacute;h&eacute;neuc (2021), "A Survey of Video Game
+      Testing."</b> A map of what the research community has actually built versus what studios
+      practice. Question to answer: performance testing is comparatively under-represented in the
+      literature they survey relative to how much studio time it consumes &mdash; what properties of
+      performance defects make them hard to write academic papers about? Your answer should mention
+      reproducibility, hardware variance, and the absence of a clean oracle.</li>
+      <li><b>Politowski &amp; Gu&eacute;h&eacute;neuc (2022), "Towards Automated Video Game Testing:
+      Still A Long Way to Go."</b> The follow-up, and deliberately deflationary about automation.
+      Question: which parts of <em>your</em> profiling workflow from this lesson could a machine run
+      nightly with no human present, and which parts still require judgment? Be specific &mdash;
+      "capture a fixed route and fail the build if P99 regresses more than 8%" is automatable;
+      "decide whether this 2 ms is worth the visual cost" is not, and knowing the boundary is the
+      point of the paper.</li>
+      <li><b>Finska, <i>Modern Game Testing</i> &mdash; performance chapters (review).</b> Question:
+      what does the book include in its definition of a performance test that you had not been
+      measuring at all? Load time and memory ceilings are the usual answers.</li>
+    </ul>
+  </details>
+
+  <div class="deliver">
+    <h3>Bring to the assignment</h3>
+    <p><b>Performance Profiling Techniques</b> &middot; due Oct 25 &middot; pick <b>three</b> of the
+    eight areas in section 9; research and justify a tool for each, profile, analyze, propose
+    optimizations, implement <b>one</b>, and measure the result. Plus the <b>Midterm Exam</b>
+    (90 minutes, 100 points) &mdash; see section 10.</p>
+    <p>Arrive with these artifacts. Each one maps to a section above.</p>
+    <ul>
+      <li><b>A written frame budget for your project</b> (section 1): target frame rate, the
+      millisecond budget, a line per subsystem with an owner, and the headroom you reserved. One
+      table. This is the document the rest of the assignment argues against.</li>
+      <li><b>A benchmark scene and harness</b> (section 8): fixed route, fixed seed, discarded
+      warmup, five runs, per-frame times written to CSV. Commit it. If your harness is not in version
+      control your results are not reproducible, and reproducibility is the graded skill.</li>
+      <li><b>Baseline numbers reported as a distribution</b> (section 2): mean, P50, P95, P99, P99.9,
+      max, and frames over budget &mdash; with your percentile convention stated. Never a bare
+      "average FPS." Include the frame-time graph; it is the single most persuasive image in the
+      deliverable.</li>
+      <li><b>A named bound with the evidence for it</b> (sections 3&ndash;4): which lane was the
+      maximum, which experiment confirmed it, and what the wait markers showed. Use the decision tree
+      and say which leaf you landed on.</li>
+      <li><b>Three areas chosen, with a tool justified per area</b> (section 9). The justification
+      must name the metric the tool produces and why the alternatives do not produce it. "It is the
+      industry standard" is not a justification.</li>
+      <li><b>Your own instrumentation</b> (section 7): at least two custom markers or cycle counters
+      and one custom counter of a work unit, with the code shown. Objective 4 is graded on this
+      specifically &mdash; a submission that only uses built-in markers has not designed a profiling
+      solution.</li>
+      <li><b>One optimization implemented and measured</b> with before/after distributions from the
+      same harness, on the same device, at the same thermal state, with the run-to-run spread
+      printed. If the spread exceeds the effect, say so and explain what you would do about it. That
+      honesty scores higher than an overstated win.</li>
+      <li><b>Recorded conditions</b> for every number: device, OS, GPU and driver version, build
+      configuration, resolution, quality preset, commit SHA. Same discipline as the configuration
+      fields on a bug report in Topic 1.</li>
+      <li><b>Two optimizations you proposed but did not implement</b>, each with an estimated
+      millisecond saving and the reasoning behind the estimate. Being able to size work you have not
+      done is a professional skill and the assignment asks for proposals, not just one fix.</li>
+    </ul>
+    <p class="small subtle">Session 13 is a work session on custom instrumentation and benchmark
+    scenes; bring a project that builds. Session 14 covers the niche areas and midterm review &mdash;
+    bring your three chosen areas already picked, and one measurement you cannot explain.</p>
+  </div>
+
+  <footer class="lf"><a href="../index.html">&larr; Course hub</a><span>Advanced Game Testing and Debugging</span></footer>
+</div>
+<script id="lesson-kit-js">
+/* ---------- reading progress ---------- */
+(function(){
+  var b=document.createElement('div'); b.className='progressbar';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(b);});
+  addEventListener('scroll',function(){
+    var h=document.documentElement, m=h.scrollHeight-h.clientHeight;
+    b.style.width=(m>0?(h.scrollTop/m*100):0)+'%';
+  },{passive:true});
+})();
+
+/* ---------- engine tabs ---------- */
+function GDTtabs(root){
+  root.querySelectorAll('.tabhd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      root.querySelectorAll('.tabhd button').forEach(function(b){b.classList.remove('on')});
+      root.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('on')});
+      btn.classList.add('on');
+      var pane=root.querySelector('.tabpane[data-pane="'+btn.dataset.tab+'"]');
+      if(pane) pane.classList.add('on');
+    });
+  });
+}
+
+/* ---------- annotated code ---------- */
+function GDTannot(root){
+  root.querySelectorAll('.arow.hasnote').forEach(function(row){
+    row.addEventListener('click',function(){
+      var note=row.nextElementSibling;
+      var open=row.classList.contains('open');
+      row.classList.toggle('open',!open);
+      if(note&&note.classList.contains('note')) note.classList.toggle('open',!open);
+    });
+  });
+}
+
+/* ---------- knowledge check ---------- */
+function GDTcheck(root){
+  var done=false;
+  root.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      if(done) return; done=true;
+      var correct = opt.dataset.correct==='1';
+      root.querySelectorAll('.opt').forEach(function(o){
+        if(o.dataset.correct==='1'){o.classList.add('right');
+          o.insertAdjacentHTML('beforeend','<span class="tag">CORRECT</span>');}
+        else if(o===opt){o.classList.add('wrong');
+          o.insertAdjacentHTML('beforeend','<span class="tag">NOT QUITE</span>');}
+        o.style.cursor='default';
+      });
+      var exp=root.querySelector('.exp'); if(exp) exp.classList.add('on');
+    });
+  });
+}
+
+/* ---------- decision tree ----------
+   Usage: new GDTTree(document.getElementById('t1'), NODES, 'start')
+   NODES = { start:{q:'', hint:'', choices:[{t:'',sub:'',go:'nodeId'}]},
+             leafId:{leaf:true, title:'', body:'<p>…</p>'} }              */
+function GDTTree(root,nodes,startId){
+  var pathEl=root.querySelector('.path'), body=root.querySelector('.body');
+  var trail=[];
+  function render(id){
+    var n=nodes[id]; if(!n) return;
+    pathEl.innerHTML = trail.length? trail.map(function(t){return '<span>'+t+'</span>'}).join(' &rsaquo; ') : '&nbsp;';
+    if(n.leaf){
+      body.innerHTML='<div class="leaf"><h5>'+n.title+'</h5>'+n.body+'</div>'+
+        '<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>';
+    }else{
+      body.innerHTML='<p class="qq">'+n.q+'</p>'+(n.hint?'<p class="qh">'+n.hint+'</p>':'')+
+        '<div class="choices">'+n.choices.map(function(c,i){
+          return '<button data-go="'+c.go+'" data-lbl="'+(c.lbl||c.t).replace(/"/g,'&quot;')+'">'+c.t+
+                 (c.sub?'<span class="sub">'+c.sub+'</span>':'')+'</button>';}).join('')+'</div>'+
+        (trail.length?'<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>':'');
+    }
+    body.querySelectorAll('[data-go]').forEach(function(b){
+      b.addEventListener('click',function(){trail.push(b.dataset.lbl); render(b.dataset.go);});
+    });
+    var rs=body.querySelector('[data-restart]');
+    if(rs) rs.addEventListener('click',function(){trail=[]; render(startId);});
+  }
+  render(startId);
+}
+
+/* ---------- auto-wire everything ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.tabs').forEach(GDTtabs);
+  document.querySelectorAll('.annot').forEach(GDTannot);
+  document.querySelectorAll('.check').forEach(GDTcheck);
+});
+
+/* ---------- small helpers for simulators ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(n,d){return Number(n).toFixed(d===undefined?1:d)}
+function lerp(a,b,t){return a+(b-a)*t}
+/* deterministic pseudo-random so demos are reproducible for a class */
+function rng(seed){var s=seed||1;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296;}}
+</script>
+<script id="lesson-widgets">
+/* ============================================================
+   Advanced Game Testing and Debugging · Topic 4 · lesson-specific widgets
+   Every displayed number is computed from the controls above it.
+   Models are simplified and labeled as such; the arithmetic is real.
+   ============================================================ */
+(function(){
+'use strict';
+
+var C = {
+  bg:'#0a0d12', line:'#2a3441', line2:'#3a4757', tx:'#e6edf3', tx2:'#9fb0c3', tx3:'#6e7f92',
+  acc:'#4da3ff', ok:'#3fb950', warn:'#d29922', crit:'#f85149', info:'#a371f7',
+  teal:'#39c5bb', unity:'#5ec8f2', unreal:'#f0a44a'
+};
+
+/* ---------- shared helpers ---------- */
+function fitCanvas(cv, cssH){
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var w = cv.clientWidth || (cv.parentNode && cv.parentNode.clientWidth) || 860;
+  w = Math.max(320, Math.round(w));
+  cv.style.height = cssH + 'px';
+  var pw = Math.round(w * dpr), ph = Math.round(cssH * dpr);
+  if(cv.width !== pw || cv.height !== ph){ cv.width = pw; cv.height = ph; }
+  var ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, cssH);
+  return { ctx: ctx, w: w, h: cssH };
+}
+function segment(container, onPick){
+  var btns = $$('button', container);
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){
+      btns.forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      onPick(parseFloat(b.dataset.v), b.textContent);
+    });
+  });
+  return function(v){
+    btns.forEach(function(x){ x.classList.toggle('on', parseFloat(x.dataset.v) === v); });
+  };
+}
+function setCell(el, text, cls){
+  if(!el) return;
+  el.textContent = text;
+  el.className = 'v' + (cls ? ' ' + cls : '');
+}
+function pctRank(sorted, p){
+  var i = Math.ceil(p * sorted.length) - 1;
+  return sorted[clamp(i, 0, sorted.length - 1)];
+}
+function dashLine(ctx, x0, y0, x1, y1, color, dash, width){
+  ctx.save(); ctx.setLineDash(dash || [5,4]); ctx.strokeStyle = color;
+  ctx.lineWidth = width || 1.4; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1);
+  ctx.stroke(); ctx.restore();
+}
+function label(ctx, text, x, y, color, align, size){
+  ctx.save(); ctx.fillStyle = color; ctx.textAlign = align || 'left';
+  ctx.font = (size || 11) + 'px ui-monospace, Menlo, Consolas, monospace';
+  ctx.fillText(text, x, y); ctx.restore();
+}
+
+/* ============================================================
+   WIDGET 1 — Frame-Time Trace Reader
+   ============================================================ */
+function initTrace(){
+  var root = document.getElementById('w-trace');
+  if(!root) return;
+  var cv = document.getElementById('tt-canvas');
+
+  var st = { target:60, base:72, jit:8, len:20, seed:20261012,
+             p:{ gc:false, shader:false, io:false, vsync:false } };
+
+  var setTarget = segment(document.getElementById('tt-target'), function(v){
+    st.target = v; update();
+  });
+
+  ['base','jit','len'].forEach(function(k){
+    var el = document.getElementById('tt-' + k);
+    el.addEventListener('input', function(){ st[k] = parseFloat(el.value); update(); });
+  });
+
+  var pathBtns = $$('#tt-path button');
+  pathBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      st.p[b.dataset.p] = !st.p[b.dataset.p];
+      b.classList.toggle('on', st.p[b.dataset.p]);
+      update();
+    });
+  });
+  function syncPathUI(){
+    pathBtns.forEach(function(b){ b.classList.toggle('on', !!st.p[b.dataset.p]); });
+  }
+
+  /* --- the model --- */
+  function buildTrace(){
+    var budget = 1000 / st.target;
+    var base = budget * (st.base / 100);
+    var jit = st.jit / 10;
+    var n = clamp(Math.round(st.len * st.target), 200, 6000);
+    var r = rng(st.seed);
+    var arr = new Float64Array(n);
+    for(var i = 0; i < n; i++){
+      var g = (r() + r() + r() + r() - 2) / 2;          /* approx normal, sd ~= 0.29 */
+      var wave = base * 0.030 * Math.sin(i / 89) + base * 0.018 * Math.sin(i / 311 + 1.3);
+      arr[i] = Math.max(0.4, base + jit * g * 2.2 + wave);
+    }
+    if(st.p.gc){
+      var per = Math.max(18, Math.round(1.2 * st.target));
+      for(var k = per; k < n; k += per) arr[k] += 11;
+    }
+    if(st.p.shader){
+      var rs = rng(st.seed + 977), ev = 5;
+      for(var e = 0; e < ev; e++){
+        var idx = Math.floor((e + 0.30 + 0.35 * rs()) * n / ev);
+        if(idx >= 0 && idx < n) arr[idx] += 55;
+      }
+    }
+    if(st.p.io){
+      var rb = rng(st.seed + 4211), bursts = 3, blen = 7;
+      for(var b = 0; b < bursts; b++){
+        var s0 = Math.floor((b + 0.22 + 0.40 * rb()) * n / bursts);
+        for(var j = 0; j < blen && s0 + j < n; j++) arr[s0 + j] += 24;
+      }
+    }
+    if(st.p.vsync){
+      for(var q = 0; q < n; q++)
+        arr[q] = Math.max(1, Math.ceil(arr[q] / budget - 1e-9)) * budget;
+    }
+    return arr;
+  }
+
+  function stats(arr){
+    var n = arr.length, sum = 0, i;
+    for(i = 0; i < n; i++) sum += arr[i];
+    var mean = sum / n;
+    var vsum = 0;
+    for(i = 0; i < n; i++){ var d = arr[i] - mean; vsum += d * d; }
+    var sd = Math.sqrt(vsum / n);
+    var sorted = arr.slice(); sorted.sort();
+    var budget = 1000 / st.target;
+    var over = 0;
+    for(i = 0; i < n; i++) if(arr[i] > budget * 1.001) over++;
+    var kk = Math.max(1, Math.round(n * 0.01)), tail = 0;
+    for(i = n - kk; i < n; i++) tail += sorted[i];
+    return {
+      n:n, mean:mean, sd:sd, sorted:sorted, budget:budget, over:over,
+      p50:pctRank(sorted, 0.50), p95:pctRank(sorted, 0.95),
+      p99:pctRank(sorted, 0.99), p999:pctRank(sorted, 0.999),
+      max:sorted[n - 1], min:sorted[0], alt1:tail / kk
+    };
+  }
+
+  function draw(arr, s){
+    var f = fitCanvas(cv, 430), ctx = f.ctx, W = f.w, H = f.h;
+    var L = 52, R = 12, T = 16;
+    var P1H = 236, P1B = T + P1H;
+    var P2T = P1B + 76, P2H = 96, P2B = P2T + P2H;
+    var yMax = Math.max(s.budget * 2.5, s.p99 * 1.35);
+    var plotW = W - L - R;
+
+    function y1(v){ return P1B - clamp(v / yMax, 0, 1) * P1H; }
+
+    /* panel 1 frame */
+    ctx.fillStyle = '#080b0f'; ctx.fillRect(L, T, plotW, P1H);
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.strokeRect(L + .5, T + .5, plotW - 1, P1H - 1);
+
+    /* horizontal gridlines in ms */
+    var step = yMax > 60 ? 20 : (yMax > 30 ? 10 : 5);
+    for(var g = step; g < yMax; g += step){
+      var yy = y1(g);
+      dashLine(ctx, L, yy, L + plotW, yy, 'rgba(42,52,65,.85)', [2,4], 1);
+      label(ctx, g + ' ms', L - 7, yy + 3.5, C.tx3, 'right', 10);
+    }
+
+    /* the trace, aggregated per pixel column */
+    var n = s.n, overflow = 0;
+    for(var x = 0; x < plotW; x++){
+      var i0 = Math.floor(x * n / plotW), i1 = Math.max(i0 + 1, Math.floor((x + 1) * n / plotW));
+      var lo = Infinity, hi = -Infinity;
+      for(var i = i0; i < i1 && i < n; i++){ if(arr[i] < lo) lo = arr[i]; if(arr[i] > hi) hi = arr[i]; }
+      if(hi === -Infinity) continue;
+      var clipped = hi > yMax;
+      if(clipped) overflow++;
+      ctx.strokeStyle = clipped ? C.crit : (hi > s.budget ? C.warn : C.acc);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(L + x + .5, y1(lo));
+      ctx.lineTo(L + x + .5, y1(Math.min(hi, yMax)));
+      ctx.stroke();
+    }
+
+    /* reference lines */
+    dashLine(ctx, L, y1(s.budget), L + plotW, y1(s.budget), C.ok, [6,4], 1.6);
+    label(ctx, 'budget ' + fmt(s.budget, 2) + ' ms', L + plotW - 4, y1(s.budget) - 5, C.ok, 'right', 10.5);
+    dashLine(ctx, L, y1(s.mean), L + plotW, y1(s.mean), C.info, [3,3], 1.3);
+    if(s.p99 <= yMax) dashLine(ctx, L, y1(s.p99), L + plotW, y1(s.p99), C.warn, [8,5], 1.3);
+    if(s.p999 <= yMax) dashLine(ctx, L, y1(s.p999), L + plotW, y1(s.p999), C.crit, [8,5], 1.3);
+    /* Lay the three stat labels out so they never overlap when the values sit close
+       together (which is exactly what happens on a clean trace — the case students
+       look at first). Sort by y, then push each one up until it clears the one below. */
+    var statLabels = [{t:'mean ' + fmt(s.mean, 2), y:y1(s.mean), c:C.info}];
+    if(s.p99  <= yMax) statLabels.push({t:'P99 '   + fmt(s.p99,  1), y:y1(s.p99),  c:C.warn});
+    if(s.p999 <= yMax) statLabels.push({t:'P99.9 ' + fmt(s.p999, 1), y:y1(s.p999), c:C.crit});
+    statLabels.sort(function(a,b){ return b.y - a.y; });   /* bottom of plot first */
+    var minGap = 13, prevY = Infinity;
+    statLabels.forEach(function(sl){
+      var y = Math.min(sl.y - 4, prevY - minGap);
+      prevY = y;
+      label(ctx, sl.t, L + 4, Math.max(T + 11, y), sl.c, 'left', 10.5);
+    });
+    if(overflow > 0)
+      label(ctx, '↑ ' + overflow + ' column(s) clipped, worst frame ' + fmt(s.max, 1) + ' ms',
+            L + plotW - 4, T + 13, C.crit, 'right', 10.5);
+
+    label(ctx, 'frame time over ' + fmt(st.len, 0) + ' s  (' + s.n + ' frames)',
+          L, P1B + 17, C.tx2, 'left', 11.5);
+    label(ctx, 'time →', L + plotW, P1B + 17, C.tx3, 'right', 11);
+
+    /* panel 2 — quantile plot, x = log(1/(1-p)) so P50/P90/P99/P99.9 are evenly spaced */
+    var XMAXL = Math.log10(2000);
+    function y2(v){ return P2B - clamp(v / yMax, 0, 1) * P2H; }
+    ctx.fillStyle = '#080b0f'; ctx.fillRect(L, P2T, plotW, P2H);
+    ctx.strokeStyle = C.line; ctx.strokeRect(L + .5, P2T + .5, plotW - 1, P2H - 1);
+
+    ctx.beginPath();
+    for(var px = 0; px <= plotW; px++){
+      var t = px / plotW;
+      var p = 1 - Math.pow(10, -t * XMAXL);
+      var idx = clamp(Math.floor(p * s.n), 0, s.n - 1);
+      var v = Math.min(s.sorted[idx], yMax);
+      if(px === 0) ctx.moveTo(L + px, y2(v)); else ctx.lineTo(L + px, y2(v));
+    }
+    ctx.lineTo(L + plotW, P2B); ctx.lineTo(L, P2B); ctx.closePath();
+    ctx.fillStyle = 'rgba(77,163,255,.20)'; ctx.fill();
+    ctx.strokeStyle = C.acc; ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    for(var px2 = 0; px2 <= plotW; px2++){
+      var t2 = px2 / plotW;
+      var p2 = 1 - Math.pow(10, -t2 * XMAXL);
+      var idx2 = clamp(Math.floor(p2 * s.n), 0, s.n - 1);
+      var v2 = Math.min(s.sorted[idx2], yMax);
+      if(px2 === 0) ctx.moveTo(L + px2, y2(v2)); else ctx.lineTo(L + px2, y2(v2));
+    }
+    ctx.stroke();
+    dashLine(ctx, L, y2(s.budget), L + plotW, y2(s.budget), C.ok, [6,4], 1.4);
+
+    [[0.50,'P50','1 in 2',C.tx2],[0.90,'P90','1 in 10',C.tx2],
+     [0.99,'P99','1 in 100',C.warn],[0.999,'P99.9','1 in 1000',C.crit]].forEach(function(m){
+      var tt = Math.log10(1 / (1 - m[0])) / XMAXL;
+      var xx = L + tt * plotW;
+      dashLine(ctx, xx, P2T, xx, P2B, m[3] === C.tx2 ? 'rgba(110,127,146,.6)' : m[3], [3,3], 1.2);
+      label(ctx, m[1], xx, P2T - 16, m[3], 'center', 10.5);
+      label(ctx, m[2], xx, P2T - 5, C.tx3, 'center', 9.5);
+    });
+    label(ctx, 'sorted frame times — worst 1 frame in N', L, P2B + 15, C.tx2, 'left', 11.5);
+    label(ctx, 'rarer →', L + plotW, P2B + 15, C.tx3, 'right', 11);
+  }
+
+  function verdict(s){
+    var el = document.getElementById('tt-verdict');
+    var avgFps = 1000 / s.mean, p99f = 1000 / s.p99, p999f = 1000 / s.p999;
+    var ratio = s.p99 / s.mean, ratio9 = s.p999 / s.mean;
+    var on = [];
+    if(st.p.gc) on.push('gc'); if(st.p.shader) on.push('shader');
+    if(st.p.io) on.push('io'); if(st.p.vsync) on.push('vsync');
+    var cls = 'ok', msg;
+
+    var head = 'Average <b>' + fmt(avgFps,1) + ' fps</b> (' + fmt(s.mean,2) +
+      ' ms) &middot; 1% low <b>' + fmt(p99f,1) + ' fps</b> &middot; 0.1% low <b>' +
+      fmt(p999f,1) + ' fps</b>. ';
+
+    if(on.length === 0){
+      if(s.mean <= s.budget){
+        cls = 'ok';
+        msg = 'Clean capture. P99 is ' + fmt(ratio,2) + '× the mean, so the tail is jitter, ' +
+          'not pathology. This is the distribution shape you are trying to get back to.';
+      } else {
+        cls = 'warn';
+        msg = 'No injected pathology, but the baseline itself overshoots the ' + fmt(s.budget,2) +
+          ' ms budget on ' + fmt(100*s.over/s.n,1) + '% of frames. This is a <i>steady</i> problem: ' +
+          'every frame is slow, so run the sixty-second bound test rather than hunting spikes.';
+      }
+    } else {
+      var driver;
+      if(st.p.shader && s.max > 45) driver = 'The 0.1% low is where the shader-compilation hitches ' +
+        'live — five events in the whole capture is well under 1% of frames, invisible in the ' +
+        'mean and ' +
+        'catastrophic at P99.9. Fix: warm the pipeline-state cache at load.';
+      else if(st.p.io) driver = 'The clustered burst shape is a streaming / I-O stall: several ' +
+        'consecutive slow frames, not one isolated spike. Fix: move the read off the game thread, ' +
+        'or preload across the transition.';
+      else if(st.p.gc) driver = 'The periodic spike is the allocator. A collection lands roughly ' +
+        'every 1.2 s, which at this frame rate is about ' + fmt(100/(1.2*st.target),1) +
+        '% of frames — just enough to own P99 and far too little to move the mean. ' +
+        'Fix: cut the allocation rate, do not tune the collector.';
+      else driver = 'Frames are being quantized to refresh boundaries, so the distribution is ' +
+        'bimodal and small overshoots cost whole frames. Fix: buy headroom, do not chase spikes.';
+
+      if(st.p.vsync && on.length > 1)
+        driver += ' Vsync is also on, so every over-budget frame is rounded up to the next refresh ' +
+          '— the penalty for a 3% overshoot is 100% of a frame.';
+
+      if(ratio9 > 2.5 || ratio > 1.9) cls = 'crit';
+      else if(ratio > 1.3 || s.over > s.n * 0.02) cls = 'warn';
+      else cls = 'warn';
+
+      msg = 'The mean moved by ' + fmt(100 * (s.mean / (s.budget * st.base / 100) - 1), 1) +
+        '% while P99 is now ' + fmt(ratio,2) + '× and P99.9 ' + fmt(ratio9,2) +
+        '× the mean. ' + driver;
+    }
+    el.className = 'verdict ' + cls;
+    el.innerHTML = head + msg;
+  }
+
+  function update(){
+    document.getElementById('tt-targeto').textContent = st.target + ' fps';
+    var budget = 1000 / st.target;
+    document.getElementById('tt-baseo').textContent = fmt(budget * st.base / 100, 2) + ' ms';
+    document.getElementById('tt-jito').textContent = fmt(st.jit / 10, 1) + ' ms';
+    document.getElementById('tt-leno').textContent = fmt(st.len, 0) + ' s';
+
+    var arr = buildTrace();
+    var s = stats(arr);
+    var avgFps = 1000 / s.mean;
+
+    setCell(document.getElementById('tt-avg'), fmt(avgFps, 1),
+      avgFps >= st.target * 0.98 ? 'ok' : (avgFps >= st.target * 0.85 ? 'warn' : 'crit'));
+    setCell(document.getElementById('tt-p50'), fmt(s.p50, 2) + ' ms',
+      s.p50 <= s.budget ? 'ok' : 'warn');
+    var p99f = 1000 / s.p99, p999f = 1000 / s.p999;
+    setCell(document.getElementById('tt-p99'), fmt(p99f, 1) + ' fps',
+      p99f >= st.target * 0.9 ? 'ok' : (p99f >= st.target * 0.6 ? 'warn' : 'crit'));
+    setCell(document.getElementById('tt-p999'), fmt(p999f, 1) + ' fps',
+      p999f >= st.target * 0.9 ? 'ok' : (p999f >= st.target * 0.5 ? 'warn' : 'crit'));
+    setCell(document.getElementById('tt-max'), fmt(s.max, 1) + ' ms',
+      s.max <= s.budget * 1.2 ? 'ok' : (s.max <= s.budget * 2 ? 'warn' : 'crit'));
+    var overPct = 100 * s.over / s.n;
+    setCell(document.getElementById('tt-over'), fmt(overPct, 1) + '%',
+      overPct < 1 ? 'ok' : (overPct < 10 ? 'warn' : 'crit'));
+
+    document.getElementById('tt-alt').textContent = fmt(s.alt1, 2) + ' ms (' + fmt(1000 / s.alt1, 1) + ' fps)';
+    document.getElementById('tt-sd').textContent = fmt(s.sd, 2) + ' ms';
+
+    draw(arr, s);
+    verdict(s);
+  }
+
+  function applyPreset(name){
+    if(name === 'reseed'){ st.seed = (st.seed * 1103515245 + 12345) % 2147483647; update(); return; }
+    st.p = { gc:false, shader:false, io:false, vsync:false };
+    if(name === 'clean'){ st.target = 60; st.base = 72; st.jit = 8; st.len = 20; }
+    if(name === 'gconly'){ st.target = 60; st.base = 72; st.jit = 8; st.len = 20; st.p.gc = true; }
+    if(name === 'firstrun'){ st.target = 60; st.base = 70; st.jit = 10; st.len = 20;
+      st.p.shader = true; st.p.io = true; }
+    if(name === 'openworld'){ st.target = 60; st.base = 90; st.jit = 16; st.len = 30;
+      st.p.gc = true; st.p.io = true; st.p.vsync = true; }
+    document.getElementById('tt-base').value = st.base;
+    document.getElementById('tt-jit').value = st.jit;
+    document.getElementById('tt-len').value = st.len;
+    setTarget(st.target);
+    syncPathUI();
+    update();
+  }
+  $$('#w-trace .btnrow button').forEach(function(b){
+    b.addEventListener('click', function(){ applyPreset(b.dataset.preset); });
+  });
+
+  addEventListener('resize', update, { passive:true });
+  update();
+}
+
+/* ============================================================
+   WIDGET 2 — Frame Budget Allocator
+   ============================================================ */
+function initBudget(){
+  var root = document.getElementById('w-budget');
+  if(!root) return;
+  var cv = document.getElementById('fb-canvas');
+
+  var MAIN = [
+    { k:'game', n:'Gameplay & script',  c:C.acc },
+    { k:'phys', n:'Physics',            c:C.info },
+    { k:'anim', n:'Animation',          c:C.teal },
+    { k:'cull', n:'Culling',            c:C.warn },
+    { k:'aud',  n:'Audio (main)',       c:C.unity },
+    { k:'gc',   n:'GC / allocator',     c:C.crit }
+  ];
+  var st = { game:48, phys:30, anim:24, cull:18, aud:7, gc:5, rt:62, gpu:140, target:60, head:85 };
+
+  var keys = ['game','phys','anim','cull','aud','gc','rt','gpu'];
+  keys.forEach(function(k){
+    var el = document.getElementById('fb-' + k);
+    el.addEventListener('input', function(){ st[k] = parseFloat(el.value); update(); });
+  });
+  var setTarget = segment(document.getElementById('fb-target'), function(v){ st.target = v; update(); });
+  var setHead   = segment(document.getElementById('fb-head'),   function(v){ st.head = v;   update(); });
+
+  /* build the legend once */
+  var leg = document.getElementById('fb-legend');
+  leg.innerHTML = MAIN.map(function(m){
+    return '<span><i style="background:' + m.c + '"></i>' + m.n + '</span>';
+  }).join('') +
+  '<span><i style="background:' + C.unreal + '"></i>Render thread</span>' +
+  '<span><i style="background:' + C.ok + '"></i>GPU</span>';
+
+  function calc(){
+    var mainParts = MAIN.map(function(m){ return { m:m, v: st[m.k] / 10 }; });
+    var main = mainParts.reduce(function(a, p){ return a + p.v; }, 0);
+    var rt = st.rt / 10, gpu = st.gpu / 10;
+    var frame = Math.max(main, rt, gpu);
+    var budget = 1000 / st.target;
+    var plan = budget * st.head / 100;
+    var lanes = [{ n:'main thread', v:main }, { n:'render thread', v:rt }, { n:'GPU', v:gpu }];
+    var bound = lanes[0];
+    lanes.forEach(function(l){ if(l.v > bound.v) bound = l; });
+    var waste = (frame - main) + (frame - rt) + (frame - gpu);
+    var biggest = mainParts[0];
+    mainParts.forEach(function(p){ if(p.v > biggest.v) biggest = p; });
+    return { mainParts:mainParts, main:main, rt:rt, gpu:gpu, frame:frame, budget:budget,
+             plan:plan, bound:bound, waste:waste, biggest:biggest, fps:1000 / frame };
+  }
+
+  function draw(d){
+    var f = fitCanvas(cv, 330), ctx = f.ctx, W = f.w, H = f.h;
+    var L = 122, R = 16, T = 26;
+    var plotW = W - L - R;
+    var xMax = Math.max(d.frame * 1.18, d.budget * 1.15, 1);
+    function X(v){ return L + (v / xMax) * plotW; }
+    var barH = 48, gap = 32;
+
+    var rows = [
+      { name:'Main thread', parts: d.mainParts.map(function(p){ return { v:p.v, c:p.m.c, n:p.m.n }; }), total:d.main },
+      { name:'Render thread', parts: [{ v:d.rt, c:C.unreal, n:'Submission' }], total:d.rt },
+      { name:'GPU', parts: [{ v:d.gpu, c:C.ok, n:'GPU' }], total:d.gpu }
+    ];
+
+    /* ms gridlines */
+    var stepMs = xMax > 40 ? 10 : (xMax > 20 ? 5 : 2);
+    for(var g = stepMs; g < xMax; g += stepMs){
+      dashLine(ctx, X(g), T - 8, X(g), T + 3 * barH + 2 * gap + 4, 'rgba(42,52,65,.8)', [2,4], 1);
+      label(ctx, g + '', X(g), T - 12, C.tx3, 'center', 10);
+    }
+
+    rows.forEach(function(row, ri){
+      var y = T + ri * (barH + gap);
+      label(ctx, row.name, L - 12, y + barH / 2 + 4, row.total === d.bound.v ? C.tx : C.tx2, 'right', 12.5);
+      ctx.fillStyle = '#080b0f'; ctx.fillRect(L, y, plotW, barH);
+      ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.strokeRect(L + .5, y + .5, plotW - 1, barH - 1);
+      var cx = L;
+      row.parts.forEach(function(p){
+        var w = (p.v / xMax) * plotW;
+        if(w <= 0) return;
+        ctx.fillStyle = p.c; ctx.fillRect(cx, y + 1, w, barH - 2);
+        if(w > 46) label(ctx, fmt(p.v, 1), cx + w / 2, y + barH / 2 + 4, '#0a0d12', 'center', 11.5);
+        cx += w;
+      });
+      label(ctx, fmt(row.total, 2) + ' ms', X(row.total) + 7, y + barH / 2 + 4,
+            row.total > d.budget ? C.crit : C.tx2, 'left', 11.5);
+      if(row.total === d.bound.v)
+        label(ctx, 'BOUND', L - 12, y + barH / 2 + 18, C.crit, 'right', 9.5);
+    });
+
+    var bottom = T + 3 * barH + 2 * gap;
+    dashLine(ctx, X(d.budget), T - 8, X(d.budget), bottom + 4, C.crit, [6,4], 1.8);
+    label(ctx, 'budget ' + fmt(d.budget, 2), X(d.budget), bottom + 18, C.crit, 'center', 10.5);
+    dashLine(ctx, X(d.plan), T - 8, X(d.plan), bottom + 4, C.ok, [4,4], 1.5);
+    label(ctx, 'plan ' + fmt(d.plan, 2), X(d.plan), bottom + 31, C.ok, 'center', 10.5);
+    label(ctx, 'milliseconds →', L + plotW, T - 12, C.tx3, 'right', 10.5);
+  }
+
+  function update(){
+    keys.forEach(function(k){
+      document.getElementById('fb-' + k + 'o').textContent = fmt(st[k] / 10, 1);
+    });
+    document.getElementById('fb-targeto').textContent = st.target + ' fps';
+    document.getElementById('fb-heado').textContent = (100 - st.head) + '%';
+
+    var d = calc();
+    setCell(document.getElementById('fb-main'), fmt(d.main, 2) + ' ms',
+      d.main === d.bound.v ? 'crit' : 'ok');
+    setCell(document.getElementById('fb-rtv'), fmt(d.rt, 2) + ' ms',
+      d.rt === d.bound.v ? 'crit' : 'ok');
+    setCell(document.getElementById('fb-gpuv'), fmt(d.gpu, 2) + ' ms',
+      d.gpu === d.bound.v ? 'crit' : 'ok');
+    setCell(document.getElementById('fb-frame'), fmt(d.frame, 2) + ' ms',
+      d.frame <= d.plan ? 'ok' : (d.frame <= d.budget ? 'warn' : 'crit'));
+    setCell(document.getElementById('fb-fps'), fmt(d.fps, 1),
+      d.fps >= st.target ? 'ok' : (d.fps >= st.target * 0.85 ? 'warn' : 'crit'));
+    var used = 100 * d.frame / d.plan;
+    setCell(document.getElementById('fb-used'), fmt(used, 0) + '%',
+      used <= 100 ? 'ok' : (used <= 118 ? 'warn' : 'crit'));
+    document.getElementById('fb-waste').textContent = fmt(d.waste, 2) + ' ms across the three lanes';
+
+    var v = document.getElementById('fb-verdict'), cls, msg;
+    var others = [d.main, d.rt, d.gpu].filter(function(x){ return x !== d.bound.v; });
+    var second = others.length ? Math.max.apply(null, others) : d.bound.v;
+    var first;
+    if(d.bound.n === 'main thread')
+      first = 'the largest main-thread line, which is <b>' + d.biggest.m.n + '</b> at ' +
+        fmt(d.biggest.v, 2) + ' ms (' + fmt(100 * d.biggest.v / d.main, 0) + '% of the lane)';
+    else if(d.bound.n === 'render thread')
+      first = 'draw-call submission — batch, instance, merge materials, and cut the number of ' +
+        'unique render states before you touch anything else';
+    else
+      first = 'pixel cost — run the resolution test first, then overdraw and post-processing';
+
+    if(d.frame <= d.plan){
+      cls = 'ok';
+      msg = 'Inside budget. Frame time is <b>' + fmt(d.frame, 2) + ' ms</b> (' + fmt(d.fps, 1) +
+        ' fps) against a ' + fmt(d.budget, 2) + ' ms budget, using ' + fmt(used, 0) +
+        '% of your ' + fmt(d.plan, 2) + ' ms plan. The <b>' + d.bound.n + '</b> is the pacing lane, ' +
+        'so any new work belongs on one of the other two if you can put it there.';
+    } else if(d.frame <= d.budget){
+      cls = 'warn';
+      msg = 'Meets the nominal ' + st.target + ' fps target at <b>' + fmt(d.frame, 2) +
+        ' ms</b>, but you are over your ' + (100 - st.head) + '% headroom reserve (' +
+        fmt(used, 0) + '% of plan). One dense encounter drops frames. Bound: <b>' + d.bound.n +
+        '</b>. First thing to cut is ' + first + '.';
+    } else {
+      cls = 'crit';
+      msg = 'Over budget by <b>' + fmt(d.frame - d.budget, 2) + ' ms</b> — ' +
+        fmt(d.fps, 1) + ' fps against a ' + st.target + ' fps target. Bound: <b>' + d.bound.n +
+        '</b> at ' + fmt(d.bound.v, 2) + ' ms. First thing to cut is ' + first +
+        '. Work on the other two lanes buys nothing right now, and cutting this one stops paying ' +
+        'at ' + fmt(second, 2) + ' ms, where the next lane takes over.';
+    }
+    v.className = 'verdict ' + cls;
+    v.innerHTML = msg;
+    draw(d);
+  }
+
+  var PRESETS = {
+    cpu:      { game:82, phys:55, anim:38, cull:26, aud:8,  gc:12, rt:40,  gpu:70,  target:60, head:85 },
+    gpu:      { game:30, phys:15, anim:14, cull:10, aud:6,  gc:4,  rt:45,  gpu:210, target:60, head:85 },
+    draw:     { game:28, phys:14, anim:16, cull:34, aud:5,  gc:4,  rt:148, gpu:95,  target:60, head:85 },
+    mobile:   { game:60, phys:30, anim:30, cull:25, aud:15, gc:120, rt:70, gpu:250, target:30, head:80 },
+    balanced: { game:48, phys:30, anim:24, cull:18, aud:7,  gc:5,  rt:62,  gpu:140, target:60, head:85 }
+  };
+  $$('#w-budget .btnrow button').forEach(function(b){
+    b.addEventListener('click', function(){
+      var p = PRESETS[b.dataset.preset]; if(!p) return;
+      Object.keys(p).forEach(function(k){ st[k] = p[k]; });
+      keys.forEach(function(k){ document.getElementById('fb-' + k).value = st[k]; });
+      setTarget(st.target); setHead(st.head);
+      update();
+    });
+  });
+
+  addEventListener('resize', update, { passive:true });
+  update();
+}
+
+/* ============================================================
+   DECISION TREE — which bound, and what to look at first
+   ============================================================ */
+var BOUND_NODES = {
+  start: {
+    q: 'Frame rate dropped. Before you open a profiler: what does the frame-time graph look like?',
+    hint: 'If you cannot answer this, that is your first task — stat unitgraph, the Unity Profiler timeline, or your own harness.',
+    choices: [
+      { t:'A raised but roughly flat line', sub:'Every frame is slow by about the same amount', go:'steady', lbl:'flat & slow' },
+      { t:'Mostly fine, with regular periodic spikes', sub:'A spike every second or two, like clockwork', go:'periodicq', lbl:'periodic spikes' },
+      { t:'Mostly fine, with rare enormous spikes', sub:'A few per session, 50–500 ms each', go:'rareq', lbl:'rare huge spikes' },
+      { t:'Alternating fast and slow frames, or pinned to two values', sub:'Average looks fine, motion judders', go:'pacing', lbl:'bimodal / judder' }
+    ]
+  },
+  steady: {
+    q: 'Halve the render resolution (or set resolution scale to 50%). What happens to frame time?',
+    hint: 'Sixty seconds. Do this before any deep profiling.',
+    choices: [
+      { t:'Substantial improvement', sub:'Frame time drops noticeably', go:'gpuq', lbl:'resolution helped' },
+      { t:'Essentially no change', sub:'Same frame time at half the pixels', go:'cpuq', lbl:'resolution did nothing' }
+    ]
+  },
+  gpuq: {
+    q: 'You are GPU-bound on pixel work. Now force every material to a trivial unlit shader.',
+    hint: 'This separates shading cost from bandwidth and raster cost.',
+    choices: [
+      { t:'Big improvement', sub:'The shaders themselves are expensive', go:'shading', lbl:'trivial shader helped' },
+      { t:'Little change', sub:'Cost survives even with no shading work', go:'bandwidth', lbl:'trivial shader did nothing' }
+    ]
+  },
+  cpuq: {
+    q: 'Not pixel-bound. Which thread is sitting at the frame time?',
+    hint: 'Unreal: stat unit — compare Game, Draw and GPU to Frame. Unity: the Profiler Timeline view, and read the wait markers.',
+    choices: [
+      { t:'Render thread or RHI thread', sub:'Draw / Draw thread is closest to Frame', go:'drawcalls', lbl:'render thread' },
+      { t:'Game / main thread', sub:'Game is closest to Frame', go:'mainq', lbl:'main thread' },
+      { t:'Nothing is busy — every thread is waiting', sub:'Low utilization everywhere, still slow', go:'external', lbl:'everything waiting' }
+    ]
+  },
+  mainq: {
+    q: 'Sort the profiler hierarchy by Self ms on the main thread. What dominates?',
+    hint: 'Self ms, not Total ms. Total tells you where you are in the call tree; Self tells you what is costing.',
+    choices: [
+      { t:'Physics', sub:'Simulate, broadphase, solver', go:'physics', lbl:'physics' },
+      { t:'Animation, skinning or IK', sub:'Evaluate, blend, bone updates', go:'anim', lbl:'animation' },
+      { t:'Your own gameplay or script code', sub:'Update loops, AI, spawning', go:'gameplay', lbl:'gameplay code' },
+      { t:'GC, allocator, or a wait on a worker thread', sub:'Alloc columns nonzero, or a sync point', go:'gcwait', lbl:'GC / sync' }
+    ]
+  },
+  periodicq: {
+    q: 'Do the spikes track your allocation rate?',
+    hint: 'Test: cut allocations in half (pool the worst offender) and see whether the interval doubles. Check the GC Alloc column per frame.',
+    choices: [
+      { t:'Yes — the interval scales with allocation rate', sub:'GC Alloc is nonzero every frame', go:'gcspike', lbl:'scales with allocation' },
+      { t:'No — the interval is fixed regardless', sub:'Same period whatever the gameplay', go:'timer', lbl:'fixed period' }
+    ]
+  },
+  rareq: {
+    q: 'Do the huge spikes happen only the first time you encounter a thing in a session?',
+    hint: 'Repeat the exact same action twice in one run and compare.',
+    choices: [
+      { t:'Yes — first encounter only', sub:'Second time through is smooth', go:'psocompile', lbl:'first-encounter only' },
+      { t:'No — it repeats every time', sub:'Same cost on the tenth pass', go:'streaming', lbl:'repeats every time' }
+    ]
+  },
+  /* ---- leaves ---- */
+  shading: { leaf:true, title:'GPU-bound on shading cost',
+    body:'<p>Pixel shader work dominates. Look for full-screen post passes, stacked transparency, ' +
+      'expensive uber-shaders with poor occupancy, and per-pixel lighting on surfaces nobody looks at.</p>' +
+      '<p><b>Confirm with:</b> a GPU capture sorted by per-pass time; then re-capture with the suspect ' +
+      'pass forced to a constant-colour shader and diff the pass times.</p>' +
+      '<p class="tool">RenderDoc &middot; PIX &middot; Nsight Graphics &middot; Radeon GPU Profiler &middot; ' +
+      'Unreal ProfileGPU + Shader Complexity view &middot; Unity Frame Debugger</p>' },
+  bandwidth: { leaf:true, title:'GPU-bound on bandwidth, overdraw or raster',
+    body:'<p>Resolution mattered but shading did not, so you are paying for moving pixels rather than ' +
+      'computing them: overdraw from blended geometry, oversized render targets, MSAA on a tiled GPU, ' +
+      'or too many full-screen resolves. This is the dominant failure mode on mobile.</p>' +
+      '<p><b>Confirm with:</b> a quad-overdraw visualization and the render-target list from a frame capture; ' +
+      'on mobile, per-tile bandwidth counters.</p>' +
+      '<p class="tool">Quad Overdraw view (Unreal) &middot; Android GPU Inspector &middot; Xcode Metal capture ' +
+      '&middot; RenderDoc render-target inspector</p>' },
+  drawcalls: { leaf:true, title:'Submission-bound: render thread or RHI thread',
+    body:'<p>You are spending the frame building and issuing draw commands, not executing them. Causes: ' +
+      'too many unique materials, batching broken by per-object state, no instancing, huge numbers of ' +
+      'small meshes, or a scene graph that rebuilds every frame.</p>' +
+      '<p><b>Confirm with:</b> draw-call and state-change counts per frame, and a batch-break report. ' +
+      'Then hide half the level and confirm the cost halves.</p>' +
+      '<p class="tool">Unity Frame Debugger (tells you <i>why</i> a batch broke) &middot; Unreal stat scenerendering, ' +
+      'stat rhi &middot; Unreal Insights RHI thread track</p>' },
+  physics: { leaf:true, title:'Physics-bound on the main thread',
+    body:'<p>Check, in this order: mesh colliders that should be primitives, a collision matrix where ' +
+      'everything tests against everything, bodies that never sleep, continuous collision detection ' +
+      'enabled globally, and a fixed timestep small enough that the simulation runs extra substeps to ' +
+      'catch up — which makes slow frames slower.</p>' +
+      '<p><b>Confirm with:</b> physics ms plotted against active body count, then against timestep. ' +
+      'Two plots, ten minutes, and you will know which one it is.</p>' +
+      '<p class="tool">Unity Physics Debugger + Profiler Physics module &middot; Unreal stat physics, ' +
+      'Chaos Visual Debugger, p.Chaos.* cvars</p>' },
+  anim: { leaf:true, title:'Animation / skinning bound',
+    body:'<p>Usually a count problem rather than a cost problem: too many animated characters evaluated at ' +
+      'full rate regardless of distance or visibility. Look for missing animation LOD, update-rate ' +
+      'scaling, and off-screen characters still evaluating.</p>' +
+      '<p><b>Confirm with:</b> a custom counter of evaluated skeletons per frame alongside the animation ' +
+      'marker time — the cost-per-skeleton number tells you whether to cut count or cut per-unit cost.</p>' +
+      '<p class="tool">Unity Profiler Animation module + ProfilerMarker &middot; Unreal stat anim, ' +
+      'Insights animation track &middot; URO / significance manager settings</p>' },
+  gameplay: { leaf:true, title:'Your own code is the bottleneck',
+    body:'<p>Good news: this is the part you can change fastest. Instrument your subsystems with named ' +
+      'markers (section 7) and split each into phases before optimizing anything. Then look for the ' +
+      'usual suspects: O(n²) scans over entities, per-frame searches that could be cached, ' +
+      'component lookups inside Update, and everything ticking at full rate that does not need to.</p>' +
+      '<p><b>Confirm with:</b> your own markers plus a work-unit counter, so you can tell "slower" from ' +
+      '"busier".</p>' +
+      '<p class="tool">ProfilerMarker / ProfilerCounterValue &middot; TRACE_CPUPROFILER_EVENT_SCOPE / ' +
+      'SCOPE_CYCLE_COUNTER &middot; Superluminal or VTune for the sampling pass first</p>' },
+  gcwait: { leaf:true, title:'Allocator pressure or a bad sync point',
+    body:'<p>If the GC Alloc column is nonzero every frame you have a future spike, not a current one — ' +
+      'go to the periodic-spike branch. If the main thread is <i>waiting</i> on a worker, your jobs are ' +
+      'either too coarse (one long job everyone waits for) or too fine (scheduling costs more than the ' +
+      'work). Either way the timeline view, not the hierarchy view, is where you will see it.</p>' +
+      '<p><b>Confirm with:</b> parallel efficiency = serial time / (threads × parallel time), measured ' +
+      'at 1, 2, 4 and 8 workers.</p>' +
+      '<p class="tool">Unity Profiler Timeline + Jobs &middot; Unreal Insights Timing tracks &middot; ' +
+      'Superluminal &middot; VTune Threading</p>' },
+  gcspike: { leaf:true, title:'Garbage collection spike',
+    body:'<p>Textbook shape: mean barely moves, P99 collapses, spikes at a regular interval set by how ' +
+      'fast you fill the heap. Do not tune the collector first — cut the allocation rate. Sort the ' +
+      'GC Alloc column descending and fix the top three: string concatenation, LINQ in Update, boxing, ' +
+      'closures capturing locals, and per-frame <code>new</code>.</p>' +
+      '<p><b>Confirm with:</b> allocation rate in KB/frame before and after, plus a frame-time trace ' +
+      'showing the periodic spike gone. Topic 6 covers this in depth.</p>' +
+      '<p class="tool">Unity Profiler GC Alloc column + Memory Profiler snapshot diff &middot; ' +
+      'incremental GC &middot; Unreal LLM and stat memory</p>' },
+  timer: { leaf:true, title:'Something on a fixed timer',
+    body:'<p>A period that does not respond to allocation rate points at scheduled work: autosave, ' +
+      'telemetry flush, checkpoint write, navmesh or LOD rebuild, a coroutine on a fixed interval, ' +
+      'analytics batching, or an anti-cheat scan. All of them are fixable by moving the work off the ' +
+      'game thread or by amortizing it across frames.</p>' +
+      '<p><b>Confirm with:</b> a trace with your own markers around each candidate, then line the spike ' +
+      'timestamps up against the marker timestamps. If they coincide five times out of five, you have it.</p>' +
+      '<p class="tool">Unreal Insights timeline (click the tall frame) &middot; Unity Profiler timeline ' +
+      '&middot; custom ProfilerMarkers around each scheduled task</p>' },
+  psocompile: { leaf:true, title:'Shader / pipeline-state compilation hitch',
+    body:'<p>First-encounter-only is the signature. The driver is compiling a pipeline state object the ' +
+      'first time a material-plus-render-state combination is actually drawn. It owns your 0.1% low and ' +
+      'is invisible in the mean.</p>' +
+      '<p><b>Fix:</b> collect a PSO cache from a scripted run and ship it; warm shader variants during ' +
+      'load; cut variant count. <b>Confirm with:</b> the 0.1% low across two consecutive runs of the ' +
+      'identical route in one session — run two should be clean.</p>' +
+      '<p class="tool">Unreal PSO precaching / bundled PSO cache &middot; Unity ShaderVariantCollection ' +
+      'warmup &middot; RenderDoc for the variant list</p>' },
+  streaming: { leaf:true, title:'Streaming or asset-loading stall',
+    body:'<p>Repeats every time, tied to position or to spawning: synchronous loads on the game thread, ' +
+      'archives opened per request, decompression on the critical path, or a streaming volume with too ' +
+      'little lead distance.</p>' +
+      '<p><b>Confirm with:</b> a capture with file-activity and asset-loading tracks visible; you want ' +
+      'the read duration and whether the game thread was blocked on it. Then compare cold-cache and ' +
+      'warm-cache runs.</p>' +
+      '<p class="tool">Unreal Insights File Activity + Asset Loading &middot; Perfetto (Android) &middot; ' +
+      'Windows Performance Analyzer / ETW &middot; Unity Addressables + Loading module</p>' },
+  pacing: { leaf:true, title:'A frame-pacing problem, not a throughput problem',
+    body:'<p>The average is fine and the motion still judders, because the interval between presented ' +
+      'frames is uneven. Two usual causes: you are sitting right on the budget with vsync on, so frames ' +
+      'alternate between one and two refresh intervals; or your simulation delta and your present ' +
+      'cadence disagree.</p>' +
+      '<p><b>Fix:</b> buy 1–2 ms of headroom rather than chasing individual spikes, or lock to a lower ' +
+      'rate you can hold. A locked 30 that never misses beats an unlocked 45 that alternates. ' +
+      '<b>Confirm with:</b> a frame-time histogram — you are looking for two clusters and an empty gap.</p>' +
+      '<p class="tool">Unreal stat unitgraph &middot; PresentMon &middot; Android GPU Inspector frame ' +
+      'pacing view &middot; your own harness with vsync on and off</p>' },
+  external: { leaf:true, title:'Nothing is busy: look outside the engine',
+    body:'<p>Low utilization on every thread and still slow means the limiter is not your code. Check, ' +
+      'cheapest first: a frame-rate cap or vsync you forgot about, thermal throttling (measure again at ' +
+      't = 10 minutes, not t = 0), a power/performance governor, a background process, running under a ' +
+      'profiler or debugger that serializes, or an editor build.</p>' +
+      '<p><b>Confirm with:</b> the same benchmark run for 15 minutes with clock and temperature logged. ' +
+      'A knee in the curve is a throttle, not a bug in your code.</p>' +
+      '<p class="tool">PresentMon &middot; HWiNFO / powermetrics &middot; Android GPU Inspector &middot; ' +
+      'Xcode Instruments Energy Log &middot; Task Manager, honestly</p>' }
+};
+
+/* ---------- boot ---------- */
+document.addEventListener('DOMContentLoaded', function(){
+  initTrace();
+  initBudget();
+  var t = document.getElementById('treeBound');
+  if(t) new GDTTree(t, BOUND_NODES, 'start');
+});
+
+})();
+</script>
+</body></html>

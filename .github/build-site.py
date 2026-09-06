@@ -55,9 +55,14 @@ def collect():
             target = dest / src.relative_to(notes)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, target)
+        # Courses name their topic pages either topic-N.html at the root of the
+        # notes folder, or lessons/lesson-NN-*.html one level down.
+        pages = sorted(notes.glob("topic-*.html"), key=topic_order) or sorted(
+            notes.glob("lessons/lesson-*.html"), key=topic_order
+        )
         topics = [
-            (page_title(f), f"{course_slug}/{f.name}")
-            for f in sorted(notes.glob("topic-*.html"), key=topic_order)
+            (page_title(f), f"{course_slug}/{f.relative_to(notes).as_posix()}")
+            for f in pages
         ]
         courses.append({"name": course_dir.name, "slug": course_slug, "topics": topics})
         print(f"  {course_dir.name} -> {course_slug}/ ({len(topics)} topics)")

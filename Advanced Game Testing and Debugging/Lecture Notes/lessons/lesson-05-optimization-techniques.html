@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Topic 5 · Advanced Optimization Techniques — Advanced Game Testing and Debugging</title>
+<style id="lesson-kit">
+:root{
+  --bg:#0e1116; --bg2:#161b22; --bg3:#1c232d; --line:#2a3441; --line2:#3a4757;
+  --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#4da3ff; --acc2:#1f6feb;
+  --ok:#3fb950; --warn:#d29922; --crit:#f85149; --info:#a371f7; --teal:#39c5bb;
+  --unity:#5ec8f2; --unreal:#f0a44a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --sh:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 120px}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .crumb{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.topbar .spacer{flex:1}
+.topbar a{color:var(--tx2);text-decoration:none;font-size:13.5px;padding:5px 10px;
+  border-radius:7px;border:1px solid transparent}
+.topbar a:hover{color:var(--tx);background:var(--bg3);border-color:var(--line)}
+.progressbar{position:fixed;top:0;left:0;height:3px;background:var(--acc);
+  width:0;z-index:60;transition:width .12s linear}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero .kicker{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.14;margin:0 0 14px;
+  letter-spacing:-.02em;font-weight:800}
+.hero .lede{font-size:19px;color:var(--tx2);max-width:70ch;margin:0}
+.metarow{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:12.5px;color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+
+/* ---------- typography ---------- */
+h2{font-size:27px;margin:56px 0 6px;letter-spacing:-.015em;font-weight:750;
+  scroll-margin-top:80px}
+h2 .num{color:var(--acc);font-family:var(--mono);font-size:16px;
+  margin-right:11px;font-weight:600}
+h3{font-size:20px;margin:34px 0 6px;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16.5px;margin:24px 0 4px;font-weight:700;color:var(--tx)}
+p{margin:13px 0}
+a{color:var(--acc)}
+ul,ol{margin:13px 0;padding-left:24px}
+li{margin:7px 0}
+li::marker{color:var(--tx3)}
+strong{color:#fff;font-weight:650}
+em{color:var(--tx)}
+code{font-family:var(--mono);font-size:.885em;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;padding:1.5px 6px;color:#bfe3ff}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.subtle{color:var(--tx2)}
+.small{font-size:14px}
+
+/* ---------- callouts ---------- */
+.box{border:1px solid var(--line);border-left:3px solid var(--acc);
+  background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin:22px 0}
+.box .lbl{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:800;color:var(--acc);margin-bottom:7px}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.why{border-left-color:var(--info)}   .box.why .lbl{color:var(--info)}
+.box.warn{border-left-color:var(--warn)}  .box.warn .lbl{color:var(--warn)}
+.box.crit{border-left-color:var(--crit)}  .box.crit .lbl{color:var(--crit)}
+.box.ok{border-left-color:var(--ok)}      .box.ok .lbl{color:var(--ok)}
+.box.field{border-left-color:var(--teal)} .box.field .lbl{color:var(--teal)}
+
+/* ---------- objectives / goals ---------- */
+.goals{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;margin:26px 0}
+.goals h4{margin:0 0 10px;font-size:12px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx3)}
+.goals ol{margin:0;padding-left:20px}
+
+/* ---------- code ---------- */
+.codeblock{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  margin:20px 0;overflow:hidden}
+.codeblock .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);font-size:12.5px;
+  color:var(--tx2);font-family:var(--mono)}
+.codeblock .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);
+  font-size:13.4px;line-height:1.62;color:#d5e2f0}
+.codeblock pre .c{color:#6a7d91;font-style:italic}   /* comment */
+.codeblock pre .k{color:#ff7b9c}                     /* keyword */
+.codeblock pre .t{color:#7ee0c6}                     /* type    */
+.codeblock pre .s{color:#ffcf8f}                     /* string  */
+.codeblock pre .n{color:#c3a6ff}                     /* number  */
+.codeblock pre .f{color:#82c8ff}                     /* func    */
+
+/* annotated code: clickable gutter markers */
+.annot{display:grid;grid-template-columns:1fr;gap:0;margin:22px 0}
+.annot .rows{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.annot .arow{display:grid;grid-template-columns:34px 1fr;align-items:stretch;
+  border-bottom:1px solid rgba(42,52,65,.55)}
+.annot .arow:last-child{border-bottom:0}
+.annot .arow.hasnote{cursor:pointer}
+.annot .arow.hasnote:hover{background:rgba(77,163,255,.07)}
+.annot .gut{display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--tx3);font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--line);user-select:none}
+.annot .arow.hasnote .gut{color:#fff;background:var(--acc2);font-weight:700}
+.annot .arow.open .gut{background:var(--acc)}
+.annot .ln{font-family:var(--mono);font-size:13.3px;line-height:1.65;padding:2px 14px;
+  white-space:pre;overflow-x:auto;color:#d5e2f0}
+.annot .note{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--line);
+  padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease;
+  font-size:14.6px;color:var(--tx2)}
+.annot .arow.open + .note,.annot .note.open{max-height:600px;padding:13px 18px}
+.annot .note b{color:var(--tx)}
+.annot .hint{font-size:12.5px;color:var(--tx3);margin:8px 2px 0}
+
+/* ---------- engine tabs (Unity / Unreal) ---------- */
+.tabs{margin:24px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tabs .tabhd{display:flex;background:var(--bg3);border-bottom:1px solid var(--line)}
+.tabs .tabhd button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:14px;font-weight:650;padding:11px 20px;cursor:pointer}
+.tabs .tabhd button:hover{color:var(--tx2)}
+.tabs .tabhd button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tabs .tabhd button[data-engine="unity"].on{border-bottom-color:var(--unity);color:var(--unity)}
+.tabs .tabhd button[data-engine="unreal"].on{border-bottom-color:var(--unreal);color:var(--unreal)}
+.tabs .tabbody{padding:4px 20px 16px;background:var(--bg2)}
+.tabs .tabpane{display:none}.tabs .tabpane.on{display:block}
+.tabs .tabbody .codeblock{margin:16px -6px}
+
+/* ---------- quiz / check ---------- */
+.check{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin:26px 0}
+.check .q{font-weight:650;margin:0 0 14px}
+.check .opt{display:block;width:100%;text-align:left;background:var(--bg3);
+  border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin:8px 0;
+  color:var(--tx);font:inherit;font-size:15.2px;cursor:pointer;transition:.12s}
+.check .opt:hover{border-color:var(--line2);background:#222b36}
+.check .opt.right{border-color:var(--ok);background:rgba(63,185,80,.11)}
+.check .opt.wrong{border-color:var(--crit);background:rgba(248,81,73,.11)}
+.check .opt .tag{float:right;font-size:12px;font-weight:700;letter-spacing:.06em}
+.check .opt.right .tag{color:var(--ok)}.check .opt.wrong .tag{color:var(--crit)}
+.check .exp{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--tx2)}
+.check .exp.on{display:block}
+.check .exp b{color:var(--tx)}
+.check .exp .ex{margin:9px 0}
+.check .exp .ex .who{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em}
+
+/* ---------- widgets / simulators ---------- */
+.widget{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.widget > .whd{display:flex;align-items:baseline;gap:10px;margin:-2px 0 4px}
+.widget > .whd .wt{font-weight:750;font-size:17px}
+.widget > .whd .wk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--teal);font-weight:800;border:1px solid rgba(57,197,187,.35);
+  border-radius:5px;padding:2px 7px}
+.widget > .wsub{color:var(--tx2);font-size:14.5px;margin:4px 0 16px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;align-items:center;
+  gap:12px;margin:11px 0}
+.ctl label{font-size:14px;color:var(--tx2)}
+.ctl output{font-family:var(--mono);font-size:13.5px;color:var(--acc);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:22px}
+.btn{background:var(--acc2);border:1px solid var(--acc);color:#fff;font:inherit;
+  font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--acc)}
+.btn.ghost{background:var(--bg3);border-color:var(--line2);color:var(--tx2)}
+.btn.ghost:hover{background:#242e3a;color:var(--tx)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:10px;margin:16px 0 0}
+.readout .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px}
+.readout .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.readout .cell .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.readout .cell .v.ok{color:var(--ok)}.readout .cell .v.warn{color:var(--warn)}
+.readout .cell .v.crit{color:var(--crit)}
+.verdict{margin:16px 0 0;padding:13px 16px;border-radius:9px;font-size:14.8px;
+  background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--acc)}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict.crit{border-left-color:var(--crit)}
+canvas{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:9px;margin:16px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;
+  color:var(--tx2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px}
+
+/* ---------- decision tree ---------- */
+.tree{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.tree .path{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  margin:0 0 14px;min-height:17px}
+.tree .path span{color:var(--acc)}
+.tree .qq{font-size:17.5px;font-weight:700;margin:0 0 6px}
+.tree .qh{color:var(--tx2);font-size:14.5px;margin:0 0 14px}
+.tree .choices{display:grid;gap:9px}
+.tree .choices button{text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:12px 15px;color:var(--tx);font:inherit;font-size:15px;
+  cursor:pointer;transition:.12s}
+.tree .choices button:hover{border-color:var(--acc);background:#222c38}
+.tree .choices button .sub{display:block;color:var(--tx3);font-size:13px;margin-top:3px}
+.tree .leaf{border-left:3px solid var(--ok);background:var(--bg3);border-radius:9px;
+  padding:15px 18px}
+.tree .leaf h5{margin:0 0 8px;font-size:16.5px;color:var(--ok)}
+.tree .leaf p{margin:9px 0;font-size:15px}
+.tree .leaf .tool{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:14.6px}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+th{background:var(--bg3);font-weight:700;font-size:13px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--tx2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.017)}
+td code{font-size:.85em}
+
+/* ---------- misc ---------- */
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2.5px 9px;border-radius:999px;vertical-align:1px}
+.pill.s0{background:rgba(248,81,73,.16);color:var(--crit);border:1px solid rgba(248,81,73,.4)}
+.pill.s1{background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pill.s2{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pill.s3{background:rgba(159,176,195,.13);color:var(--tx2);border:1px solid var(--line2)}
+.pill.unity{background:rgba(94,200,242,.14);color:var(--unity);border:1px solid rgba(94,200,242,.4)}
+.pill.unreal{background:rgba(240,164,74,.14);color:var(--unreal);border:1px solid rgba(240,164,74,.4)}
+
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);
+  padding:0 18px;margin:20px 0}
+details.more > summary{cursor:pointer;padding:13px 0;font-weight:650;font-size:15.5px;
+  list-style:none;color:var(--tx)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"▸ ";color:var(--acc);font-weight:800}
+details.more[open] > summary::before{content:"▾ "}
+details.more[open]{padding-bottom:14px}
+details.more > summary:hover{color:var(--acc)}
+
+.deliver{background:linear-gradient(180deg,rgba(77,163,255,.07),transparent);
+  border:1px solid var(--acc2);border-radius:12px;padding:20px 24px;margin:40px 0 0}
+.deliver h3{margin-top:0;color:var(--acc)}
+
+footer.lf{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:13.5px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap}
+footer.lf a{color:var(--tx2);text-decoration:none}
+footer.lf a:hover{color:var(--acc)}
+
+@media (max-width:720px){
+  body{font-size:16px}
+  .ctl{grid-template-columns:1fr;gap:4px}
+  .ctl output{text-align:left}
+  .hero{padding:34px 0 24px}
+}
+@media print{
+  .topbar,.progressbar{display:none}
+  body{background:#fff;color:#111}
+  .widget,.tree,.check,.box,.goals{break-inside:avoid}
+}
+</style>
+<style id="lesson-local">
+/* lesson-specific additions only */
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.seg button{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button:hover{border-color:var(--line2);color:var(--tx)}
+.seg button.on{background:var(--acc2);border-color:var(--acc);color:#fff;font-weight:650}
+select{background:var(--bg3);color:var(--tx);border:1px solid var(--line2);border-radius:7px;
+  font:inherit;font-size:13.5px;padding:6px 9px}
+.layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:22px 0}
+.layers .ly{background:var(--bg2);border:1px solid var(--line);border-top:3px solid var(--acc);
+  border-radius:9px;padding:14px 17px}
+.layers .ly h5{margin:0 0 6px;font-size:15.5px}
+.layers .ly p{margin:0;font-size:14.3px;color:var(--tx2)}
+.layers .ly.l2{border-top-color:var(--warn)} .layers .ly.l3{border-top-color:var(--teal)}
+.layers .ly .tg{font-family:var(--mono);font-size:11px;color:var(--tx3);letter-spacing:.08em;
+  text-transform:uppercase;display:block;margin-bottom:4px}
+.ranktbl{width:100%;border-collapse:collapse;font-size:13.6px;margin-top:14px}
+.ranktbl th,.ranktbl td{border:1px solid var(--line);padding:6px 10px}
+.ranktbl th{background:var(--bg3);font-size:11.5px}
+.ranktbl td.n{font-family:var(--mono);text-align:right}
+.ranktbl tr.pick td{background:rgba(77,163,255,.10)}
+.parambox{display:grid;gap:8px;margin:12px 0 4px}
+.parambox .prow{display:grid;grid-template-columns:26px 1fr 190px;gap:10px;align-items:center;
+  background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:7px 12px}
+.parambox .prow .pn{font-size:14px}
+.parambox .prow .pv{font-family:var(--mono);font-size:11.5px;color:var(--tx3)}
+.parambox .prow.off{opacity:.42}
+.pairout{max-height:330px;overflow:auto;border:1px solid var(--line);border-radius:9px;
+  margin-top:14px;background:#0a0d12}
+.pairout table{font-family:var(--mono);font-size:12.2px;border-collapse:collapse;width:100%}
+.pairout th{position:sticky;top:0;background:var(--bg3);font-size:10.5px;z-index:2}
+.pairout td,.pairout th{border:1px solid var(--line);padding:4px 8px;white-space:nowrap}
+.pairout td.ix{color:var(--tx3);text-align:right}
+.readlist{font-size:14.6px;color:var(--tx2)}
+.readlist li b{color:var(--tx)}
+.mini{font-size:13px;color:var(--tx3);margin:8px 0 0}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <span class="crumb">Advanced Game Testing and Debugging &middot; Topic 5</span><span class="spacer"></span>
+  <a href="../index.html">Course hub</a>
+  <a href="lesson-04-performance-profiling.html">&larr; Prev</a>
+  <a href="lesson-06-memory-management.html">Next &rarr;</a>
+</div></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Topic 5 &middot; Oct 26 &ndash; Nov 8 &middot; Weeks 8&ndash;9 &middot; Sessions 15&ndash;18</div>
+    <h1>Advanced Optimization Techniques</h1>
+    <p class="lede">Topic 4 taught you to take a measurement. This topic teaches you to decide what
+    that measurement is worth &mdash; to do the arithmetic <em>before</em> the work, to pick the
+    layer with the ceiling high enough to matter, and to prove afterwards that your five clever
+    flags do not misbehave when a player combines them in a way you never tried.</p>
+    <div class="metarow">
+      <span class="chip"><b>Reading:</b> Niu et al. (2021); Raunak et al. (2024); Mercan &amp; Yilmaz (2023); Mah Ung (2017); He et al. (2015)</span>
+      <span class="chip"><b>Assignment:</b> Multi-Layered Game Optimization &middot; 100 pts &middot; due Nov 8</span>
+      <span class="chip"><b>Sessions:</b> 15&ndash;18</span>
+      <span class="chip"><b>Est. time:</b> 130 min + reading</span>
+    </div>
+  </header>
+
+  <div class="goals"><h4>By the end you will be able to</h4><ol>
+    <li>Optimize game logic and physics &mdash; starting with the algorithm, not the constant factor.</li>
+    <li>Analyze asset optimization strategies and state, in megabytes and milliseconds, what each one buys.</li>
+    <li>Implement code optimizations across algorithmic efficiency, memory layout, and CPU work, and measure the delta.</li>
+    <li>Analyze the impact of an optimization across platforms and hardware tiers, including the cases where it makes things worse.</li>
+    <li>Explain and defend the balance between performance gains and gameplay quality or visual fidelity, using numbers a designer can argue with.</li>
+  </ol></div>
+
+  <h2><span class="num">1</span>Do the arithmetic before you do the work</h2>
+
+  <p>Optimization is the only engineering activity students routinely start without a target. You
+  have a capture from Topic 4, you scroll it, something looks ugly, and two days later you have a
+  beautifully rewritten inventory sort that moved the frame time by 0.2&nbsp;ms. The build still
+  misses 60 fps. Nothing you did was wrong; the <em>selection</em> was wrong, and it was knowably
+  wrong before you started, in about ninety seconds of arithmetic.</p>
+
+  <p>That arithmetic is Amdahl's law. If a subsystem occupies fraction <em>p</em> of your frame and
+  you make that subsystem <em>s</em> times faster, the whole-frame speedup is
+  <code>1 / ((1 &minus; p) + p/s)</code>. The important consequence is the ceiling: as <em>s</em>
+  goes to infinity the expression collapses to <code>1 / (1 &minus; p)</code>. Deleting a subsystem
+  entirely cannot save more time than that subsystem was spending. Written down that way it sounds
+  too obvious to state, which is exactly why it keeps getting violated &mdash; nobody is comparing
+  the size of the prize to the size of the effort.</p>
+
+  <p>Work an example. Your frame is 24.0&nbsp;ms and you want 16.6&nbsp;ms, so you need to find
+  7.4&nbsp;ms. Gameplay scripts cost 2.9&nbsp;ms, or 12% of the frame. Suppose you are heroic and
+  make them four times faster: the frame becomes 24.0 &minus; 2.9 + 0.725 = 21.8&nbsp;ms, a 9.1%
+  improvement, 46 fps instead of 41.7. Even at infinite speedup &mdash; delete the gameplay code and
+  ship an empty level &mdash; you land at 21.1&nbsp;ms and still miss the target. The 7.4&nbsp;ms is
+  not in that subsystem, and no amount of cleverness inside it will produce the milliseconds. The
+  same law governs parallelization: moving particle updates to Burst jobs on eight cores does not
+  give you 8&times; the frame, it gives you <code>1/((1&minus;p) + p/8)</code>, and if the serial
+  main-thread portion is 85% of the frame your eight cores buy 15% at most.</p>
+
+  <div class="box why"><div class="lbl">Why the arithmetic goes first, always</div>
+  <p>Optimization work is uniquely good at feeling productive while accomplishing nothing, because
+  the local measurement always improves. Your function <em>is</em> four times faster. The profiler
+  <em>does</em> show a smaller bar. If your only metric is the bar you optimized, every project is a
+  success. Amdahl's law is the discipline that converts a local win into a project-level number
+  before you spend the week, and it is also your best defense in a planning meeting: "this costs
+  four days and the ceiling on the entire idea is 0.9&nbsp;ms" ends an argument that opinions
+  cannot.</p></div>
+
+  <p>Two things the formula does not tell you, which you must carry alongside it. First, cost:
+  milliseconds saved per engineering day is the ratio that actually ranks work, and a 0.4&nbsp;ms
+  win you get in an hour by changing a physics layer matrix beats a 1.2&nbsp;ms win that takes six
+  days of refactoring. Second, risk: an optimization that changes simulation results can break
+  determinism, replays, or netcode, and the cost of that is not measured in milliseconds. Rank by
+  gain, divide by effort, then filter by blast radius.</p>
+
+  <div class="widget" id="w-amdahl">
+    <div class="whd"><span class="wt">Amdahl / Optimization ROI Calculator</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Set your measured frame breakdown, pick a target subsystem and a realistic
+    speedup, and the widget computes the whole-frame result, the Amdahl ceiling for every
+    subsystem, and the return per engineering day. The arithmetic is exact; the breakdown below is
+    yours to replace with a real capture.</p>
+
+    <div class="ctl"><label>Gameplay scripts / AI</label><input type="range" id="am-s0" min="0" max="200" value="29"><output id="am-s0o">2.9 ms</output></div>
+    <div class="ctl"><label>Physics</label><input type="range" id="am-s1" min="0" max="200" value="61"><output id="am-s1o">6.1 ms</output></div>
+    <div class="ctl"><label>Animation &amp; skinning</label><input type="range" id="am-s2" min="0" max="200" value="34"><output id="am-s2o">3.4 ms</output></div>
+    <div class="ctl"><label>Culling &amp; draw submission</label><input type="range" id="am-s3" min="0" max="200" value="47"><output id="am-s3o">4.7 ms</output></div>
+    <div class="ctl"><label>GPU / render thread</label><input type="range" id="am-s4" min="0" max="200" value="58"><output id="am-s4o">5.8 ms</output></div>
+    <div class="ctl"><label>Audio, UI, everything else</label><input type="range" id="am-s5" min="0" max="200" value="11"><output id="am-s5o">1.1 ms</output></div>
+
+    <div class="ctl"><label>Optimize which subsystem?</label>
+      <select id="am-target">
+        <option value="0">Gameplay scripts / AI</option>
+        <option value="1" selected>Physics</option>
+        <option value="2">Animation &amp; skinning</option>
+        <option value="3">Culling &amp; draw submission</option>
+        <option value="4">GPU / render thread</option>
+        <option value="5">Audio, UI, everything else</option>
+      </select><output id="am-targeto">&nbsp;</output></div>
+    <div class="ctl"><label>Speedup on that subsystem</label>
+      <input type="range" id="am-speed" min="10" max="120" value="30"><output id="am-speedo">3.0&times;</output></div>
+    <div class="ctl"><label>Engineering cost (days)</label>
+      <input type="range" id="am-days" min="1" max="200" value="30"><output id="am-dayso">3.0 d</output></div>
+    <div class="ctl"><label>Target frame rate</label>
+      <div class="seg" id="am-fps">
+        <button data-v="30">30 fps</button><button data-v="60" class="on">60 fps</button>
+        <button data-v="120">120 fps</button>
+      </div><output id="am-fpso">16.67 ms</output></div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Frame before</div><div class="v" id="am-before">&mdash;</div></div>
+      <div class="cell"><div class="k">Frame after</div><div class="v" id="am-after">&mdash;</div></div>
+      <div class="cell"><div class="k">FPS before &rarr; after</div><div class="v" id="am-fpsc">&mdash;</div></div>
+      <div class="cell"><div class="k">Whole-frame gain</div><div class="v" id="am-gain">&mdash;</div></div>
+      <div class="cell"><div class="k">Amdahl ceiling</div><div class="v" id="am-ceil">&mdash;</div></div>
+      <div class="cell"><div class="k">ROI (ms / dev-day)</div><div class="v" id="am-roi">&mdash;</div></div>
+    </div>
+
+    <div id="am-rank"></div>
+    <div class="verdict" id="am-verdict">Move a slider.</div>
+    <div class="btnrow">
+      <button class="btn ghost" data-am="physics">Physics-bound CPU capture</button>
+      <button class="btn ghost" data-am="gpu">GPU-bound capture</button>
+      <button class="btn ghost" data-am="flat">Death by a thousand cuts</button>
+    </div>
+  </div>
+
+  <p>Load the "death by a thousand cuts" preset. Every subsystem sits between 3 and 5&nbsp;ms, every
+  ceiling is under 20%, and no single optimization reaches the target. That profile is a real and
+  common outcome, and it is telling you something specific: there is no bottleneck to remove, so
+  either the whole content budget is too high (fewer objects, fewer lights, fewer agents) or you
+  change the target. Recognizing that shape early saves a month of picking at subsystems.</p>
+
+  <h3>The three layers, and why the assignment is structured that way</h3>
+
+  <p>Your graded work for this topic asks for optimization in three layers with before/after data
+  for each. The layers are not an arbitrary rubric; they have different ceilings, different risk
+  profiles, and different people who have to agree.</p>
+
+  <div class="layers">
+    <div class="ly l1"><span class="tg">Layer 1</span><h5>Game logic &amp; physics</h5>
+      <p>Algorithmic and configuration wins. Highest ceiling, lowest tooling cost, but touches
+      simulation behavior &mdash; determinism and feel are on the line.</p></div>
+    <div class="ly l2"><span class="tg">Layer 2</span><h5>Assets &amp; technical art</h5>
+      <p>Memory, bandwidth, draw calls, shader variants. Often the biggest wins on GPU-bound and
+      mobile targets, and the layer where a designer or artist must sign off on what you gave up.</p></div>
+    <div class="ly l3"><span class="tg">Layer 3</span><h5>Code patterns &amp; architecture</h5>
+      <p>Allocation, memory layout, dispatch. Usually the smallest single win and the most durable
+      one, because it changes the slope of the cost curve as content grows.</p></div>
+  </div>
+
+  <div class="check">
+    <p class="q">Your capture: frame 33.3&nbsp;ms. Draw submission is 4.0&nbsp;ms. A teammate proposes
+    a two-week refactor that would make draw submission 10&times; faster. You need 60 fps. What is
+    the honest response?</p>
+    <button class="opt" data-correct="0">Approve it &mdash; a 10&times; speedup on any subsystem is a large win.</button>
+    <button class="opt" data-correct="1">Reject the plan on arithmetic: even deleting draw submission saves 4.0&nbsp;ms of the 16.7&nbsp;ms you need.</button>
+    <button class="opt" data-correct="0">Approve it but ask for it in one week instead of two.</button>
+    <button class="opt" data-correct="0">Run the refactor on a branch and decide after measuring.</button>
+    <div class="exp"><b>Why B:</b> The Amdahl ceiling for a 4.0&nbsp;ms subsystem is 4.0&nbsp;ms &mdash;
+    12% of the frame. At 10&times; you save 3.6&nbsp;ms and land at 29.7&nbsp;ms, or 33.7 fps. The
+    target needs 16.7&nbsp;ms found somewhere. The correct next sentence is "where are the other
+    12.7&nbsp;ms?", and that is a question about the remaining 29.3&nbsp;ms of frame.
+      <div class="ex"><span class="who">Why A is tempting</span><br>
+      10&times; is a genuinely impressive engineering result and it will look impressive in the
+      profiler. The local measurement improves enormously. That is precisely the trap: the size of
+      the multiplier is unrelated to the size of the prize.</div>
+      <div class="ex"><span class="who">Why D is tempting</span><br>
+      "Measure, don't argue" is usually right &mdash; but here you can compute the upper bound in
+      ten seconds from data you already have. Spending two engineer-weeks to measure something
+      arithmetic already bounds is not empiricism, it is procrastination with a burndown chart.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">2</span>Layer 1 &mdash; logic and physics</h2>
+
+  <p>Start here because this is the layer where complexity classes live, and a complexity class
+  beats a constant factor at every scale you care about. The canonical example is collision
+  broadphase. Checking every pair of <em>n</em> objects is <code>n(n&minus;1)/2</code> tests: at 400
+  objects that is 79,800 pair tests per frame and 4.8 million per second at 60&nbsp;Hz. Double the
+  object count and the cost quadruples &mdash; 1,000 objects is 499,500 tests per frame. Micro-optimizing
+  the inner test buys you a constant factor of maybe two. Sorting objects into a uniform grid and
+  testing only against the eight neighboring cells changes the shape of the curve, and at that point
+  doubling the object count roughly doubles the work instead of quadrupling it.</p>
+
+  <p>Engines already do this for rigidbody physics; you are unlikely to beat PhysX or Chaos at their
+  own broadphase. You will, however, write the naive version yourself the first time you need
+  "which enemies are within aggro range", "which pickups are near the player", or "which of my 800
+  bullets hit something", and those hand-rolled loops are where student projects burn frames. The
+  visualizer below runs both strategies on the same moving population and counts real checks.</p>
+
+  <div class="widget" id="w-broad">
+    <div class="whd"><span class="wt">Broadphase Visualizer</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Both algorithms run on the same objects every frame and both report the number
+    of narrow-phase checks they performed and the number of overlapping pairs they found. The pair
+    counts must match &mdash; a spatial structure that finds fewer collisions is not an
+    optimization, it is a bug. Timing shown is an estimate at a nominal 4&nbsp;ns per check, labeled
+    as such; the check counts themselves are exact.</p>
+
+    <div class="ctl"><label>Objects (n)</label><input type="range" id="bp-n" min="20" max="1200" value="300"><output id="bp-no">300</output></div>
+    <div class="ctl"><label>Cell size (&times; object diameter)</label><input type="range" id="bp-cell" min="10" max="120" value="20"><output id="bp-cello">2.0&times;</output></div>
+    <div class="ctl"><label>Clustering</label><input type="range" id="bp-clus" min="0" max="100" value="0"><output id="bp-cluso">uniform</output></div>
+    <div class="ctl"><label>Draw</label>
+      <div class="seg" id="bp-draw">
+        <button data-v="0" class="on">Objects + grid</button><button data-v="1">Objects only</button>
+      </div><output id="bp-drawo">&nbsp;</output></div>
+
+    <canvas id="bp-canvas" height="360" aria-label="Moving objects with uniform grid overlay"></canvas>
+    <div class="legend">
+      <span><i style="background:#4da3ff"></i>object</span>
+      <span><i style="background:#f85149"></i>overlapping this frame</span>
+      <span><i style="background:#2a3441"></i>grid cell</span>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Naive checks/frame</div><div class="v" id="bp-naive">&mdash;</div></div>
+      <div class="cell"><div class="k">Grid checks/frame</div><div class="v" id="bp-grid">&mdash;</div></div>
+      <div class="cell"><div class="k">Reduction</div><div class="v" id="bp-red">&mdash;</div></div>
+      <div class="cell"><div class="k">Pairs found (naive / grid)</div><div class="v" id="bp-pairs">&mdash;</div></div>
+      <div class="cell"><div class="k">Est. cost @60Hz</div><div class="v" id="bp-cost">&mdash;</div></div>
+    </div>
+    <div class="verdict" id="bp-verdict">Press Start.</div>
+    <div class="btnrow">
+      <button class="btn" id="bp-run">Start</button>
+      <button class="btn ghost" id="bp-step">Step one frame</button>
+      <button class="btn ghost" id="bp-reset">Reseed</button>
+    </div>
+  </div>
+
+  <p>Three things to notice. Push <em>n</em> to 1,200 and watch the naive counter pass 700,000 checks
+  per frame while the grid stays in the low tens of thousands. Then drag cell size down to
+  1.0&times;: the grid gets worse, because with tiny cells each object must consult more cells and
+  the bookkeeping outgrows the savings. Then drag cell size up to 12&times;: also worse, because
+  every cell now holds dozens of objects and you are running the naive algorithm inside each cell.
+  The optimum is near a small multiple of the object diameter, and it is empirical. Finally, drag
+  clustering to the right &mdash; when all objects pile into one corner, the grid degenerates toward
+  <code>O(n&sup2;)</code> and the reduction number collapses. That is the honest failure mode of
+  uniform grids, and it is why engines use hierarchical structures (BVH, sweep-and-prune) when the
+  distribution is uneven.</p>
+
+  <div class="box why"><div class="lbl">Why the "pairs found" readout is in that widget</div>
+  <p>The most dangerous optimization is one that is faster because it does less <em>correct</em>
+  work. If a spatial hash misses a pair because an object straddles a cell boundary and you only
+  checked one cell, your frame time improves and your game develops an intermittent
+  pass-through-the-wall bug that reproduces once every forty minutes. Every optimization you ship
+  needs an equivalence check next to the timing number: same inputs, same outputs. Section 5 turns
+  that instinct into a testing method.</p></div>
+
+  <h3>Physics configuration: the highest ROI ten minutes in the project</h3>
+
+  <p>Before rewriting anything, spend ten minutes in the physics settings. The wins there are large,
+  reversible, and cost no engineering days.</p>
+
+  <ul>
+    <li><b>Fixed timestep.</b> Physics runs on its own clock. A 0.0166&nbsp;s step is 60 physics ticks
+    per second; 0.02&nbsp;s is 50. If your render frame takes 30&nbsp;ms, the engine may run two or
+    three physics steps in that frame to catch up &mdash; which makes the frame longer, which makes
+    it run more steps. That is the physics death spiral, and it is why a maximum-allowed-timestep
+    clamp exists. Raising the step from 0.0166 to 0.02 is a 17% cut in physics cost for a change
+    most games cannot feel; going to 0.033 will be felt in anything with fast projectiles.</li>
+    <li><b>Collision layers.</b> An <em>n</em>&times;<em>n</em> matrix of which layer collides with
+    which. Debris that only needs to hit the world does not need to be tested against other debris,
+    against bullets, or against triggers. Turning off three quarters of a matrix is common, takes
+    minutes, and cannot break gameplay you did not have.</li>
+    <li><b>Sleeping.</b> Bodies at rest should deactivate. Check your sleep thresholds; a scene where
+    nothing ever sleeps usually has one jittering object or a script writing velocities every frame.</li>
+    <li><b>Collider shape.</b> Sphere and capsule are nearly free, box is cheap, convex hull is
+    moderate, and a concave triangle mesh collider on a moving object is the most expensive thing in
+    the category. Replacing a 4,000-triangle mesh collider with three boxes is the classic
+    student-project win.</li>
+    <li><b>Continuous collision detection.</b> Necessary on fast, small, gameplay-critical objects
+    &mdash; bullets, the player at high speed. Enabled on everything, it multiplies broadphase cost
+    for objects that were never going to tunnel.</li>
+  </ul>
+
+  <div class="tabs">
+    <div class="tabhd"><button data-engine="unity" data-tab="u" class="on">Unity</button><button data-engine="unreal" data-tab="e">Unreal</button></div>
+    <div class="tabbody">
+      <div class="tabpane on" data-pane="u">
+        <p><b>Where to look.</b> <i>Project Settings &rarr; Time</i> for <code>Fixed Timestep</code>
+        and <code>Maximum Allowed Timestep</code>; <i>Project Settings &rarr; Physics</i> for the
+        Layer Collision Matrix, <code>Default Solver Iterations</code>, <code>Sleep Threshold</code>,
+        and <code>Auto Sync Transforms</code> (leave it off &mdash; it forces a full transform sync
+        on every physics query). Profile with the Unity Profiler's Physics module plus
+        <code>Physics.Simulate</code> in the CPU timeline, and open the Physics Debugger to see which
+        colliders are awake.</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>PhysicsBudget.cs &middot; C#</div><pre><span class="c">// Measured: 12,000 Physics.Raycast calls/sec from 200 agents polling every frame.</span>
+<span class="c">// Fix 1: query only the layers that matter — a LayerMask is a broadphase filter.</span>
+<span class="k">private static readonly</span> <span class="t">int</span> WorldOnly = LayerMask.GetMask(<span class="s">"World"</span>, <span class="s">"Cover"</span>);
+
+<span class="c">// Fix 2: NonAlloc variants write into a reusable buffer — no per-call GC allocation.</span>
+<span class="k">private readonly</span> RaycastHit[] _hits = <span class="k">new</span> RaycastHit[<span class="n">8</span>];
+
+<span class="k">public</span> <span class="t">bool</span> <span class="f">HasCover</span>(Vector3 from, Vector3 dir){
+    <span class="t">int</span> n = Physics.<span class="f">RaycastNonAlloc</span>(from, dir, _hits, <span class="n">25f</span>, WorldOnly, QueryTriggerInteraction.Ignore);
+    <span class="k">return</span> n &gt; <span class="n">0</span>;
+}</pre></div>
+      </div>
+      <div class="tabpane" data-pane="e">
+        <p><b>Where to look.</b> <i>Project Settings &rarr; Physics</i> for <code>Substepping</code>,
+        <code>Max Substep Delta Time</code>, and <code>Max Substeps</code>; the Collision settings for
+        Object Channels and Trace Channels and their per-channel response matrix; per-primitive
+        <code>Collision Complexity</code> (use <i>Simple</i> and author simple collision, not
+        <i>Use Complex as Simple</i>). Measure with <code>stat physics</code>, <code>stat game</code>,
+        and Unreal Insights; <code>show Collision</code> in the viewport tells you what is actually
+        being simulated.</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>CoverQuery.cpp &middot; C++</div><pre><span class="c">// Fix 1: a dedicated trace channel beats tracing against ECC_WorldStatic + filtering after.</span>
+FCollisionQueryParams Params(SCENE_QUERY_STAT(CoverTrace), <span class="c">/*bTraceComplex=*/</span><span class="k">false</span>);
+Params.AddIgnoredActor(<span class="k">this</span>);
+
+<span class="c">// Fix 2: bTraceComplex=false keeps the query on simple collision — per-triangle traces</span>
+<span class="c">// against a 40k-tri mesh were 0.4 ms of the 1.9 ms AI budget.</span>
+FHitResult Hit;
+<span class="k">const bool</span> bBlocked = GetWorld()-&gt;<span class="f">LineTraceSingleByChannel</span>(
+    Hit, From, From + Dir * <span class="n">2500.f</span>, COLLISION_COVER, Params);</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>AI and gameplay logic: budget, do not throttle by accident</h3>
+
+  <p>Most gameplay code does not need to run at frame rate; it runs at frame rate because
+  <code>Update()</code> exists. Suppose 200 agents each perform a 0.05&nbsp;ms perception query every
+  frame: 10&nbsp;ms, which is 60% of a 60 fps budget spent deciding things that change every few
+  hundred milliseconds. Time-slice the population into eight buckets and update one bucket per
+  frame: 1.25&nbsp;ms, with each agent re-deciding every 133&nbsp;ms. No player can perceive the
+  difference, and you just bought back 8.75&nbsp;ms &mdash; more than any micro-optimization in this
+  lesson will give you.</p>
+
+  <p>Extend that with behavior LOD: the three agents on screen get full behavior trees at high
+  frequency, the twelve agents beyond 40 metres get a cheap state machine at 4&nbsp;Hz, the ones
+  outside the streaming radius get a simulation tick that is literally a position lerp. The rule to
+  internalize is that <em>update frequency is a design parameter</em>, and leaving it at "every
+  frame" is a decision you made by not making it. The one trap: time-sliced systems must not create
+  visible lockstep. If all eight buckets do their expensive work on the same frame every 8th frame,
+  you have not removed a cost, you have converted a steady 10&nbsp;ms into a 1-in-8 spike, which is
+  worse for the 1% lows you learned to read in Topic 4. Stagger by index, not by a shared counter.</p>
+
+  <div class="check">
+    <p class="q">You replace an <code>O(n&sup2;)</code> proximity loop over 500 pickups with a uniform
+    spatial hash. Frame time drops 3.1&nbsp;ms. What must appear in your before/after report next to
+    that number?</p>
+    <button class="opt" data-correct="0">The number of lines of code removed.</button>
+    <button class="opt" data-correct="1">Evidence that the hash returns the same set of pairs as the brute-force loop, including at cell boundaries.</button>
+    <button class="opt" data-correct="0">A note that the hash is theoretically <code>O(n)</code>.</button>
+    <button class="opt" data-correct="0">The frame time measured on a second machine.</button>
+    <div class="exp"><b>Why B:</b> A broadphase that misses boundary-straddling pairs is faster and
+    wrong, and the resulting bug is intermittent, position-dependent, and nearly impossible to
+    reproduce on demand. The cheapest possible check is to run both implementations for a few
+    thousand frames and assert set equality &mdash; it costs twenty minutes and it is the difference
+    between an optimization and a regression with a good press release.
+      <div class="ex"><span class="who">Why C is tempting</span><br>
+      The complexity claim is the reason you expected a win, so it feels like the justification. But
+      it is a claim about asymptotic behavior, not evidence about your implementation; a buggy hash
+      is also <code>O(n)</code>.</div>
+      <div class="ex"><span class="who">Why D is tempting</span><br>
+      Cross-machine data genuinely matters (section 6), and you should have it. It just does not
+      address correctness &mdash; the same wrong answer arrives faster on both machines.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">3</span>Layer 2 &mdash; assets and technical art</h2>
+
+  <p>The asset layer is where the largest numbers live, because assets consume three budgets at once:
+  disk, memory, and bandwidth. It is also the layer where the optimization is a negotiation, since
+  every win here is visible to somebody who chose that asset on purpose.</p>
+
+  <p>Start with texture arithmetic, because it is simple and nobody does it. An uncompressed RGBA32
+  2048&times;2048 texture is 2048 &times; 2048 &times; 4 bytes = 16&nbsp;MB. The same texture as BC7
+  is 8&nbsp;bits per pixel &mdash; 4&nbsp;MB. As BC1 (no usable alpha) it is 4&nbsp;bits per pixel
+  &mdash; 2&nbsp;MB. Mipmaps add a third: the full chain is 1 + 1/4 + 1/16 + ... &asymp; 1.333&times;
+  the base. Multiply by the 340 textures in your project and the difference between "imported at
+  defaults" and "imported deliberately" is measured in gigabytes.</p>
+
+  <div class="widget" id="w-tex">
+    <div class="whd"><span class="wt">Texture Budget Calculator</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Real bits-per-pixel figures for each format, real mip-chain arithmetic
+    (&times;4/3), real totals. Change the format and the resolution cap and watch what a single
+    import-settings pass is worth across a project.</p>
+
+    <div class="ctl"><label>Texture resolution</label>
+      <div class="seg" id="tx-res">
+        <button data-v="512">512</button><button data-v="1024">1024</button>
+        <button data-v="2048" class="on">2048</button><button data-v="4096">4096</button>
+      </div><output id="tx-reso">2048</output></div>
+    <div class="ctl"><label>Format</label>
+      <select id="tx-fmt">
+        <option value="rgba32">RGBA32 uncompressed &mdash; 32 bpp</option>
+        <option value="bc7" selected>BC7 (desktop, RGBA) &mdash; 8 bpp</option>
+        <option value="bc1">BC1 / DXT1 (desktop, RGB) &mdash; 4 bpp</option>
+        <option value="bc5">BC5 (normal maps, 2ch) &mdash; 8 bpp</option>
+        <option value="astc4">ASTC 4&times;4 (mobile, high) &mdash; 8 bpp</option>
+        <option value="astc6">ASTC 6&times;6 (mobile, balanced) &mdash; 3.56 bpp</option>
+        <option value="astc8">ASTC 8&times;8 (mobile, aggressive) &mdash; 2 bpp</option>
+        <option value="etc2">ETC2 RGBA (older Android) &mdash; 8 bpp</option>
+      </select><output id="tx-fmto">8.00 bpp</output></div>
+    <div class="ctl"><label>Textures in the set</label><input type="range" id="tx-count" min="1" max="800" value="340"><output id="tx-counto">340</output></div>
+    <div class="ctl"><label>Mipmaps</label>
+      <div class="seg" id="tx-mip"><button data-v="1" class="on">On (&times;1.333)</button><button data-v="0">Off</button></div>
+      <output id="tx-mipo">on</output></div>
+    <div class="ctl"><label>Texture memory budget (MB)</label><input type="range" id="tx-budget" min="64" max="4096" value="1024"><output id="tx-budgeto">1024 MB</output></div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Per texture</div><div class="v" id="tx-per">&mdash;</div></div>
+      <div class="cell"><div class="k">Set total</div><div class="v" id="tx-tot">&mdash;</div></div>
+      <div class="cell"><div class="k">Vs. RGBA32 baseline</div><div class="v" id="tx-vs">&mdash;</div></div>
+      <div class="cell"><div class="k">Budget used</div><div class="v" id="tx-use">&mdash;</div></div>
+    </div>
+    <div class="verdict" id="tx-verdict">Pick a format.</div>
+  </div>
+
+  <p>Two traps the calculator makes visible. First, halving the resolution cap is a 4&times; memory
+  cut &mdash; almost always a bigger win than changing format, and usually less visible than
+  artists fear, because a 2048&times;2048 texture on an object that occupies 80 pixels of screen was
+  never being sampled at full resolution anyway. Second, turning mipmaps <em>off</em> to save that
+  33% is a classic own goal: without mips, a distant object samples a scattered set of texels, the
+  texture cache misses constantly, and you trade a memory saving for both aliasing and lower GPU
+  throughput. Mips are a performance feature that happens to cost memory.</p>
+
+  <h3>Geometry, animation, audio</h3>
+
+  <p>LOD chains follow the same logic as behavior LOD: pay for detail in proportion to screen
+  coverage. A three-level chain with sensible transition distances typically removes a large
+  fraction of vertex and skinning work in a busy scene, and the discipline is to set the transitions
+  by measured screen-space size rather than by eye. Mesh decimation matters most for the shadow-only
+  and distant levels &mdash; a shadow caster rarely needs the silhouette fidelity of the main mesh.
+  Animation compression is under-used: keyframe reduction and curve compression on long cinematic
+  clips can remove tens of megabytes, and the failure mode is visible immediately, which makes it a
+  safe optimization to try. For audio, the choices are codec (uncompressed / ADPCM / Vorbis-class
+  lossy), and load type &mdash; stream long music from disk, decompress short frequently-triggered
+  effects into memory once, and never leave a five-minute music track set to decompress-on-load
+  unless you enjoy explaining an 80&nbsp;MB spike to a memory owner in Topic 6.</p>
+
+  <h3>Draw calls, batching, and the shader variant problem</h3>
+
+  <p>Each draw call carries CPU cost on the render thread and a state-change cost on the GPU. The
+  standard remedies are batching (static and dynamic), GPU instancing for many copies of one mesh,
+  and texture atlasing so that objects share a material and therefore <em>can</em> batch. Atlasing is
+  a good example of an optimization with a real cost: it complicates streaming granularity and can
+  waste memory on partially-used atlas pages, and it interacts with mip generation at page borders.
+  Trade-offs, not free lunches.</p>
+
+  <p>Shader variants deserve their own paragraph because they are the asset problem students meet
+  last and suffer from most. A shader with 12 independent boolean keywords has 2<sup>12</sup> = 4,096
+  possible variants; add three quality tiers and two lighting modes and you have 24,576 programs to
+  compile, ship, and keep in memory. This is why builds take 40 minutes, why the first traversal of a
+  new area hitches, and why a mobile build blows past its package size. The fixes are keyword
+  stripping in the build pipeline, shader_feature versus multi_compile discipline, precompiled
+  variant collections warmed at load, and choosing runtime branches over new keywords where the
+  branch is coherent across a wavefront.</p>
+
+  <div class="box field"><div class="lbl">From the reading</div>
+  <p>He, Foley et&nbsp;al. (2015) attack the other half of the shader problem: not how many variants
+  exist, but how expensive each one is at a given distance. Their system automatically generates
+  simplified shader level-of-detail versions and reasons about the quality/cost trade explicitly,
+  rather than leaving a technical artist to hand-author a cheap version and hope it looks close. The
+  transferable idea for your assignment is that "shader LOD" is a real axis you can pull on:
+  full-quality material for hero objects on screen, a reduced variant &mdash; fewer texture reads,
+  no parallax, simplified BRDF &mdash; past a distance threshold, and a measurable pixel-cost
+  difference to report.</p></div>
+
+  <div class="tabs">
+    <div class="tabhd"><button data-engine="unity" data-tab="u" class="on">Unity</button><button data-engine="unreal" data-tab="e">Unreal</button></div>
+    <div class="tabbody">
+      <div class="tabpane on" data-pane="u">
+        <p><b>Asset pipeline levers.</b> Per-platform texture import overrides (Max Size, format:
+        BC7/BC5 on desktop, ASTC blocks on mobile), <code>Crunch</code> compression for download size
+        only, mipmap streaming with a memory budget, Sprite Atlas for UI and 2D, LOD Group components
+        with screen-relative transition heights, Model importer <code>Optimize Mesh</code> and
+        animation compression settings, and Addressables to control what is resident at all. Strip
+        variants with an <code>IPreprocessShaders</code> callback and verify with the Build Report and
+        the Frame Debugger (which tells you exactly why two draws did not batch).</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>StripVariants.cs &middot; C# (editor)</div><pre><span class="c">// Build log said 18,411 variants / 6m12s of shader compilation.</span>
+<span class="c">// This callback removes variants we can prove are unreachable on mobile.</span>
+<span class="k">class</span> <span class="t">StripMobile</span> : <span class="t">IPreprocessShaders</span> {
+    <span class="k">public int</span> callbackOrder =&gt; <span class="n">0</span>;
+    <span class="k">public void</span> <span class="f">OnProcessShader</span>(Shader s, ShaderSnippetData snippet, IList&lt;ShaderCompilerData&gt; data){
+        <span class="k">if</span> (!EditorUserBuildSettings.activeBuildTarget.ToString().Contains(<span class="s">"Android"</span>)) <span class="k">return</span>;
+        <span class="k">var</span> softShadows = <span class="k">new</span> ShaderKeyword(<span class="s">"_MAIN_LIGHT_SHADOWS_SOFT"</span>);
+        <span class="k">for</span> (<span class="t">int</span> i = data.Count - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--)
+            <span class="k">if</span> (data[i].shaderKeywordSet.IsEnabled(softShadows)) data.<span class="f">RemoveAt</span>(i);
+    }
+}</pre></div>
+      </div>
+      <div class="tabpane" data-pane="e">
+        <p><b>Asset pipeline levers.</b> Texture Groups (LODGroup / TEXTUREGROUP_World) set max size
+        and compression per platform in one place; <code>r.Streaming.PoolSize</code> caps resident
+        texture memory; Static Mesh LODs with auto-generated reduction and screen sizes; Nanite where
+        it applies, and explicit LODs where it does not; Animation Compression Library settings per
+        clip; <code>r.ShaderPipelineCache</code> / PSO precaching to stop first-encounter hitches;
+        Material Quality Levels and Static Switch discipline to keep permutation counts down. Inspect
+        with <code>stat SceneRendering</code>, the Shader Compilation stats, and RenderDoc.</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>DefaultDeviceProfiles.ini &middot; scalability</div><pre><span class="c">; Permutation and pixel-cost control by device tier, not by hand-editing materials.</span>
+[Android_Mid DeviceProfile]
++CVars=r.MobileContentScaleFactor=<span class="n">0.85</span>
++CVars=r.Streaming.PoolSize=<span class="n">512</span>
++CVars=r.MaterialQualityLevel=<span class="n">0</span>          <span class="c">; Low — selects the cheap Quality Switch branch</span>
++CVars=foliage.LODDistanceScale=<span class="n">0.6</span>
+
+[Android_High DeviceProfile]
++CVars=r.MobileContentScaleFactor=<span class="n">1.0</span>
++CVars=r.Streaming.PoolSize=<span class="n">1024</span>
++CVars=r.MaterialQualityLevel=<span class="n">1</span>          <span class="c">; High</span></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="check">
+    <p class="q">A teammate reports: "I disabled mipmaps on all environment textures and saved
+    410&nbsp;MB." What is the first thing you check?</p>
+    <button class="opt" data-correct="0">Whether the saving is enough to hit the memory budget.</button>
+    <button class="opt" data-correct="1">GPU frame time and texture-cache behavior &mdash; disabling mips usually costs performance and adds aliasing.</button>
+    <button class="opt" data-correct="0">Whether the textures were compressed before the change.</button>
+    <button class="opt" data-correct="0">Whether the artists approved the change.</button>
+    <div class="exp"><b>Why B:</b> Mip chains cost 33% more memory and exist to make distant sampling
+    cache-coherent. Without them, a surface at distance samples texels scattered across the full
+    texture, cache hit rate collapses, and shimmer appears on every fence and roof. This is the
+    canonical example of an optimization that improves one budget by damaging another; you need the
+    GPU-side number before you accept the memory-side number.
+      <div class="ex"><span class="who">Why A is tempting</span><br>
+      Memory is a hard ceiling (Topic 6), so a 410&nbsp;MB saving looks decisive. But "did it fit"
+      and "did it get worse elsewhere" are separate questions, and shipping a game that fits and
+      shimmers is not a win.</div>
+      <div class="ex"><span class="who">Why D is tempting</span><br>
+      Artist sign-off is genuinely part of the asset layer &mdash; section 6 is about exactly that
+      conversation. It is the second thing you do. Bring the performance data into the meeting or
+      the meeting is about taste.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">4</span>Layer 3 &mdash; code patterns and data layout</h2>
+
+  <p>This layer is about the cost of how you arranged your data and your calls, independent of what
+  the code computes. Three ideas carry most of the value: stop allocating in the hot path, arrange
+  data the way the hardware wants to read it, and stop paying for dispatch you do not need.</p>
+
+  <p><b>Allocation.</b> Every <code>Instantiate</code>/<code>SpawnActor</code> in a firing loop is a
+  memory manager call, a constructor, and eventually a collection. Object pooling replaces that with
+  an index into an array you already own. The number that matters is allocations per frame, not bytes
+  &mdash; Topic 6 develops this &mdash; but the pattern belongs here because pooling is a code
+  structure decision.</p>
+
+  <p><b>Layout.</b> A CPU reads memory in 64-byte cache lines. If your particle struct is 64 bytes
+  and your update touches only position and velocity (24 bytes), then 62% of every line you pull
+  from RAM is data you did not use, and you pull one line per particle. Split those fields into
+  parallel arrays &mdash; structure of arrays instead of array of structures &mdash; and a single
+  cache line now carries five consecutive positions. You moved roughly a third of the bytes for the
+  same work, and you handed the compiler a shape it can vectorize. This is the argument Wingqvist,
+  Wickström &amp; Memeti make quantitatively for data-oriented design, and it is the reason ECS
+  frameworks exist.</p>
+
+  <p><b>Dispatch.</b> A virtual call in a loop over 20,000 entities is 20,000 indirect branches that
+  the CPU cannot inline and often cannot predict. Sorting entities by concrete type and running one
+  monomorphic loop per type usually wins more than any change inside the loop body. In C#, the
+  adjacent traps are boxing (a struct passed as an <code>object</code>, or an interface call on a
+  struct), string concatenation in logging that runs even when logging is off, LINQ in
+  <code>Update</code>, and <code>foreach</code> over non-generic collections. In C++, the equivalents
+  are <code>TArray</code> growth without <code>Reserve</code>, copying <code>TArray</code>s into
+  function parameters by value, and <code>TMap</code> lookups in a loop where an index would do.</p>
+
+  <h3>Annotated walkthrough: pooling and an AoS &rarr; SoA refactor</h3>
+
+  <p>Here is the before. It is not a strawman; it is the shape of every student projectile system,
+  and it profiles at roughly 6&nbsp;ms for 4,000 active projectiles with a GC spike every couple of
+  seconds.</p>
+
+  <div class="codeblock"><div class="hd"><span class="dot"></span>BEFORE &mdash; ProjectileManager.cs</div><pre><span class="k">public class</span> <span class="t">Projectile</span> {                 <span class="c">// class = heap object, one allocation each</span>
+    <span class="k">public</span> Vector3 pos, vel;
+    <span class="k">public</span> <span class="t">float</span> life, radius, damage;
+    <span class="k">public</span> GameObject view;                <span class="c">// 8-byte reference chased every frame</span>
+    <span class="k">public</span> <span class="t">string</span> ownerName;              <span class="c">// only used when it hits something</span>
+}
+
+<span class="k">public class</span> <span class="t">ProjectileManager</span> : <span class="t">MonoBehaviour</span> {
+    List&lt;Projectile&gt; live = <span class="k">new</span> List&lt;Projectile&gt;();
+
+    <span class="k">public void</span> <span class="f">Fire</span>(Vector3 p, Vector3 v, <span class="t">string</span> owner){
+        <span class="k">var</span> pr = <span class="k">new</span> Projectile{ pos=p, vel=v, life=<span class="n">3f</span>, radius=<span class="n">0.1f</span>,
+                                  damage=<span class="n">12f</span>, ownerName=owner };
+        pr.view = Instantiate(bulletPrefab, p, Quaternion.identity);   <span class="c">// spawn per shot</span>
+        live.<span class="f">Add</span>(pr);
+    }
+
+    <span class="k">void</span> <span class="f">Update</span>(){
+        <span class="k">for</span>(<span class="t">int</span> i = live.Count-<span class="n">1</span>; i &gt;= <span class="n">0</span>; i--){
+            <span class="k">var</span> pr = live[i];                                   <span class="c">// pointer chase</span>
+            pr.pos += pr.vel * Time.deltaTime;
+            pr.life -= Time.deltaTime;
+            pr.view.transform.position = pr.pos;                <span class="c">// managed→native call each</span>
+            <span class="k">if</span>(pr.life &lt;= <span class="n">0f</span>){
+                Destroy(pr.view);                               <span class="c">// destroy + GC pressure</span>
+                live.<span class="f">RemoveAt</span>(i);
+                Debug.Log(<span class="s">"Expired bullet from "</span> + pr.ownerName);  <span class="c">// string alloc, always</span>
+            }
+        }
+    }
+}</pre></div>
+
+  <p>And here is the after. Click any highlighted line to see why that specific change exists &mdash;
+  the reasoning is the deliverable, not the code.</p>
+
+  <div class="annot"><div class="rows">
+    <div class="arow hasnote"><div class="gut">1</div><div class="ln">const int CAP = 8192;                       // fixed pool capacity, decided once</div></div>
+    <div class="note"><b>Why a hard cap.</b> A pool with unbounded growth is just an allocator with
+    extra steps: it still spikes the first time a firefight is bigger than anything you tested. A
+    fixed capacity converts "occasionally allocates" into "occasionally refuses", which is a
+    designable failure &mdash; you drop the oldest projectile or refuse the shot &mdash; and it makes
+    the memory cost a constant you can put in a budget spreadsheet. Decide the cap from measured peak
+    usage times a safety factor, and log when you hit it.</div>
+    <div class="arow hasnote"><div class="gut">2</div><div class="ln">float[] px = new float[CAP], py = new float[CAP], pz = new float[CAP];</div></div>
+    <div class="note"><b>Why split into parallel arrays (SoA).</b> The hot loop reads position and
+    velocity and writes position. In the AoS version each 40&ndash;64 byte object shares a cache line
+    with <code>damage</code>, <code>radius</code>, <code>ownerName</code> and a GameObject reference
+    that the loop never touches, so most of every fetched line is waste and each element is a
+    separate heap object at an unpredictable address. With parallel <code>float</code> arrays, one
+    64-byte line holds 16 consecutive x-values, the hardware prefetcher sees a linear stride, and the
+    JIT (or Burst) can vectorize. Same math, roughly a third of the bytes moved.</div>
+    <div class="arow"><div class="gut">3</div><div class="ln">float[] vx = new float[CAP], vy = new float[CAP], vz = new float[CAP];</div></div>
+    <div class="arow hasnote"><div class="gut">4</div><div class="ln">float[] life = new float[CAP];              // cold fields live elsewhere</div></div>
+    <div class="note"><b>Why cold data is separated, not deleted.</b> <code>damage</code>,
+    <code>ownerName</code> and the impact VFX id still exist &mdash; they live in a second set of
+    arrays touched only on the hit path, which runs a few dozen times a second instead of 4,000 times
+    a frame. The split is by <em>access frequency</em>, not by semantics. This is the part students
+    get wrong: SoA is not "one array per field because the pattern says so", it is "hot fields
+    contiguous, cold fields out of the way."</div>
+    <div class="arow"><div class="gut">5</div><div class="ln">int count = 0;                              // live prefix: [0, count)</div></div>
+    <div class="arow hasnote"><div class="gut">6</div><div class="ln">Transform[] views = new Transform[CAP];     // pre-instantiated once, at load</div></div>
+    <div class="note"><b>Why cache the Transform, not the GameObject.</b> Every
+    <code>go.transform</code> is a managed-to-native lookup. Caching the <code>Transform</code>
+    reference removes that lookup from the hot loop, and pre-instantiating the whole pool at load
+    time moves 8,192 <code>Instantiate</code> calls out of gameplay and into a loading screen where a
+    120&nbsp;ms cost is invisible. The pooled views are deactivated, not destroyed.</div>
+    <div class="arow hasnote"><div class="gut">7</div><div class="ln">public bool Fire(Vector3 p, Vector3 v){</div></div>
+    <div class="note"><b>Why it returns bool.</b> The pool can be full. Returning a bool forces every
+    caller to decide what a full pool means for that weapon &mdash; silently dropping the shot is a
+    choice, but it must be a choice someone made. A <code>void Fire</code> that quietly does nothing
+    is how you get a bug report titled "gun sometimes doesn't shoot" three months later.</div>
+    <div class="arow"><div class="gut">8</div><div class="ln">    if (count &gt;= CAP) return false;</div></div>
+    <div class="arow hasnote"><div class="gut">9</div><div class="ln">    int i = count++;                        // append; no free-list search</div></div>
+    <div class="note"><b>Why a dense prefix instead of a free list.</b> Keeping live elements packed
+    in <code>[0, count)</code> means the update loop has no "is this slot alive?" branch and no holes
+    to skip &mdash; the branch predictor and the prefetcher both love it. The cost is that removal
+    must be swap-with-last (line 16), which changes element order. That is fine for projectiles and
+    not fine for anything where a stable index is a handle; in that case you add a generation-indexed
+    handle table rather than reintroducing holes.</div>
+    <div class="arow"><div class="gut">10</div><div class="ln">    px[i]=p.x; py[i]=p.y; pz[i]=p.z; vx[i]=v.x; vy[i]=v.y; vz[i]=v.z;</div></div>
+    <div class="arow"><div class="gut">11</div><div class="ln">    life[i]=3f; views[i].gameObject.SetActive(true); return true; }</div></div>
+    <div class="arow hasnote"><div class="gut">12</div><div class="ln">void Update(){ float dt = Time.deltaTime;   // hoisted out of the loop</div></div>
+    <div class="note"><b>Why hoist <code>Time.deltaTime</code>.</b> It is a property backed by a
+    native call. Reading it 4,000 times per frame instead of once is pure overhead, and unlike most
+    micro-optimizations this one is free to write and impossible to get wrong. Measure it before you
+    claim it in a report: on its own it is worth a fraction of a millisecond, and your report should
+    say so rather than implying it carried the win.</div>
+    <div class="arow"><div class="gut">13</div><div class="ln">  for (int i = 0; i &lt; count; i++){          // forward, linear, no bounds surprises</div></div>
+    <div class="arow"><div class="gut">14</div><div class="ln">    px[i] += vx[i]*dt; py[i] += vy[i]*dt; pz[i] += vz[i]*dt;</div></div>
+    <div class="arow hasnote"><div class="gut">15</div><div class="ln">    life[i] -= dt;                          // expiry decided in a second pass</div></div>
+    <div class="note"><b>Why two passes instead of one.</b> Removing elements inside the movement
+    loop mixes a pure streaming operation with a branchy compaction operation, which blocks
+    vectorization of the arithmetic and mispredicts constantly. Pass one is branch-free math over
+    contiguous floats; pass two walks the same array and compacts. Two linear passes over cached data
+    beat one pass that stalls, and this is the single most transferable idea in the refactor.</div>
+    <div class="arow"><div class="gut">16</div><div class="ln">  }</div></div>
+    <div class="arow hasnote"><div class="gut">17</div><div class="ln">  for (int i = count-1; i &gt;= 0; i--) if (life[i] &lt;= 0f) SwapRemove(i);</div></div>
+    <div class="note"><b>Why iterate backwards here.</b> <code>SwapRemove</code> moves the last live
+    element into slot <code>i</code> and decrements <code>count</code>. Walking backwards guarantees
+    the element swapped in has already been examined this frame, so nothing is skipped and nothing is
+    processed twice &mdash; the off-by-one bug that this pattern always produces when written
+    forwards.</div>
+    <div class="arow hasnote"><div class="gut">18</div><div class="ln">  if (expiredThisFrame &gt; 0 &amp;&amp; log.IsEnabled) log.Expired(expiredThisFrame);</div></div>
+    <div class="note"><b>Why the log changed shape.</b> The original built a string with
+    <code>+ pr.ownerName</code> on every expiry &mdash; the concatenation happens <em>before</em> the
+    call, so it allocates even when logging is disabled, and it allocated once per bullet. The new
+    form checks the flag first and reports a count, turning thousands of string allocations per
+    second into zero. Then measure again: this change alone removed the recurring GC spike in the
+    original capture, which is a separate, reportable result from the SoA win.</div>
+  </div><p class="hint">Click any highlighted line to see the reasoning behind that change.</p></div>
+
+  <div class="box why"><div class="lbl">Why you report these as separate numbers</div>
+  <p>That refactor bundles five distinct changes: pooling, SoA layout, hot/cold splitting, two-pass
+  update, and log-allocation removal. If you measure once at the end and report "6.0&nbsp;ms &rarr;
+  1.4&nbsp;ms", you have learned nothing transferable and you cannot defend the work &mdash; nobody,
+  including you, knows which change earned the 4.6&nbsp;ms. Land them one at a time with a capture
+  between each. You will usually find that one change carried 80% of the win and two of the others
+  did nothing measurable, and <em>that</em> is the finding worth putting in your assignment video.</p></div>
+
+  <div class="tabs">
+    <div class="tabhd"><button data-engine="unity" data-tab="u" class="on">Unity</button><button data-engine="unreal" data-tab="e">Unreal</button></div>
+    <div class="tabbody">
+      <div class="tabpane on" data-pane="u">
+        <p><b>Going wider.</b> Once data is in parallel <code>NativeArray</code>s, the Job System plus
+        Burst is a short step: a job over contiguous value types compiles to vectorized native code
+        and runs on worker threads. The constraint is what makes it work &mdash; jobs cannot touch
+        managed objects, which is precisely the discipline SoA already imposed.</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>ProjectileJob.cs &middot; C#</div><pre>[BurstCompile]
+<span class="k">struct</span> <span class="t">MoveJob</span> : <span class="t">IJobParallelFor</span> {
+    <span class="k">public</span> NativeArray&lt;<span class="t">float</span>&gt; px, py, pz;
+    [ReadOnly] <span class="k">public</span> NativeArray&lt;<span class="t">float</span>&gt; vx, vy, vz;
+    <span class="k">public float</span> dt;
+    <span class="k">public void</span> <span class="f">Execute</span>(<span class="t">int</span> i){
+        px[i] += vx[i]*dt; py[i] += vy[i]*dt; pz[i] += vz[i]*dt;
+    }
+}
+<span class="c">// Schedule with a batch size — too small and scheduling overhead dominates,</span>
+<span class="c">// too large and one worker finishes last. 64–256 is the usual measured range.</span>
+JobHandle h = <span class="k">new</span> MoveJob{ px=px, py=py, pz=pz, vx=vx, vy=vy, vz=vz, dt=Time.deltaTime }
+              .<span class="f">Schedule</span>(count, <span class="n">128</span>);
+h.<span class="f">Complete</span>();   <span class="c">// completing in the same frame you scheduled wastes the parallelism</span></pre></div>
+      </div>
+      <div class="tabpane" data-pane="e">
+        <p><b>Going wider.</b> <code>ParallelFor</code> distributes a range across the task graph; the
+        same rules apply &mdash; contiguous data, no shared mutable state, a chunk size big enough to
+        amortize scheduling. <code>TArray::Reserve</code> before a known-size fill removes the
+        geometric reallocation-and-copy pattern that shows up as memcpy in Insights.</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>ProjectilePool.cpp &middot; C++</div><pre><span class="c">// SoA in C++: separate TArrays, reserved once at pool construction.</span>
+Px.<span class="f">Reserve</span>(Cap); Py.<span class="f">Reserve</span>(Cap); Pz.<span class="f">Reserve</span>(Cap);
+Vx.<span class="f">Reserve</span>(Cap); Vy.<span class="f">Reserve</span>(Cap); Vz.<span class="f">Reserve</span>(Cap);
+
+<span class="c">// Branch-free streaming pass, split across workers. Count must be large enough</span>
+<span class="c">// that the task overhead (~microseconds) is noise — measure the crossover.</span>
+<span class="k">const</span> <span class="t">float</span> Dt = DeltaSeconds;
+<span class="f">ParallelFor</span>(Count, [&amp;](<span class="t">int32</span> i){
+    Px[i] += Vx[i] * Dt;  Py[i] += Vy[i] * Dt;  Pz[i] += Vz[i] * Dt;
+}, <span class="c">/*bForceSingleThread=*/</span> Count &lt; <span class="n">512</span>);
+
+<span class="c">// Expiry compaction stays single-threaded and backwards — order-dependent.</span>
+<span class="k">for</span> (<span class="t">int32</span> i = Count - <span class="n">1</span>; i &gt;= <span class="n">0</span>; --i) { <span class="k">if</span> (Life[i] &lt;= <span class="n">0.f</span>) <span class="f">SwapRemove</span>(i); }</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <h2><span class="num">5</span>Proving the optimizations do not interact badly</h2>
+
+  <p>Here is the situation you will actually be in at the end of this topic. You added eight
+  optimization toggles &mdash; instancing on/off, LOD bias, shadow resolution, physics substeps,
+  Burst on/off, texture streaming pool size, particle budget, dynamic resolution. Your game ships
+  four quality presets and runs on five hardware tiers. You tested "Ultra on my machine" and "Low on
+  a laptop" and both were fine.</p>
+
+  <p>The configuration space is 2<sup>8</sup> &times; 4 &times; 5 = 5,120 combinations. At six minutes
+  of smoke test each, exhaustive coverage is 512 hours of testing &mdash; three months of one
+  person's time for a build that will be obsolete on Thursday. And the bug you are afraid of is
+  exactly an interaction: dynamic resolution plus a low texture-streaming pool plus the mid tier
+  produces a frame where the streamer cannot keep up and the game renders a grey world, and no single
+  setting is at fault.</p>
+
+  <p>Combinatorial interaction testing is the established answer. Its central empirical claim,
+  surveyed by Raunak et&nbsp;al. (2024), is that interaction faults are overwhelmingly triggered by
+  a small number of interacting parameters &mdash; most by one or two &mdash; so a test suite that
+  guarantees every <em>pair</em> of parameter values appears together in at least one test catches a
+  large majority of interaction faults at a tiny fraction of the cost. Guaranteeing that property is
+  a covering-array construction problem, and it is not intuitive: you cannot get there by picking
+  configurations that "feel varied."</p>
+
+  <div class="widget" id="w-pair">
+    <div class="whd"><span class="wt">Pairwise Test Set Reducer</span><span class="wk">Generator</span></div>
+    <p class="wsub">Select parameters and how many values of each you ship. The widget builds a real
+    2-way covering array with a greedy IPOG-style algorithm (horizontal growth, then vertical
+    growth), then <em>independently re-verifies</em> that every value pair appears in at least one
+    row and tells you if it did not. Every generated row is listed below &mdash; that list is a test
+    plan you can execute.</p>
+
+    <div class="parambox" id="pw-params"></div>
+    <div class="ctl"><label>Minutes to test one config</label><input type="range" id="pw-min" min="1" max="60" value="6"><output id="pw-mino">6 min</output></div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Exhaustive configs</div><div class="v" id="pw-exh">&mdash;</div></div>
+      <div class="cell"><div class="k">Pairwise configs</div><div class="v" id="pw-pw">&mdash;</div></div>
+      <div class="cell"><div class="k">Reduction</div><div class="v" id="pw-red">&mdash;</div></div>
+      <div class="cell"><div class="k">Pairs to cover</div><div class="v" id="pw-pairs">&mdash;</div></div>
+      <div class="cell"><div class="k">Exhaustive time</div><div class="v" id="pw-texh">&mdash;</div></div>
+      <div class="cell"><div class="k">Pairwise time</div><div class="v" id="pw-tpw">&mdash;</div></div>
+    </div>
+    <div class="verdict" id="pw-verdict">&nbsp;</div>
+    <div class="btnrow">
+      <button class="btn" id="pw-gen">Regenerate</button>
+      <button class="btn ghost" id="pw-all">Select all</button>
+      <button class="btn ghost" id="pw-min6">Six-factor default</button>
+    </div>
+    <div class="pairout" id="pw-out"></div>
+    <p class="mini">Honest limits: this generator is unconstrained. Real matrices contain forbidden
+    combinations (ASTC on hardware without ASTC support; ray tracing on a handheld), which require a
+    constrained covering array &mdash; see the note on Mercan &amp; Yilmaz below. It also builds 2-way
+    coverage only; safety-relevant systems go to 3-way or higher, and the row count grows accordingly.</p>
+  </div>
+
+  <p>Try six parameters with three or four values each. Exhaustive is in the hundreds or thousands;
+  pairwise typically lands somewhere between a dozen and twenty rows. Notice what that buys and what
+  it does not: every <em>pair</em> is guaranteed, no specific triple is. If your grey-world bug needs
+  three specific settings simultaneously, a 2-way array may miss it &mdash; which is why you also
+  keep the handful of hand-picked configurations you know are risky, and why the literature discusses
+  <em>t</em>-way coverage for higher <em>t</em>.</p>
+
+  <div class="box field"><div class="lbl">From the reading</div>
+  <p>Two refinements matter for a game. Mercan &amp; Yilmaz (2023) work on unified combinatorial
+  interaction testing with <em>hints</em> &mdash; a way to fold prior knowledge and constraints into
+  the array construction, rather than generating combinations that are invalid or that you already
+  know are safe. That is exactly the game problem: half your matrix is impossible (no D3D12 on iOS)
+  and some of it is known-good from last milestone, and an unconstrained generator wastes rows on
+  both.</p>
+  <p>Niu et&nbsp;al. (2021) address the harder question, which the widget above cannot answer for you:
+  once you have 18 configurations, <em>what do you assert?</em> There is no expected screenshot for
+  "Medium preset, instancing off, tier 3". Their answer is to combine combinatorial testing with
+  <b>metamorphic relations</b> &mdash; properties that must hold <em>between</em> runs rather than
+  absolute expected outputs.</p></div>
+
+  <p>Metamorphic relations are the piece that makes this practical for games, so make them concrete.
+  For a graphics and performance matrix, useful relations include: replaying the same recorded input
+  with the same RNG seed must produce the same gameplay state hash under <em>every</em> graphics
+  preset (rendering must not touch simulation); lowering shadow resolution must not change collision
+  results, navmesh paths, or damage numbers; enabling GPU instancing must not change rendered output
+  beyond a small per-pixel epsilon; raising quality must never <em>increase</em> frame rate on the
+  same scene; and total texture memory must be monotonically non-increasing as the resolution cap
+  drops. Each of those is a machine-checkable assertion you can run across all 18 generated
+  configurations without a human deciding whether the frame "looks right". That combination &mdash;
+  a covering array for which configurations to run, metamorphic relations for what to check &mdash;
+  is a genuinely strong validation story for your assignment, and it is the part most submissions
+  will not have.</p>
+
+  <div class="tabs">
+    <div class="tabhd"><button data-engine="unity" data-tab="u" class="on">Unity</button><button data-engine="unreal" data-tab="e">Unreal</button></div>
+    <div class="tabbody">
+      <div class="tabpane on" data-pane="u">
+        <p>Drive the generated rows from a parameterized test. Unity Test Framework's
+        <code>[TestCaseSource]</code> takes your covering array as data, so adding a parameter
+        regenerates cases instead of requiring new test code. Run in PlayMode in
+        <code>-batchmode</code> on the build agent and record the assertion results per row.</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>PresetMatrixTests.cs &middot; C#</div><pre><span class="c">// CoveringArray.Rows was generated offline and checked into the repo as JSON,</span>
+<span class="c">// so a failing row is reproducible by row index months later.</span>
+[UnityTest]
+<span class="k">public</span> IEnumerator <span class="f">SimulationIsIndependentOfGraphics</span>(
+    [ValueSource(<span class="k">nameof</span>(CoveringArray.Rows))] ConfigRow row){
+
+    ApplyConfig(row);                       <span class="c">// quality preset, keywords, pool sizes</span>
+    <span class="k">var</span> replay = Replay.<span class="f">Load</span>(<span class="s">"fixtures/arena_30s.rec"</span>);
+    <span class="k">yield return</span> Sim.<span class="f">RunDeterministic</span>(replay, seed: <span class="n">20261026</span>);
+
+    <span class="c">// Metamorphic relation: graphics settings must not perturb simulation state.</span>
+    Assert.<span class="f">AreEqual</span>(GoldenStateHash, Sim.<span class="f">StateHash</span>(),
+        $<span class="s">"Config {row.Id} changed simulation state — graphics is leaking into gameplay"</span>);
+}</pre></div>
+      </div>
+      <div class="tabpane" data-pane="e">
+        <p>Use an Automation Spec that iterates the same array, driven from Gauntlet so each row can
+        run on a different device tier in the device farm. <code>GetTests</code> enumerates the rows
+        as separate automation entries so the results grid shows exactly which configuration failed.</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>PresetMatrixTest.cpp &middot; C++</div><pre>IMPLEMENT_COMPLEX_AUTOMATION_TEST(FPresetMatrixTest, <span class="s">"Game.Perf.PresetMatrix"</span>,
+    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+<span class="k">void</span> FPresetMatrixTest::<span class="f">GetTests</span>(TArray&lt;FString&gt;&amp; OutBeautified,
+                                 TArray&lt;FString&gt;&amp; OutCommands) <span class="k">const</span> {
+    <span class="k">for</span> (<span class="k">const</span> FConfigRow&amp; Row : UCoveringArray::Get()-&gt;Rows) {   <span class="c">// 18 rows, not 5120</span>
+        OutBeautified.<span class="f">Add</span>(Row.Label);
+        OutCommands.<span class="f">Add</span>(FString::<span class="f">FromInt</span>(Row.Index));
+    }
+}
+
+<span class="k">bool</span> FPresetMatrixTest::<span class="f">RunTest</span>(<span class="k">const</span> FString&amp; Parameters) {
+    <span class="k">const</span> FConfigRow&amp; Row = UCoveringArray::Get()-&gt;<span class="f">ByIndex</span>(FCString::Atoi(*Parameters));
+    <span class="f">ApplyScalability</span>(Row);
+    <span class="k">const</span> uint64 Hash = <span class="f">RunDeterministicReplay</span>(TEXT(<span class="s">"arena_30s"</span>), <span class="c">/*Seed=*/</span><span class="n">20261026</span>);
+    <span class="c">// Same metamorphic relation, same fixture, different engine.</span>
+    <span class="k">return</span> <span class="f">TestEqual</span>(TEXT(<span class="s">"Simulation hash invariant to scalability"</span>), Hash, GoldenHash);
+}</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="check">
+    <p class="q">Your matrix is 5 parameters: 4&times;4&times;3&times;3&times;2. The pairwise generator
+    returns 16 rows. A teammate says "16 rows can't possibly be enough &mdash; that's 5.6% of the
+    288 combinations." What is the accurate reply?</p>
+    <button class="opt" data-correct="0">He is right; pairwise is a heuristic and 16 rows proves nothing.</button>
+    <button class="opt" data-correct="1">The 16 rows provably contain every 2-way value pair; what they do not guarantee is any specific 3-way or higher interaction.</button>
+    <button class="opt" data-correct="0">Row count scales with the number of parameters, so 16 is expected for 5 parameters.</button>
+    <button class="opt" data-correct="0">Pairwise coverage is equivalent to exhaustive coverage when no parameter has more than four values.</button>
+    <div class="exp"><b>Why B:</b> A covering array is a construction with a proof obligation, and the
+    obligation is precise: every pair of values from every pair of parameters occurs in at least one
+    row. That is checkable &mdash; the widget re-verifies it independently after generating &mdash;
+    and it is also bounded. It says nothing about a fault that only fires when three particular
+    settings coincide. Stating both halves is what makes you credible.
+      <div class="ex"><span class="who">Why A is tempting</span><br>
+      The percentage is startling and "5.6% coverage" sounds indefensible. But the denominator is the
+      wrong unit: you are not sampling configurations, you are covering interactions, and the
+      interaction coverage is 100% at strength 2 by construction.</div>
+      <div class="ex"><span class="who">Why C is tempting</span><br>
+      Row count does grow with parameter count, but only logarithmically; it is dominated by the
+      product of the two largest value counts &mdash; here 4&times;4 = 16, which is exactly the row
+      count you get. Adding a sixth 2-value parameter will barely move it; adding a 5-value one
+      will. Try both in the widget.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">6</span>The trade, the platform, and the argument you have to win</h2>
+
+  <p>Every optimization in layers 1 and 2 spends something a person chose. The physics step you
+  doubled was tuned by a designer; the texture you halved was authored by an artist; the shadow
+  resolution you dropped was a lighting decision. Arriving with "I optimized it" is how the change
+  gets reverted the week after you leave the project. Arrive instead with three options and their
+  costs: shadow resolution 2048 costs 3.1&nbsp;ms and misses 60 fps on tier 2; 1024 costs 1.4&nbsp;ms
+  and holds 60 with a visible softening at contact points; distance-based cascades cost 1.9&nbsp;ms
+  and preserve near-field quality but need two days. State a recommendation, name what is lost in the
+  language of the person you are talking to, and let them choose. The people who get their
+  optimizations kept are the ones who make the trade legible instead of making it quietly.</p>
+
+  <p>Then there is the platform. Mah Ung (2017) reported on demonstrations that game code explicitly
+  optimized for a specific CPU's core and thread topology &mdash; Ryzen, at the time &mdash; produced
+  noticeably different results from the same game's default path, which is a reminder that
+  "optimized" is not a property of code, it is a relationship between code and a machine. The
+  practical consequences for your assignment: work distributed across eight worker threads is a win
+  on a desktop CPU and can be a loss on a mobile SoC with four cores that thermally throttle when you
+  wake them all up. Fewer, larger draw calls are usually right on desktop, while on a tile-based
+  mobile GPU the binding constraint is more often bandwidth and overdraw than draw call count. Larger
+  textures with better compression are free on a discrete GPU with 12&nbsp;GB of VRAM and fatal on a
+  device with unified memory. And an optimization that reduces average frame time while increasing
+  its variance can score better on the metric and feel worse in the hand.</p>
+
+  <p>This is why the assignment asks for cross-platform analysis rather than a single number, and why
+  Topic 8 will make you do it for real on a phone. The habit to build now: whenever you record a
+  before/after pair, record the machine, the build configuration, the scene, the route, the run
+  count, and the thermal state. A before/after with no configuration attached is not evidence, it is
+  an anecdote with decimals.</p>
+
+  <div class="tree" id="tree5"><p class="path"></p><div class="body"></div></div>
+
+  <div class="deliver">
+    <h3>Bring to the assignment</h3>
+    <p><b>Multi-Layered Game Optimization</b> &middot; 100 points &middot; due Nov 8 &middot;
+    optimize in three layers with before/after profiling data for each, presented as slides, video,
+    or a document.</p>
+    <p>The lesson maps onto the deliverable piece by piece. Arrive with:</p>
+    <ul>
+      <li><b>A baseline capture before you touch anything</b>, from a repeatable benchmark scene
+      (Topic 4's discipline): same route, same duration, at least three runs, median and 1% low
+      reported. No baseline, no assignment &mdash; every later number is relative to this one.</li>
+      <li><b>An Amdahl table</b> for your baseline: each subsystem's share of frame time, its ceiling,
+      and your estimated effort. Use the ROI calculator to produce it, then say in one sentence why
+      you chose the target you chose. Including a candidate you <em>rejected</em> on arithmetic is
+      worth more than one more optimization.</li>
+      <li><b>Layer 1 &mdash; logic/physics:</b> one algorithmic or configuration change with a
+      complexity or count argument attached (pair checks per frame before and after, physics steps per
+      second, agents updated per frame), plus an equivalence check showing behavior did not change.</li>
+      <li><b>Layer 2 &mdash; assets:</b> one asset change with the memory and bandwidth arithmetic
+      shown (use the texture calculator's method), a before/after screenshot pair at the same camera
+      position, and one sentence naming what fidelity was given up and who would have to approve it.</li>
+      <li><b>Layer 3 &mdash; code patterns:</b> one refactor in the shape of the annotated walkthrough
+      &mdash; pooling, hot/cold split, SoA, allocation removal &mdash; measured <em>per change</em>,
+      not as one bundled number. Report the change that did nothing; that is data.</li>
+      <li><b>A validation matrix.</b> List your optimization flags, quality presets, and hardware
+      tiers; state the exhaustive count; generate the pairwise set with the widget; paste the rows.
+      Name at least two metamorphic relations you asserted across those rows (the deterministic replay
+      hash is the strongest one available to you).</li>
+      <li><b>A cross-platform note.</b> Run at least two configurations &mdash; two machines, or one
+      machine at two quality tiers &mdash; and identify one optimization whose benefit differs between
+      them. If everything helped equally everywhere, say so and explain why that is plausible.</li>
+      <li><b>Full configuration metadata</b> on every measurement: CPU, GPU, RAM, OS, engine version,
+      build configuration (development vs shipping), resolution, vsync state, and thermal state for
+      mobile. Copy this block onto every slide that shows a number.</li>
+    </ul>
+    <p class="small subtle">Sessions 15&ndash;18 run as a profiling-and-optimization sprint. Bring a
+    project that currently misses its frame target &mdash; a project that already runs at 300 fps
+    gives you nothing to work with, and "I optimized a game that was already fast" is the hardest
+    version of this assignment to pass.</p>
+  </div>
+
+  <footer class="lf"><a href="../index.html">&larr; Course hub</a><span>Advanced Game Testing and Debugging</span></footer>
+</div>
+<script id="lesson-kit-js">
+/* ---------- reading progress ---------- */
+(function(){
+  var b=document.createElement('div'); b.className='progressbar';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(b);});
+  addEventListener('scroll',function(){
+    var h=document.documentElement, m=h.scrollHeight-h.clientHeight;
+    b.style.width=(m>0?(h.scrollTop/m*100):0)+'%';
+  },{passive:true});
+})();
+
+/* ---------- engine tabs ---------- */
+function GDTtabs(root){
+  root.querySelectorAll('.tabhd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      root.querySelectorAll('.tabhd button').forEach(function(b){b.classList.remove('on')});
+      root.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('on')});
+      btn.classList.add('on');
+      var pane=root.querySelector('.tabpane[data-pane="'+btn.dataset.tab+'"]');
+      if(pane) pane.classList.add('on');
+    });
+  });
+}
+
+/* ---------- annotated code ---------- */
+function GDTannot(root){
+  root.querySelectorAll('.arow.hasnote').forEach(function(row){
+    row.addEventListener('click',function(){
+      var note=row.nextElementSibling;
+      var open=row.classList.contains('open');
+      row.classList.toggle('open',!open);
+      if(note&&note.classList.contains('note')) note.classList.toggle('open',!open);
+    });
+  });
+}
+
+/* ---------- knowledge check ---------- */
+function GDTcheck(root){
+  var done=false;
+  root.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      if(done) return; done=true;
+      var correct = opt.dataset.correct==='1';
+      root.querySelectorAll('.opt').forEach(function(o){
+        if(o.dataset.correct==='1'){o.classList.add('right');
+          o.insertAdjacentHTML('beforeend','<span class="tag">CORRECT</span>');}
+        else if(o===opt){o.classList.add('wrong');
+          o.insertAdjacentHTML('beforeend','<span class="tag">NOT QUITE</span>');}
+        o.style.cursor='default';
+      });
+      var exp=root.querySelector('.exp'); if(exp) exp.classList.add('on');
+    });
+  });
+}
+
+/* ---------- decision tree ----------
+   Usage: new GDTTree(document.getElementById('t1'), NODES, 'start')
+   NODES = { start:{q:'', hint:'', choices:[{t:'',sub:'',go:'nodeId'}]},
+             leafId:{leaf:true, title:'', body:'<p>…</p>'} }              */
+function GDTTree(root,nodes,startId){
+  var pathEl=root.querySelector('.path'), body=root.querySelector('.body');
+  var trail=[];
+  function render(id){
+    var n=nodes[id]; if(!n) return;
+    pathEl.innerHTML = trail.length? trail.map(function(t){return '<span>'+t+'</span>'}).join(' &rsaquo; ') : '&nbsp;';
+    if(n.leaf){
+      body.innerHTML='<div class="leaf"><h5>'+n.title+'</h5>'+n.body+'</div>'+
+        '<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>';
+    }else{
+      body.innerHTML='<p class="qq">'+n.q+'</p>'+(n.hint?'<p class="qh">'+n.hint+'</p>':'')+
+        '<div class="choices">'+n.choices.map(function(c,i){
+          return '<button data-go="'+c.go+'" data-lbl="'+(c.lbl||c.t).replace(/"/g,'&quot;')+'">'+c.t+
+                 (c.sub?'<span class="sub">'+c.sub+'</span>':'')+'</button>';}).join('')+'</div>'+
+        (trail.length?'<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>':'');
+    }
+    body.querySelectorAll('[data-go]').forEach(function(b){
+      b.addEventListener('click',function(){trail.push(b.dataset.lbl); render(b.dataset.go);});
+    });
+    var rs=body.querySelector('[data-restart]');
+    if(rs) rs.addEventListener('click',function(){trail=[]; render(startId);});
+  }
+  render(startId);
+}
+
+/* ---------- auto-wire everything ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.tabs').forEach(GDTtabs);
+  document.querySelectorAll('.annot').forEach(GDTannot);
+  document.querySelectorAll('.check').forEach(GDTcheck);
+});
+
+/* ---------- small helpers for simulators ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(n,d){return Number(n).toFixed(d===undefined?1:d)}
+function lerp(a,b,t){return a+(b-a)*t}
+/* deterministic pseudo-random so demos are reproducible for a class */
+function rng(seed){var s=seed||1;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296;}}
+</script>
+<script id="lesson-widgets">
+/* ============================================================
+   Advanced Game Testing and Debugging · Topic 5 · lesson-specific widgets
+   Every number below is computed from the controls. Models are
+   simplified where labeled; the arithmetic is always real.
+   ============================================================ */
+(function(){
+'use strict';
+
+/* ---------- shared helpers ---------- */
+function segment(container, onPick){
+  var btns = $$('button', container);
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){
+      btns.forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      onPick(parseFloat(b.dataset.v), b.textContent);
+    });
+  });
+  return function(v){
+    btns.forEach(function(x){ x.classList.toggle('on', parseFloat(x.dataset.v) === v); });
+  };
+}
+function bigint(v){
+  if(v >= 1e15) return v.toExponential(2);
+  return Math.round(v).toLocaleString('en-US');
+}
+function hoursTxt(minutes){
+  if(minutes < 90) return Math.round(minutes) + ' min';
+  var h = minutes/60;
+  if(h < 48) return h.toFixed(1) + ' h';
+  var d = h/8;
+  if(d < 400) return d.toFixed(0) + ' dev-days';
+  return (d/220).toFixed(1) + ' dev-years';
+}
+function msTxt(ms){
+  if(ms < 0.01) return (ms*1000).toFixed(0) + ' µs';
+  return ms.toFixed(2) + ' ms';
+}
+function cls(el, kind){
+  el.classList.remove('ok','warn','crit');
+  if(kind) el.classList.add(kind);
+}
+
+/* ============================================================
+   WIDGET 1 — Amdahl / Optimization ROI calculator
+   ============================================================ */
+function initAmdahl(){
+  var root = document.getElementById('w-amdahl');
+  if(!root) return;
+
+  var NAMES = ['Gameplay scripts / AI','Physics','Animation & skinning',
+               'Culling & draw submission','GPU / render thread','Audio, UI, everything else'];
+  var st = { ms:[2.9,6.1,3.4,4.7,5.8,1.1], target:1, speed:3.0, days:3.0, fps:60 };
+
+  var setFps = segment(document.getElementById('am-fps'), function(v){ st.fps = v; update(); });
+
+  NAMES.forEach(function(_, i){
+    var el = document.getElementById('am-s' + i);
+    el.addEventListener('input', function(){ st.ms[i] = parseFloat(el.value)/10; update(); });
+  });
+  var sel = document.getElementById('am-target');
+  sel.addEventListener('change', function(){ st.target = parseInt(sel.value,10); update(); });
+  var spd = document.getElementById('am-speed');
+  spd.addEventListener('input', function(){ st.speed = parseFloat(spd.value)/10; update(); });
+  var dys = document.getElementById('am-days');
+  dys.addEventListener('input', function(){ st.days = parseFloat(dys.value)/10; update(); });
+
+  $$('[data-am]', root).forEach(function(b){
+    b.addEventListener('click', function(){
+      var p = b.dataset.am;
+      if(p === 'physics'){ st.ms = [2.9,10.5,3.4,4.7,5.8,1.1]; st.target = 1; }
+      if(p === 'gpu'){     st.ms = [2.2,2.0,2.4,3.1,14.0,0.9]; st.target = 4; }
+      if(p === 'flat'){    st.ms = [4.2,4.6,3.9,4.4,4.8,3.6];  st.target = 4; }
+      st.ms.forEach(function(v,i){
+        var el = document.getElementById('am-s'+i); el.value = Math.round(v*10);
+      });
+      sel.value = String(st.target);
+      update();
+    });
+  });
+
+  function afterFrame(base, ms, s){ return base - ms + ms/s; }
+
+  function update(){
+    var base = st.ms.reduce(function(a,b){ return a+b; }, 0);
+    st.ms.forEach(function(v,i){
+      document.getElementById('am-s'+i+'o').textContent = v.toFixed(1) + ' ms';
+    });
+    document.getElementById('am-speedo').textContent = st.speed.toFixed(1) + '×';
+    document.getElementById('am-dayso').textContent  = st.days.toFixed(1) + ' d';
+    document.getElementById('am-targeto').textContent = ' ';
+    var targetMs = 1000/st.fps;
+    document.getElementById('am-fpso').textContent = targetMs.toFixed(2) + ' ms';
+
+    if(base <= 0.05){
+      document.getElementById('am-verdict').textContent = 'Give the frame some work first.';
+      return;
+    }
+    var t = st.target, msT = st.ms[t];
+    var after = afterFrame(base, msT, st.speed);
+    var gain  = (base - after)/base*100;
+    var ceil  = msT/base*100;
+    var roi   = (base - after)/st.days;
+
+    document.getElementById('am-before').textContent = base.toFixed(2) + ' ms';
+    document.getElementById('am-after').textContent  = after.toFixed(2) + ' ms';
+    document.getElementById('am-fpsc').textContent   =
+      (1000/base).toFixed(1) + ' → ' + (1000/after).toFixed(1);
+    document.getElementById('am-gain').textContent   = gain.toFixed(1) + '%';
+    document.getElementById('am-ceil').textContent   = ceil.toFixed(1) + '%';
+    document.getElementById('am-roi').textContent    = roi.toFixed(2);
+
+    cls(document.getElementById('am-after'), after <= targetMs ? 'ok' : 'crit');
+    cls(document.getElementById('am-ceil'),  ceil >= 25 ? 'ok' : (ceil >= 12 ? 'warn' : 'crit'));
+    cls(document.getElementById('am-roi'),   roi >= 1 ? 'ok' : (roi >= 0.3 ? 'warn' : 'crit'));
+
+    /* ranked candidate table, recomputed live at the current speedup */
+    var rows = st.ms.map(function(v,i){
+      var a = afterFrame(base, v, st.speed);
+      return { i:i, ms:v, share:v/base*100, save:base-a, aft:a,
+               ceilMs:v, hits:(a <= targetMs), ceilHits:((base-v) <= targetMs) };
+    }).sort(function(a,b){ return b.save - a.save; });
+
+    var html = '<table class="ranktbl"><thead><tr><th>Subsystem</th><th>ms</th><th>Share</th>' +
+      '<th>Ceiling (∞×)</th><th>Saved @' + st.speed.toFixed(1) + '×</th>' +
+      '<th>Frame after</th><th>Hits ' + st.fps + '?</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      html += '<tr class="' + (r.i === t ? 'pick' : '') + '"><td>' + NAMES[r.i] + '</td>' +
+        '<td class="n">' + r.ms.toFixed(2) + '</td>' +
+        '<td class="n">' + r.share.toFixed(1) + '%</td>' +
+        '<td class="n">' + r.ceilMs.toFixed(2) + ' ms</td>' +
+        '<td class="n">' + r.save.toFixed(2) + ' ms</td>' +
+        '<td class="n">' + r.aft.toFixed(2) + ' ms</td>' +
+        '<td class="n">' + (r.hits ? 'yes' : (r.ceilHits ? 'only at ∞' : 'no')) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('am-rank').innerHTML = html;
+
+    /* verdict */
+    var v = document.getElementById('am-verdict');
+    var need = base - targetMs;
+    var msg, kind;
+    if(need <= 0){
+      msg = 'You are already inside the ' + st.fps + ' fps budget at ' + base.toFixed(2) +
+            ' ms. Optimizing ' + NAMES[t] + ' buys headroom for content, not frame rate — ' +
+            'say that out loud before spending ' + st.days.toFixed(1) + ' days on it.';
+      kind = 'ok';
+    } else if(after <= targetMs){
+      msg = 'This works. ' + NAMES[t] + ' at ' + st.speed.toFixed(1) + '× saves ' +
+            (base-after).toFixed(2) + ' ms, you needed ' + need.toFixed(2) + ' ms, and you land at ' +
+            after.toFixed(2) + ' ms (' + (1000/after).toFixed(1) + ' fps). ROI is ' + roi.toFixed(2) +
+            ' ms per dev-day; compare that against the next row in the table before committing.';
+      kind = 'ok';
+    } else if(base - msT <= targetMs){
+      msg = 'Not at this speedup. You need ' + need.toFixed(2) + ' ms and this gives ' +
+            (base-after).toFixed(2) + ' ms. ' + NAMES[t] + ' could reach the target, but only at ' +
+            (msT/(msT-need)).toFixed(1) + '× or better — decide whether that is a real ' +
+            'engineering plan or a wish.';
+      kind = 'warn';
+    } else {
+      msg = 'Amdahl says stop. ' + NAMES[t] + ' is ' + ceil.toFixed(1) + '% of the frame, so even ' +
+            'deleting it entirely leaves ' + (base-msT).toFixed(2) + ' ms against a ' +
+            targetMs.toFixed(2) + ' ms budget. The missing ' + need.toFixed(2) +
+            ' ms is not in this subsystem. Look at the top row of the table instead.';
+      kind = 'crit';
+    }
+    v.className = 'verdict ' + kind;
+    v.textContent = msg;
+  }
+
+  setFps(60);
+  update();
+}
+
+/* ============================================================
+   WIDGET 2 — Broadphase visualizer (naive O(n^2) vs uniform grid)
+   ============================================================ */
+function initBroad(){
+  var root = document.getElementById('w-broad');
+  if(!root) return;
+  var cv = document.getElementById('bp-canvas');
+  var ctx = cv.getContext('2d');
+  var W = 900, H = 360, R = 5, DPR = 1;
+  var st = { n:300, cellF:2.0, clus:0, draw:0, running:false, raf:0 };
+  var px=[], py=[], vx=[], vy=[];
+  var hit = [];
+  var last = { naive:0, grid:0, pN:0, pG:0, mismatch:false };
+
+  function fit(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(320, cv.clientWidth || cv.parentNode.clientWidth || 900);
+    H = 360;
+    cv.width  = Math.round(W * DPR);
+    cv.height = Math.round(H * DPR);
+    cv.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  var rand = rng(20261026);
+  function seed(){
+    rand = rng(20261026);
+    px = []; py = []; vx = []; vy = []; hit = [];
+    var c = st.clus/100;
+    var cx = W*0.32, cy = H*0.5, rad = Math.min(W,H)*0.16;
+    for(var i=0;i<st.n;i++){
+      var ux = R + rand()*(W-2*R), uy = R + rand()*(H-2*R);
+      var a = rand()*Math.PI*2, rr = Math.sqrt(rand())*rad;
+      var gx = clamp(cx + Math.cos(a)*rr, R, W-R), gy = clamp(cy + Math.sin(a)*rr, R, H-R);
+      px.push(lerp(ux, gx, c)); py.push(lerp(uy, gy, c));
+      var sp = 18 + rand()*46, ang = rand()*Math.PI*2;
+      vx.push(Math.cos(ang)*sp); vy.push(Math.sin(ang)*sp);
+      hit.push(false);
+    }
+  }
+
+  function move(dt){
+    for(var i=0;i<st.n;i++){
+      px[i] += vx[i]*dt; py[i] += vy[i]*dt;
+      if(px[i] < R){ px[i] = R; vx[i] = -vx[i]; }
+      if(px[i] > W-R){ px[i] = W-R; vx[i] = -vx[i]; }
+      if(py[i] < R){ py[i] = R; vy[i] = -vy[i]; }
+      if(py[i] > H-R){ py[i] = H-R; vy[i] = -vy[i]; }
+      hit[i] = false;
+    }
+  }
+
+  var D2 = (2*R)*(2*R);
+
+  function naivePass(){
+    var checks = 0, pairs = 0, set = {};
+    for(var i=0;i<st.n;i++){
+      for(var j=i+1;j<st.n;j++){
+        checks++;
+        var dx = px[i]-px[j], dy = py[i]-py[j];
+        if(dx*dx + dy*dy < D2){ pairs++; set[i+':'+j] = 1; }
+      }
+    }
+    return { checks:checks, pairs:pairs, set:set };
+  }
+
+  function gridPass(){
+    var cs = Math.max(2*R*0.5, st.cellF * 2 * R);
+    var cols = Math.max(1, Math.ceil(W/cs)), rowsN = Math.max(1, Math.ceil(H/cs));
+    var buckets = new Array(cols*rowsN);
+    var i, k;
+    for(i=0;i<st.n;i++){
+      var cxi = clamp(Math.floor(px[i]/cs), 0, cols-1);
+      var cyi = clamp(Math.floor(py[i]/cs), 0, rowsN-1);
+      k = cyi*cols + cxi;
+      if(!buckets[k]) buckets[k] = [];
+      buckets[k].push(i);
+    }
+    var checks = 0, pairs = 0, set = {};
+    for(i=0;i<st.n;i++){
+      var bx = clamp(Math.floor(px[i]/cs), 0, cols-1);
+      var by = clamp(Math.floor(py[i]/cs), 0, rowsN-1);
+      for(var oy=-1; oy<=1; oy++){
+        var yy = by+oy; if(yy<0 || yy>=rowsN) continue;
+        for(var ox=-1; ox<=1; ox++){
+          var xx = bx+ox; if(xx<0 || xx>=cols) continue;
+          var b = buckets[yy*cols+xx]; if(!b) continue;
+          for(var q=0;q<b.length;q++){
+            var j = b[q];
+            if(j <= i) continue;          /* each candidate pair examined exactly once */
+            checks++;
+            var dx = px[i]-px[j], dy = py[i]-py[j];
+            if(dx*dx + dy*dy < D2){ pairs++; set[i+':'+j] = 1; }
+          }
+        }
+      }
+    }
+    var occupied = 0;
+    for(k=0;k<buckets.length;k++){ if(buckets[k]) occupied++; }
+    return { checks:checks, pairs:pairs, set:set, cs:cs, cols:cols, rows:rowsN, occ:occupied };
+  }
+
+  function step(){
+    move(1/60);
+    var a = naivePass();
+    var g = gridPass();
+    var mismatch = (a.pairs !== g.pairs);
+    if(!mismatch){
+      for(var key in a.set){ if(!g.set[key]){ mismatch = true; break; } }
+    }
+    for(var kk in a.set){
+      var ij = kk.split(':'); hit[+ij[0]] = true; hit[+ij[1]] = true;
+    }
+    last = { naive:a.checks, grid:g.checks, pN:a.pairs, pG:g.pairs,
+             mismatch:mismatch, cs:g.cs, cols:g.cols, rows:g.rows, occ:g.occ };
+    draw(g);
+    report();
+  }
+
+  function draw(g){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#0a0d12'; ctx.fillRect(0,0,W,H);
+    if(st.draw === 0 && g.cols*g.rows < 6000){
+      ctx.strokeStyle = '#202934'; ctx.lineWidth = 1;
+      ctx.beginPath();
+      for(var c=1;c<g.cols;c++){ ctx.moveTo(c*g.cs, 0); ctx.lineTo(c*g.cs, H); }
+      for(var r=1;r<g.rows;r++){ ctx.moveTo(0, r*g.cs); ctx.lineTo(W, r*g.cs); }
+      ctx.stroke();
+    }
+    for(var i=0;i<st.n;i++){
+      ctx.beginPath();
+      ctx.arc(px[i], py[i], R, 0, Math.PI*2);
+      ctx.fillStyle = hit[i] ? '#f85149' : '#4da3ff';
+      ctx.fill();
+    }
+  }
+
+  function report(){
+    var red = last.naive > 0 ? (1 - last.grid/last.naive)*100 : 0;
+    document.getElementById('bp-naive').textContent = bigint(last.naive);
+    document.getElementById('bp-grid').textContent  = bigint(last.grid);
+    document.getElementById('bp-red').textContent   = red.toFixed(1) + '%';
+    document.getElementById('bp-pairs').textContent = last.pN + ' / ' + last.pG;
+    var msNaive = last.naive * 4e-6, msGrid = last.grid * 4e-6;   /* 4 ns per check */
+    document.getElementById('bp-cost').textContent  =
+      msTxt(msNaive) + ' → ' + msTxt(msGrid);
+    cls(document.getElementById('bp-red'), red > 90 ? 'ok' : (red > 60 ? 'warn' : 'crit'));
+    cls(document.getElementById('bp-pairs'), last.mismatch ? 'crit' : 'ok');
+    cls(document.getElementById('bp-cost'), msGrid < 1 ? 'ok' : (msGrid < 4 ? 'warn' : 'crit'));
+
+    var v = document.getElementById('bp-verdict'), kind = 'ok', msg;
+    var perCell = st.n / Math.max(1, last.occ || 1);   /* density where objects actually are */
+    if(last.mismatch){
+      kind = 'crit';
+      msg = 'The two algorithms disagree on which pairs overlap. That is the bug this readout ' +
+            'exists to catch — a faster broadphase that loses pairs is a regression, not an ' +
+            'optimization.';
+    } else if(red < 55){
+      kind = 'crit';
+      msg = 'The grid is barely helping (' + red.toFixed(1) + '% fewer checks) with ' +
+            perCell.toFixed(1) + ' objects per cell on average. Either the cell size is wrong or ' +
+            'the population is clustered (that figure counts only non-empty cells) — a ' +
+            'uniform grid degrades toward O(n²) when ' +
+            'everything occupies one cell. Hierarchical structures (BVH, sweep-and-prune) exist ' +
+            'for exactly this distribution.';
+    } else if(st.cellF < 0.9){
+      kind = 'warn';
+      msg = red.toFixed(1) + '% fewer checks, but cells are smaller than one object diameter, so ' +
+            'each object consults cells that cannot possibly contain a partner. Bookkeeping is ' +
+            'now competing with the savings; try 1.5–3×.';
+    } else {
+      msg = red.toFixed(1) + '% fewer checks: ' + bigint(last.naive) + ' → ' +
+            bigint(last.grid) + ' per frame, ' + perCell.toFixed(1) +
+            ' objects per occupied cell, and both ' +
+            'algorithms found the same ' + last.pN + ' overlapping pairs. At a nominal 4 ns per ' +
+            'check that is ' + msTxt(last.naive*4e-6) + ' → ' +
+            msTxt(last.grid*4e-6) + ' of the frame.';
+    }
+    v.className = 'verdict ' + kind;
+    v.textContent = msg;
+  }
+
+  function loop(){
+    if(!st.running) return;
+    step();
+    st.raf = requestAnimationFrame(loop);
+  }
+  function stop(){
+    st.running = false;
+    if(st.raf) cancelAnimationFrame(st.raf);
+    st.raf = 0;
+    document.getElementById('bp-run').textContent = 'Start';
+  }
+  function start(){
+    if(st.running) return;
+    st.running = true;
+    document.getElementById('bp-run').textContent = 'Stop';
+    st.raf = requestAnimationFrame(loop);
+  }
+
+  document.getElementById('bp-run').addEventListener('click', function(){
+    if(st.running) stop(); else start();
+  });
+  document.getElementById('bp-step').addEventListener('click', function(){ stop(); step(); });
+  document.getElementById('bp-reset').addEventListener('click', function(){ seed(); step(); });
+
+  var nEl = document.getElementById('bp-n');
+  nEl.addEventListener('input', function(){
+    st.n = parseInt(nEl.value,10);
+    document.getElementById('bp-no').textContent = st.n;
+    seed(); if(!st.running) step();
+  });
+  var cEl = document.getElementById('bp-cell');
+  cEl.addEventListener('input', function(){
+    st.cellF = parseFloat(cEl.value)/10;
+    document.getElementById('bp-cello').textContent = st.cellF.toFixed(1) + '×';
+    if(!st.running) step();
+  });
+  var clEl = document.getElementById('bp-clus');
+  clEl.addEventListener('input', function(){
+    st.clus = parseFloat(clEl.value);
+    document.getElementById('bp-cluso').textContent =
+      st.clus === 0 ? 'uniform' : (st.clus < 60 ? st.clus + '% clumped' : 'one dense blob');
+    seed(); if(!st.running) step();
+  });
+  segment(document.getElementById('bp-draw'), function(v){ st.draw = v; if(!st.running) step(); });
+
+  var rt = 0;
+  addEventListener('resize', function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){
+      var oldW = W;
+      fit();
+      var k = W/oldW;
+      for(var i=0;i<px.length;i++){ px[i] = clamp(px[i]*k, R, W-R); }
+      if(!st.running) step();
+    }, 150);
+  });
+
+  fit(); seed(); step();
+}
+
+/* ============================================================
+   WIDGET 3 — Texture budget calculator
+   ============================================================ */
+function initTex(){
+  var root = document.getElementById('w-tex');
+  if(!root) return;
+  var BPP = { rgba32:32, bc7:8, bc1:4, bc5:8, astc4:8, astc6:128/36, astc8:2, etc2:8 };
+  var NOTE = {
+    rgba32:'Uncompressed. Correct only for lookup tables, some UI, and render targets — never for albedo.',
+    bc7:'The desktop default for colour with alpha: high quality, 4:1 versus RGBA32. Not available on most mobile GPUs.',
+    bc1:'4:1 more than BC7 but 1-bit alpha and visible artefacts on smooth gradients and skies.',
+    bc5:'Two-channel: reconstruct Z in the shader. The right answer for tangent-space normal maps.',
+    astc4:'Mobile, highest ASTC quality tier. Same footprint as BC7 — you chose ASTC for hardware support, not for size.',
+    astc6:'The usual mobile balance point: 2.25× smaller than ASTC 4×4, artefacts visible mainly on high-frequency detail.',
+    astc8:'Aggressive. Fine for large low-frequency surfaces (terrain, sky), obviously bad on text and UI.',
+    etc2:'The older Android baseline. Assume it if you are shipping to devices without ASTC support; no alpha-quality advantage over BC7.'
+  };
+  var st = { res:2048, fmt:'bc7', count:340, mip:1, budget:1024 };
+
+  var setRes = segment(document.getElementById('tx-res'), function(v){ st.res = v; update(); });
+  var setMip = segment(document.getElementById('tx-mip'), function(v){ st.mip = v; update(); });
+  var fEl = document.getElementById('tx-fmt');
+  fEl.addEventListener('change', function(){ st.fmt = fEl.value; update(); });
+  var cEl = document.getElementById('tx-count');
+  cEl.addEventListener('input', function(){ st.count = parseInt(cEl.value,10); update(); });
+  var bEl = document.getElementById('tx-budget');
+  bEl.addEventListener('input', function(){ st.budget = parseInt(bEl.value,10); update(); });
+
+  function mb(res, bpp, mip){
+    var bytes = res*res*bpp/8;
+    if(mip) bytes *= 4/3;
+    return bytes/1048576;
+  }
+  function update(){
+    var bpp = BPP[st.fmt];
+    var per = mb(st.res, bpp, st.mip);
+    var tot = per*st.count;
+    var baseTot = mb(st.res, 32, st.mip)*st.count;
+    var used = tot/st.budget*100;
+
+    document.getElementById('tx-reso').textContent = st.res;
+    document.getElementById('tx-fmto').textContent = bpp.toFixed(2) + ' bpp';
+    document.getElementById('tx-counto').textContent = st.count;
+    document.getElementById('tx-mipo').textContent = st.mip ? 'on' : 'off';
+    document.getElementById('tx-budgeto').textContent = st.budget + ' MB';
+    document.getElementById('tx-per').textContent =
+      per < 1 ? (per*1024).toFixed(0) + ' KB' : per.toFixed(2) + ' MB';
+    document.getElementById('tx-tot').textContent =
+      tot > 1024 ? (tot/1024).toFixed(2) + ' GB' : tot.toFixed(1) + ' MB';
+    document.getElementById('tx-vs').textContent = (baseTot/tot).toFixed(2) + '× smaller';
+    document.getElementById('tx-use').textContent = used.toFixed(0) + '%';
+    cls(document.getElementById('tx-use'), used <= 80 ? 'ok' : (used <= 100 ? 'warn' : 'crit'));
+    cls(document.getElementById('tx-tot'), used <= 100 ? 'ok' : 'crit');
+
+    var half = mb(st.res/2, bpp, st.mip)*st.count;
+    var v = document.getElementById('tx-verdict');
+    var kind = used > 100 ? 'crit' : (used > 80 ? 'warn' : 'ok');
+    var msg = NOTE[st.fmt] + ' At ' + st.res + '² × ' + st.count + ' textures' +
+      (st.mip ? ' with mip chains (×4/3)' : ' with mipmaps disabled') + ' you are using ' +
+      (tot > 1024 ? (tot/1024).toFixed(2) + ' GB' : tot.toFixed(1) + ' MB') + ' of a ' +
+      st.budget + ' MB budget. Halving the resolution cap to ' + (st.res/2) + '² would take ' +
+      'that to ' + (half > 1024 ? (half/1024).toFixed(2) + ' GB' : half.toFixed(1) + ' MB') +
+      ' — a 4× cut, usually a bigger and cheaper win than changing format.';
+    if(!st.mip) msg += ' Note that mipmaps off saves 25% of this figure and typically costs you ' +
+      'GPU time and adds shimmer; it is a memory decision that bills to the frame budget.';
+    v.className = 'verdict ' + kind;
+    v.textContent = msg;
+  }
+  setRes(2048); setMip(1);
+  update();
+}
+
+/* ============================================================
+   WIDGET 4 — Pairwise test-set reducer (real IPOG-style covering array)
+   ============================================================ */
+var PW_PARAMS = [
+  { n:'GPU instancing',     v:['Off','On'] },
+  { n:'Burst / SIMD path',  v:['Off','On'] },
+  { n:'Quality preset',     v:['Low','Medium','High','Ultra'] },
+  { n:'Shadow resolution',  v:['Off','512','1024','2048'] },
+  { n:'Hardware tier',      v:['Handheld','Laptop iGPU','Mid PC','High PC','Console'] },
+  { n:'Physics substeps',   v:['1','2','4'] },
+  { n:'Texture format',     v:['BC7','ASTC 6x6','ETC2'] },
+  { n:'Dynamic resolution', v:['Off','On'] }
+];
+
+/* Greedy IPOG: horizontal growth then vertical growth. Returns rows of value
+   indices, in the caller's parameter order. Guarantees 2-way coverage; the
+   caller re-verifies independently. */
+function buildCoveringArray(counts){
+  var k = counts.length;
+  if(k < 2) return [];
+  /* IPOG works best largest-first; remember the mapping back */
+  var order = counts.map(function(c,i){ return { c:c, i:i }; });
+  order.sort(function(a,b){ return b.c - a.c || a.i - b.i; });
+  var pc = order.map(function(o){ return o.c; });
+
+  var covered = {};
+  function key(a,b,va,vb){ return a + '_' + b + '_' + va + '_' + vb; }
+  function markAll(row, upto){
+    for(var a=0;a<upto;a++){
+      if(row[a] < 0) continue;
+      for(var b=a+1;b<upto;b++){
+        if(row[b] < 0) continue;
+        covered[key(a,b,row[a],row[b])] = 1;
+      }
+    }
+  }
+  function markWith(row, col, upto){
+    for(var m=0;m<upto;m++){
+      if(m === col || row[m] < 0) continue;
+      var lo = Math.min(m,col), hi = Math.max(m,col);
+      covered[key(lo,hi,row[lo],row[hi])] = 1;
+    }
+  }
+
+  var rows = [], r, a, b;
+  for(a=0;a<pc[0];a++){
+    for(b=0;b<pc[1];b++){
+      r = []; for(var z=0;z<k;z++) r.push(-1);
+      r[0] = a; r[1] = b; rows.push(r);
+    }
+  }
+  rows.forEach(function(rw){ markAll(rw, 2); });
+
+  for(var i=2;i<k;i++){
+    /* horizontal growth: extend every existing row with the value of param i
+       that newly covers the most pairs against params 0..i-1 */
+    for(var ri=0; ri<rows.length; ri++){
+      var row = rows[ri];
+      var best = 0, bestCount = -1;
+      for(var val=0; val<pc[i]; val++){
+        var c = 0;
+        for(var j=0;j<i;j++){
+          if(row[j] < 0) continue;
+          if(!covered[key(j,i,row[j],val)]) c++;
+        }
+        if(c > bestCount){ bestCount = c; best = val; }
+      }
+      row[i] = best;
+      markWith(row, i, i+1);
+    }
+    /* vertical growth: any pair still uncovered gets placed in a compatible
+       row, or forces a new row with don't-cares elsewhere */
+    for(var jj=0; jj<i; jj++){
+      for(var av=0; av<pc[jj]; av++){
+        for(var bv=0; bv<pc[i]; bv++){
+          if(covered[key(jj,i,av,bv)]) continue;
+          var placed = false;
+          for(var rk=0; rk<rows.length; rk++){
+            var rr = rows[rk];
+            if(rr[i] === bv && rr[jj] < 0){
+              rr[jj] = av; markWith(rr, jj, i+1); placed = true; break;
+            }
+            if(rr[jj] === av && rr[i] < 0){
+              rr[i] = bv; markWith(rr, i, i+1); placed = true; break;
+            }
+          }
+          if(!placed){
+            var nr = []; for(var z2=0;z2<k;z2++) nr.push(-1);
+            nr[jj] = av; nr[i] = bv;
+            covered[key(jj,i,av,bv)] = 1;
+            rows.push(nr);
+          }
+        }
+      }
+    }
+  }
+  /* fill remaining don't-cares with value 0 and map back to original order */
+  return rows.map(function(rw){
+    var out = new Array(k);
+    for(var p=0;p<k;p++){
+      var val = rw[p] < 0 ? 0 : rw[p];
+      out[order[p].i] = val;
+    }
+    return out;
+  });
+}
+
+/* Independent verifier: recount every required pair against the produced rows. */
+function verifyPairs(counts, rows){
+  var k = counts.length, need = 0, have = 0, missing = [];
+  for(var a=0;a<k;a++){
+    for(var b=a+1;b<k;b++){
+      for(var va=0; va<counts[a]; va++){
+        for(var vb=0; vb<counts[b]; vb++){
+          need++;
+          var found = false;
+          for(var r=0;r<rows.length;r++){
+            if(rows[r][a] === va && rows[r][b] === vb){ found = true; break; }
+          }
+          if(found) have++;
+          else if(missing.length < 5) missing.push([a,va,b,vb]);
+        }
+      }
+    }
+  }
+  return { need:need, have:have, missing:missing };
+}
+
+function initPairwise(){
+  var root = document.getElementById('w-pair');
+  if(!root) return;
+  var box = document.getElementById('pw-params');
+  var state = PW_PARAMS.map(function(p, i){
+    return { on: i < 6, count: p.v.length };
+  });
+  var minutes = 6;
+
+  function renderParams(){
+    box.innerHTML = '';
+    PW_PARAMS.forEach(function(p, i){
+      var row = document.createElement('div');
+      row.className = 'prow' + (state[i].on ? '' : ' off');
+      var opts = '';
+      for(var c=2;c<=p.v.length;c++){
+        opts += '<option value="'+c+'"'+(state[i].count===c?' selected':'')+'>'+c+' values</option>';
+      }
+      row.innerHTML =
+        '<input type="checkbox" data-i="'+i+'"'+(state[i].on?' checked':'')+'>' +
+        '<span class="pn">'+p.n+'<br><span class="pv">'+
+          p.v.slice(0, state[i].count).join(' · ')+'</span></span>' +
+        '<select data-i="'+i+'">'+opts+'</select>';
+      box.appendChild(row);
+    });
+    $$('input[type=checkbox]', box).forEach(function(cb){
+      cb.addEventListener('change', function(){
+        state[+cb.dataset.i].on = cb.checked; renderParams(); run();
+      });
+    });
+    $$('select', box).forEach(function(sl){
+      sl.addEventListener('change', function(){
+        state[+sl.dataset.i].count = parseInt(sl.value,10); renderParams(); run();
+      });
+    });
+  }
+
+  function run(){
+    var idx = [], counts = [];
+    state.forEach(function(s, i){ if(s.on){ idx.push(i); counts.push(s.count); } });
+
+    var out = document.getElementById('pw-out');
+    var v = document.getElementById('pw-verdict');
+    if(idx.length < 2){
+      ['pw-exh','pw-pw','pw-red','pw-pairs','pw-texh','pw-tpw'].forEach(function(id){
+        document.getElementById(id).textContent = '—';
+      });
+      out.innerHTML = '';
+      v.className = 'verdict warn';
+      v.textContent = 'Select at least two parameters — an interaction needs two things to interact.';
+      return;
+    }
+
+    var exhaustive = counts.reduce(function(a,b){ return a*b; }, 1);
+    var rows = buildCoveringArray(counts);
+    var check = verifyPairs(counts, rows);
+
+    document.getElementById('pw-exh').textContent   = bigint(exhaustive);
+    document.getElementById('pw-pw').textContent    = rows.length;
+    document.getElementById('pw-red').textContent   =
+      (100*(1 - rows.length/exhaustive)).toFixed(1) + '%';
+    document.getElementById('pw-pairs').textContent = check.have + ' / ' + check.need;
+    document.getElementById('pw-texh').textContent  = hoursTxt(exhaustive*minutes);
+    document.getElementById('pw-tpw').textContent   = hoursTxt(rows.length*minutes);
+    cls(document.getElementById('pw-pairs'), check.have === check.need ? 'ok' : 'crit');
+    cls(document.getElementById('pw-pw'), 'ok');
+
+    /* table of generated rows */
+    var html = '<table><thead><tr><th>#</th>';
+    idx.forEach(function(i){ html += '<th>' + PW_PARAMS[i].n + '</th>'; });
+    html += '</tr></thead><tbody>';
+    rows.forEach(function(r, ri){
+      html += '<tr><td class="ix">' + (ri+1) + '</td>';
+      r.forEach(function(val, c){
+        html += '<td>' + PW_PARAMS[idx[c]].v[val] + '</td>';
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    out.innerHTML = html;
+
+    var maxTwo = counts.slice().sort(function(a,b){ return b-a; }).slice(0,2);
+    var lower = maxTwo[0]*maxTwo[1];
+    var ok = (check.have === check.need);
+    v.className = 'verdict ' + (ok ? 'ok' : 'crit');
+    v.textContent = ok
+      ? ('Generated ' + rows.length + ' configurations and independently verified all ' +
+         check.need + ' value pairs appear in at least one of them. Exhaustive testing would be ' +
+         bigint(exhaustive) + ' configurations (' + hoursTxt(exhaustive*minutes) + ' at ' +
+         minutes + ' min each) against ' + hoursTxt(rows.length*minutes) +
+         ' here. The theoretical floor for 2-way coverage is ' + lower +
+         ' rows — the product of your two largest value counts — and this greedy ' +
+         'construction ' + (rows.length === lower ? 'hits that bound exactly.'
+            : 'is within ' + (rows.length - lower) + ' rows of it.') +
+         ' Adding more 2-value parameters will barely move the row count; adding a 5-value ' +
+         'parameter will.')
+      : ('Verification FAILED: ' + (check.need - check.have) + ' pairs uncovered. Report this — ' +
+         'an unverified covering array is just a list of configurations.');
+  }
+
+  document.getElementById('pw-gen').addEventListener('click', run);
+  document.getElementById('pw-all').addEventListener('click', function(){
+    state.forEach(function(s, i){ s.on = true; s.count = PW_PARAMS[i].v.length; });
+    renderParams(); run();
+  });
+  document.getElementById('pw-min6').addEventListener('click', function(){
+    state.forEach(function(s, i){ s.on = i < 6; s.count = PW_PARAMS[i].v.length; });
+    renderParams(); run();
+  });
+  var mEl = document.getElementById('pw-min');
+  mEl.addEventListener('input', function(){
+    minutes = parseInt(mEl.value,10);
+    document.getElementById('pw-mino').textContent = minutes + ' min';
+    run();
+  });
+
+  renderParams();
+  run();
+}
+
+/* ============================================================
+   DECISION TREE — which layer do I optimize first?
+   ============================================================ */
+var TREE_NODES = {
+  start:{
+    q:'Which layer do I optimize first?',
+    hint:'Answer from a capture, not from memory. If you cannot answer a question, that is the answer.',
+    choices:[
+      { t:'I have a profiler capture of the failing scene, on target hardware, from a development build',
+        sub:'Repeatable route, at least three runs', go:'bound' },
+      { t:'I have a frame-rate counter and a feeling',
+        sub:'Or a capture from the editor / a different machine', go:'nocap' }
+    ]
+  },
+  nocap:{ leaf:true, title:'Stop. Go get the capture first.',
+    body:'<p>Every optimization decision in this lesson is a ratio, and you cannot compute a ratio ' +
+      'without a denominator. An editor capture attributes time to editor overhead; a capture from ' +
+      'your desktop tells you nothing about the tier that is failing.</p>' +
+      '<p class="tool">Unity Profiler (attached to a development player) · Unreal Insights · ' +
+      'RenderDoc · Android GPU Inspector · Xcode Instruments</p>' +
+      '<p>Build the repeatable benchmark scene from Topic 4 while you are there: same route, same ' +
+      'duration, three runs, report median and 1% low.</p>' },
+  bound:{
+    q:'What does the capture say the frame is waiting on?',
+    hint:'CPU-bound: the GPU idles at the end of the frame. GPU-bound: the CPU submits and waits.',
+    choices:[
+      { t:'CPU-bound — a CPU thread is the critical path', go:'cpu' },
+      { t:'GPU-bound — the GPU is saturated', go:'gpu' },
+      { t:'Average frame time is fine; the problem is spikes', sub:'1% lows collapse, average looks healthy', go:'spikes' }
+    ]
+  },
+  cpu:{
+    q:'What dominates the busiest CPU thread?',
+    hint:'Read the widest bar, not the one you recognize.',
+    choices:[
+      { t:'Gameplay scripts, AI, perception queries', go:'l1ai' },
+      { t:'Physics simulation and queries', go:'l1phys' },
+      { t:'Culling and draw submission on the render thread', go:'l2draw' },
+      { t:'Garbage collection or allocation', go:'l3alloc' }
+    ]
+  },
+  gpu:{
+    q:'Halve the render resolution. What happens to GPU time?',
+    hint:'A two-minute experiment that separates fill-rate cost from geometry and setup cost.',
+    choices:[
+      { t:'It drops roughly in half', sub:'Cost scales with pixels', go:'l2fill' },
+      { t:'It barely moves', sub:'Cost is per-object or per-vertex', go:'l2geo' }
+    ]
+  },
+  l1ai:{ leaf:true, title:'Layer 1 — update frequency and algorithm, in that order',
+    body:'<p>First ask what the update rate needs to be. Time-slicing 200 agents into eight buckets ' +
+      'cuts the cost by 8× for free; nothing you do inside the perception function competes ' +
+      'with that. Then look for <code>O(n²)</code> proximity loops and replace them with a ' +
+      'spatial hash — and verify pair-set equality against brute force before you believe the ' +
+      'timing.</p><p class="tool">Unity: Profiler CPU module, ProfilerMarker around each system · ' +
+      'Unreal: Insights timing view, stat game, SCOPE_CYCLE_COUNTER</p>' +
+      '<p>Stagger the buckets by agent index so you do not convert a steady cost into a periodic spike.</p>' },
+  l1phys:{ leaf:true, title:'Layer 1 — spend ten minutes in physics settings before writing code',
+    body:'<p>Collision layer matrix, sleep thresholds, collider shapes (replace concave mesh ' +
+      'colliders on moving objects), CCD only on fast small gameplay-critical bodies, and the fixed ' +
+      'timestep itself. These are reversible, cost no engineering days, and routinely beat a week ' +
+      'of code work.</p><p class="tool">Unity: Physics Debugger, Physics profiler module, ' +
+      'Physics.Simulate timeline · Unreal: stat physics, show Collision, substepping settings</p>' +
+      '<p>Determinism warning: changing the timestep changes simulation results. If you have ' +
+      'replays, netcode, or a speedrun community, that is a compatibility break, not a tuning knob.</p>' },
+  l2draw:{ leaf:true, title:'Layer 2 — batching, instancing, and the material count',
+    body:'<p>Draw submission cost is dominated by state changes and by the number of unique ' +
+      'material/mesh combinations. Atlas textures so objects share materials, enable GPU instancing ' +
+      'for repeated meshes, merge static geometry, and check that shadow casting is not silently ' +
+      'doubling your draw count.</p><p class="tool">Unity: Frame Debugger (it names the reason each ' +
+      'batch broke) · Unreal: stat SceneRendering, RenderDoc, r.RHISetGraphicsPipelineState counters</p>' +
+      '<p>Report draw calls and set-pass calls before and after, not just milliseconds.</p>' },
+  l3alloc:{ leaf:true, title:'Layer 3 — stop allocating in the hot path',
+    body:'<p>Find the allocation sites (they are almost always the same short list: per-frame ' +
+      '<code>new</code>, string concatenation in logs, LINQ in Update, closures, boxing, ' +
+      'non-cached <code>GetComponent</code>), then pool the spawned objects. Measure allocations ' +
+      'per frame, not bytes.</p><p class="tool">Unity: Profiler GC.Alloc column, Memory Profiler ' +
+      'snapshot diff · Unreal: LLM, MallocProfiler, stat memory</p>' +
+      '<p>This is the doorway into Topic 6 — finish this lesson, then treat the allocation rate ' +
+      'as a memory problem rather than a frame-time problem.</p>' },
+  l2fill:{ leaf:true, title:'Layer 2 — pixel cost: overdraw, post, and shader complexity',
+    body:'<p>You are paying per pixel, so attack pixels: reduce overdraw (transparent particles are ' +
+      'the usual culprit), cut or downsample full-screen post effects, add dynamic resolution ' +
+      'scaling, and introduce shader LOD so distant surfaces run a cheaper variant — the ' +
+      'He et al. (2015) idea, applied by hand.</p><p class="tool">RenderDoc overdraw view · Unity ' +
+      'Frame Debugger and the Rendering Debugger overdraw mode · Unreal: viewmode ShaderComplexity, ' +
+      'viewmode QuadOverdraw</p>' +
+      '<p>On a tile-based mobile GPU this branch is even more likely; bandwidth, not ALU, is usually ' +
+      'the binding constraint.</p>' },
+  l2geo:{ leaf:true, title:'Layer 2 — geometry, LODs, and shadow setup',
+    body:'<p>Cost that ignores resolution is per-vertex or per-draw: too many triangles, missing or ' +
+      'badly tuned LOD chains, skinned meshes rendered at full detail off-screen, shadow cascades ' +
+      'rendering the whole scene again at high resolution, or too many small draws.</p>' +
+      '<p class="tool">Unity: LOD Group, Frame Debugger, shadow cascade settings · Unreal: stat ' +
+      'SceneRendering (triangle and draw counts), r.Shadow.CSM settings, Nanite stats</p>' +
+      '<p>Set LOD transitions from measured screen-space size, and give shadow-only meshes their own ' +
+      'decimated version.</p>' },
+  spikes:{ leaf:true, title:'Neither — you have a hitch problem, and it needs a different tool',
+    body:'<p>Average frame time will not move because the fault is periodic. The usual four causes: ' +
+      'garbage collection, shader or PSO compilation on first encounter, asset streaming or level ' +
+      'load, and a time-sliced system whose buckets all fire on the same frame.</p>' +
+      '<p class="tool">Unity: Profiler with "Deep Profile" off but GC.Alloc on, Frame Debugger, ' +
+      'shader variant collection warmup · Unreal: Insights, PSO precaching, stat streaming</p>' +
+      '<p>Report the 1% and 0.1% lows before and after — the average is the metric that hides ' +
+      'this class of defect, as Topic 4 showed.</p>' }
+};
+
+/* ---------- boot ---------- */
+document.addEventListener('DOMContentLoaded', function(){
+  initAmdahl();
+  initBroad();
+  initTex();
+  initPairwise();
+  var t = document.getElementById('tree5');
+  if(t) new GDTTree(t, TREE_NODES, 'start');
+});
+
+})();
+</script>
+</body></html>

@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Topic 8 · Applied Testing Project: Mobile Optimization — Advanced Game Testing and Debugging</title>
+<style id="lesson-kit">
+:root{
+  --bg:#0e1116; --bg2:#161b22; --bg3:#1c232d; --line:#2a3441; --line2:#3a4757;
+  --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#4da3ff; --acc2:#1f6feb;
+  --ok:#3fb950; --warn:#d29922; --crit:#f85149; --info:#a371f7; --teal:#39c5bb;
+  --unity:#5ec8f2; --unreal:#f0a44a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --sh:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 120px}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .crumb{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.topbar .spacer{flex:1}
+.topbar a{color:var(--tx2);text-decoration:none;font-size:13.5px;padding:5px 10px;
+  border-radius:7px;border:1px solid transparent}
+.topbar a:hover{color:var(--tx);background:var(--bg3);border-color:var(--line)}
+.progressbar{position:fixed;top:0;left:0;height:3px;background:var(--acc);
+  width:0;z-index:60;transition:width .12s linear}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero .kicker{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.14;margin:0 0 14px;
+  letter-spacing:-.02em;font-weight:800}
+.hero .lede{font-size:19px;color:var(--tx2);max-width:70ch;margin:0}
+.metarow{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:12.5px;color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+
+/* ---------- typography ---------- */
+h2{font-size:27px;margin:56px 0 6px;letter-spacing:-.015em;font-weight:750;
+  scroll-margin-top:80px}
+h2 .num{color:var(--acc);font-family:var(--mono);font-size:16px;
+  margin-right:11px;font-weight:600}
+h3{font-size:20px;margin:34px 0 6px;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16.5px;margin:24px 0 4px;font-weight:700;color:var(--tx)}
+p{margin:13px 0}
+a{color:var(--acc)}
+ul,ol{margin:13px 0;padding-left:24px}
+li{margin:7px 0}
+li::marker{color:var(--tx3)}
+strong{color:#fff;font-weight:650}
+em{color:var(--tx)}
+code{font-family:var(--mono);font-size:.885em;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;padding:1.5px 6px;color:#bfe3ff}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.subtle{color:var(--tx2)}
+.small{font-size:14px}
+
+/* ---------- callouts ---------- */
+.box{border:1px solid var(--line);border-left:3px solid var(--acc);
+  background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin:22px 0}
+.box .lbl{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:800;color:var(--acc);margin-bottom:7px}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.why{border-left-color:var(--info)}   .box.why .lbl{color:var(--info)}
+.box.warn{border-left-color:var(--warn)}  .box.warn .lbl{color:var(--warn)}
+.box.crit{border-left-color:var(--crit)}  .box.crit .lbl{color:var(--crit)}
+.box.ok{border-left-color:var(--ok)}      .box.ok .lbl{color:var(--ok)}
+.box.field{border-left-color:var(--teal)} .box.field .lbl{color:var(--teal)}
+
+/* ---------- objectives / goals ---------- */
+.goals{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;margin:26px 0}
+.goals h4{margin:0 0 10px;font-size:12px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx3)}
+.goals ol{margin:0;padding-left:20px}
+
+/* ---------- code ---------- */
+.codeblock{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  margin:20px 0;overflow:hidden}
+.codeblock .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);font-size:12.5px;
+  color:var(--tx2);font-family:var(--mono)}
+.codeblock .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);
+  font-size:13.4px;line-height:1.62;color:#d5e2f0}
+.codeblock pre .c{color:#6a7d91;font-style:italic}   /* comment */
+.codeblock pre .k{color:#ff7b9c}                     /* keyword */
+.codeblock pre .t{color:#7ee0c6}                     /* type    */
+.codeblock pre .s{color:#ffcf8f}                     /* string  */
+.codeblock pre .n{color:#c3a6ff}                     /* number  */
+.codeblock pre .f{color:#82c8ff}                     /* func    */
+
+/* annotated code: clickable gutter markers */
+.annot{display:grid;grid-template-columns:1fr;gap:0;margin:22px 0}
+.annot .rows{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.annot .arow{display:grid;grid-template-columns:34px 1fr;align-items:stretch;
+  border-bottom:1px solid rgba(42,52,65,.55)}
+.annot .arow:last-child{border-bottom:0}
+.annot .arow.hasnote{cursor:pointer}
+.annot .arow.hasnote:hover{background:rgba(77,163,255,.07)}
+.annot .gut{display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--tx3);font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--line);user-select:none}
+.annot .arow.hasnote .gut{color:#fff;background:var(--acc2);font-weight:700}
+.annot .arow.open .gut{background:var(--acc)}
+.annot .ln{font-family:var(--mono);font-size:13.3px;line-height:1.65;padding:2px 14px;
+  white-space:pre;overflow-x:auto;color:#d5e2f0}
+.annot .note{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--line);
+  padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease;
+  font-size:14.6px;color:var(--tx2)}
+.annot .arow.open + .note,.annot .note.open{max-height:600px;padding:13px 18px}
+.annot .note b{color:var(--tx)}
+.annot .hint{font-size:12.5px;color:var(--tx3);margin:8px 2px 0}
+
+/* ---------- engine tabs (Unity / Unreal) ---------- */
+.tabs{margin:24px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tabs .tabhd{display:flex;background:var(--bg3);border-bottom:1px solid var(--line)}
+.tabs .tabhd button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:14px;font-weight:650;padding:11px 20px;cursor:pointer}
+.tabs .tabhd button:hover{color:var(--tx2)}
+.tabs .tabhd button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tabs .tabhd button[data-engine="unity"].on{border-bottom-color:var(--unity);color:var(--unity)}
+.tabs .tabhd button[data-engine="unreal"].on{border-bottom-color:var(--unreal);color:var(--unreal)}
+.tabs .tabbody{padding:4px 20px 16px;background:var(--bg2)}
+.tabs .tabpane{display:none}.tabs .tabpane.on{display:block}
+.tabs .tabbody .codeblock{margin:16px -6px}
+
+/* ---------- quiz / check ---------- */
+.check{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin:26px 0}
+.check .q{font-weight:650;margin:0 0 14px}
+.check .opt{display:block;width:100%;text-align:left;background:var(--bg3);
+  border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin:8px 0;
+  color:var(--tx);font:inherit;font-size:15.2px;cursor:pointer;transition:.12s}
+.check .opt:hover{border-color:var(--line2);background:#222b36}
+.check .opt.right{border-color:var(--ok);background:rgba(63,185,80,.11)}
+.check .opt.wrong{border-color:var(--crit);background:rgba(248,81,73,.11)}
+.check .opt .tag{float:right;font-size:12px;font-weight:700;letter-spacing:.06em}
+.check .opt.right .tag{color:var(--ok)}.check .opt.wrong .tag{color:var(--crit)}
+.check .exp{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--tx2)}
+.check .exp.on{display:block}
+.check .exp b{color:var(--tx)}
+.check .exp .ex{margin:9px 0}
+.check .exp .ex .who{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em}
+
+/* ---------- widgets / simulators ---------- */
+.widget{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.widget > .whd{display:flex;align-items:baseline;gap:10px;margin:-2px 0 4px}
+.widget > .whd .wt{font-weight:750;font-size:17px}
+.widget > .whd .wk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--teal);font-weight:800;border:1px solid rgba(57,197,187,.35);
+  border-radius:5px;padding:2px 7px}
+.widget > .wsub{color:var(--tx2);font-size:14.5px;margin:4px 0 16px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;align-items:center;
+  gap:12px;margin:11px 0}
+.ctl label{font-size:14px;color:var(--tx2)}
+.ctl output{font-family:var(--mono);font-size:13.5px;color:var(--acc);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:22px}
+.btn{background:var(--acc2);border:1px solid var(--acc);color:#fff;font:inherit;
+  font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--acc)}
+.btn.ghost{background:var(--bg3);border-color:var(--line2);color:var(--tx2)}
+.btn.ghost:hover{background:#242e3a;color:var(--tx)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:10px;margin:16px 0 0}
+.readout .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px}
+.readout .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.readout .cell .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.readout .cell .v.ok{color:var(--ok)}.readout .cell .v.warn{color:var(--warn)}
+.readout .cell .v.crit{color:var(--crit)}
+.verdict{margin:16px 0 0;padding:13px 16px;border-radius:9px;font-size:14.8px;
+  background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--acc)}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict.crit{border-left-color:var(--crit)}
+canvas{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:9px;margin:16px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;
+  color:var(--tx2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px}
+
+/* ---------- decision tree ---------- */
+.tree{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.tree .path{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  margin:0 0 14px;min-height:17px}
+.tree .path span{color:var(--acc)}
+.tree .qq{font-size:17.5px;font-weight:700;margin:0 0 6px}
+.tree .qh{color:var(--tx2);font-size:14.5px;margin:0 0 14px}
+.tree .choices{display:grid;gap:9px}
+.tree .choices button{text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:12px 15px;color:var(--tx);font:inherit;font-size:15px;
+  cursor:pointer;transition:.12s}
+.tree .choices button:hover{border-color:var(--acc);background:#222c38}
+.tree .choices button .sub{display:block;color:var(--tx3);font-size:13px;margin-top:3px}
+.tree .leaf{border-left:3px solid var(--ok);background:var(--bg3);border-radius:9px;
+  padding:15px 18px}
+.tree .leaf h5{margin:0 0 8px;font-size:16.5px;color:var(--ok)}
+.tree .leaf p{margin:9px 0;font-size:15px}
+.tree .leaf .tool{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:14.6px}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+th{background:var(--bg3);font-weight:700;font-size:13px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--tx2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.017)}
+td code{font-size:.85em}
+
+/* ---------- misc ---------- */
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2.5px 9px;border-radius:999px;vertical-align:1px}
+.pill.s0{background:rgba(248,81,73,.16);color:var(--crit);border:1px solid rgba(248,81,73,.4)}
+.pill.s1{background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pill.s2{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pill.s3{background:rgba(159,176,195,.13);color:var(--tx2);border:1px solid var(--line2)}
+.pill.unity{background:rgba(94,200,242,.14);color:var(--unity);border:1px solid rgba(94,200,242,.4)}
+.pill.unreal{background:rgba(240,164,74,.14);color:var(--unreal);border:1px solid rgba(240,164,74,.4)}
+
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);
+  padding:0 18px;margin:20px 0}
+details.more > summary{cursor:pointer;padding:13px 0;font-weight:650;font-size:15.5px;
+  list-style:none;color:var(--tx)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"▸ ";color:var(--acc);font-weight:800}
+details.more[open] > summary::before{content:"▾ "}
+details.more[open]{padding-bottom:14px}
+details.more > summary:hover{color:var(--acc)}
+
+.deliver{background:linear-gradient(180deg,rgba(77,163,255,.07),transparent);
+  border:1px solid var(--acc2);border-radius:12px;padding:20px 24px;margin:40px 0 0}
+.deliver h3{margin-top:0;color:var(--acc)}
+
+footer.lf{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:13.5px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap}
+footer.lf a{color:var(--tx2);text-decoration:none}
+footer.lf a:hover{color:var(--acc)}
+
+@media (max-width:720px){
+  body{font-size:16px}
+  .ctl{grid-template-columns:1fr;gap:4px}
+  .ctl output{text-align:left}
+  .hero{padding:34px 0 24px}
+}
+@media print{
+  .topbar,.progressbar{display:none}
+  body{background:#fff;color:#111}
+  .widget,.tree,.check,.box,.goals{break-inside:avoid}
+}
+</style>
+<style id="lesson-local">
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button:hover{border-color:var(--line2);color:var(--tx)}
+.seg button.on{background:var(--acc2);border-color:var(--acc);color:#fff;font-weight:650}
+.ctl.seg3{grid-template-columns:170px 1fr 74px}
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:22px 0}
+.tiers .tier{background:var(--bg2);border:1px solid var(--line);border-top:3px solid var(--acc);
+  border-radius:9px;padding:14px 17px}
+.tiers .tier h5{margin:0 0 6px;font-size:15.5px}
+.tiers .tier p{margin:0;font-size:14.3px;color:var(--tx2)}
+.tiers .tier.t2{border-top-color:var(--warn)} .tiers .tier.t3{border-top-color:var(--crit)}
+.plan{counter-reset:pl;margin:22px 0}
+.plan .sec{display:grid;grid-template-columns:38px 1fr;gap:14px;background:var(--bg2);
+  border:1px solid var(--line);border-radius:9px;padding:13px 16px;margin:9px 0}
+.plan .sec .n{font-family:var(--mono);color:var(--acc);font-weight:800;font-size:15px}
+.plan .sec b{display:block;color:#fff}
+.plan .sec p{margin:4px 0 0;font-size:14.4px;color:var(--tx2)}
+.plan .sec .eg{margin-top:7px;font-family:var(--mono);font-size:12.6px;color:#bfe3ff;
+  background:#0a0d12;border:1px solid var(--line);border-radius:6px;padding:8px 11px;white-space:pre-wrap}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px 26px;margin:20px 0}
+.split .ctl{grid-template-columns:1fr 68px;gap:4px 10px;margin:14px 0}
+.split .ctl label{grid-column:1;grid-row:1;align-self:end}
+.split .ctl output{grid-column:2;grid-row:1;text-align:right;align-self:end}
+.split .ctl input[type=range],.split .ctl .seg{grid-column:1/-1;grid-row:2}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+.matrixtbl td.hit{color:var(--ok)} .matrixtbl td.miss{color:var(--tx3)}
+.finaltbl td:first-child{white-space:nowrap;font-weight:650;color:var(--tx)}
+.bars{margin:16px 0 0}
+.bars .b{display:grid;grid-template-columns:150px 1fr 96px;gap:10px;align-items:center;margin:6px 0;
+  font-size:13.5px;color:var(--tx2)}
+.bars .b{grid-template-columns:168px 1fr 122px}
+.bars .b .track{display:block;background:var(--bg3);border:1px solid var(--line);
+  border-radius:6px;height:16px;overflow:hidden}
+.bars .b .fill{display:block;height:100%;background:var(--acc);border-radius:5px 0 0 5px}
+.bars .b .fill.f2{background:var(--warn)} .bars .b .fill.f3{background:var(--info)}
+.bars .b .fill.f4{background:var(--teal)} .bars .b .fill.f5{background:var(--crit)}
+.bars .b .val{font-family:var(--mono);font-size:12.6px;text-align:right;color:var(--tx)}
+.readlist{font-size:14.6px;color:var(--tx2)}
+.readlist li b{color:var(--tx)}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <span class="crumb">Advanced Game Testing and Debugging &middot; Topic 8</span><span class="spacer"></span>
+  <a href="../index.html">Course hub</a>
+  <a href="lesson-07-ethics-compliance.html">&larr; Prev</a>
+  <a href="../index.html" title="Topic 8 is the final topic &mdash; there is no next lesson">Course hub &rarr;</a>
+</div></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Topic 8 &middot; Dec 7&ndash;20 &middot; Weeks 14&ndash;15 &middot; Sessions 27&ndash;30</div>
+    <h1>Applied Testing Project: Mobile Optimization</h1>
+    <p class="lede">Everything in this course now points at one deliverable: take a project that
+    runs on your desktop, prove what it does on a phone, change two things, and prove the change
+    with numbers a stranger could reproduce. Mobile is where sloppy measurement gets caught,
+    because the device fights back.</p>
+    <div class="metarow">
+      <span class="chip"><b>Reading:</b> <i>Modern Game Testing</i> ch. 4 (review) + Xin, Kazmi, Ul Abidin</span>
+      <span class="chip"><b>Assignment:</b> Mobile Game Optimization &middot; 210 pts incl. Final &middot; due Dec 20</span>
+      <span class="chip"><b>Sessions:</b> 27&ndash;30</span>
+      <span class="chip"><b>Est. time:</b> 130 min + reading</span>
+    </div>
+  </header>
+
+  <div class="goals"><h4>By the end you will be able to</h4><ol>
+    <li>Adapt an existing project to run smoothly on mobile, starting from the constraints that
+    actually bind: bandwidth, thermals, and memory &mdash; not "lower the settings".</li>
+    <li>Implement optimizations across rendering, assets, code, and memory, and say in advance
+    which budget each one buys back.</li>
+    <li>Use platform-specific profiling tools on a real device, not in the editor.</li>
+    <li>Balance optimization against visual quality and core gameplay, and defend the trade in
+    a sentence a designer will accept.</li>
+    <li>Demonstrate the impact of optimizations with a measurement protocol that survives
+    someone trying to reproduce it.</li>
+    <li>Evaluate competing optimization strategies and pick the one with the best return for the
+    hours you have left.</li>
+  </ol></div>
+
+  <h2><span class="num">1</span>Mobile is a different machine, not a smaller one</h2>
+
+  <p>The intuition students bring to their first mobile port is that a phone is a slow PC. Under
+  that model the fix is obvious: turn things down until the number goes up. That model is wrong in
+  a specific way that will cost you a week if you do not correct it now. A phone is a machine with
+  a <em>different shape of bottleneck</em>. It has a competent GPU, a hostile memory system, no
+  sustained power budget, and an operating system that will take the machine away from you
+  mid-frame.</p>
+
+  <p>Four architectural facts drive nearly every mobile performance decision you will make.</p>
+
+  <p><strong>The GPU is tile-based.</strong> Desktop GPUs are immediate-mode: they rasterize
+  triangles into a framebuffer sitting in VRAM, and every blend, every depth test, every overdrawn
+  pixel is traffic across a very wide memory bus. Mobile GPUs &mdash; Mali, Adreno, PowerVR, Apple
+  &mdash; are tile-based deferred renderers. They bin all the geometry for a render pass, then
+  render the screen in small tiles (often 16&times;16 pixels) inside a small block of on-chip
+  memory, and write each finished tile out to DRAM exactly once. The consequences invert your
+  desktop instincts. Blending and depth testing inside a tile are nearly free, and 4&times; MSAA
+  can be close to free because the extra samples live on-chip and are resolved before the tile is
+  written. But anything that forces the GPU to <em>stop tiling</em> &mdash; reading back the
+  framebuffer mid-pass, a grab pass, a full-screen post effect that has to sample the finished
+  image &mdash; forces a resolve to DRAM and a reload, at full screen resolution, every frame.
+  On desktop a bloom pass is a rounding error. On a phone it can be a quarter of your frame.</p>
+
+  <p><strong>Memory is unified and the bus is narrow.</strong> There is no separate VRAM. The CPU,
+  GPU, display controller, camera, and every background app share one LPDDR pool over a bus that
+  might deliver 15&ndash;50 GB/s peak, of which your game realistically gets half. A mid-range
+  desktop GPU has ten to twenty times that. Every byte the GPU reads &mdash; texture samples,
+  vertex fetches, post-process reads &mdash; competes with everything else on the device, and
+  moving a byte off-chip costs roughly a thousand times the energy of an on-chip arithmetic
+  operation. Bandwidth is therefore not just a speed budget. It is the <em>battery</em> budget and,
+  through heat, the sustained-performance budget too.</p>
+
+  <p><strong>There is no sustained power budget.</strong> A phone with no fan can dissipate roughly
+  3&ndash;5 W continuously before its chassis reaches the temperature at which the operating system
+  starts protecting the user's hand. It can burst to 9&ndash;12 W for a couple of minutes because
+  the aluminium and glass absorb the heat first. Every benchmark you run in the first ninety
+  seconds is measuring the burst. Your players are measuring the sustained state.</p>
+
+  <p><strong>The OS owns the process.</strong> A phone call arrives, an alarm fires, the user
+  switches apps, the system posts a low-memory warning, the screen rotates, a notification banner
+  eats the top of your safe area. On desktop these are edge cases. On mobile they are the normal
+  operating environment and they are, consistently, the largest category of platform-certification
+  failures for student and indie projects: the game that does not survive suspend and resume.</p>
+
+  <div class="box why"><div class="lbl">Why this reframing earns its keep</div>
+  <p>Suppose your port runs at 22 fps and you spend a day cutting triangle counts by 40%, because
+  that is what "the phone is a slow PC" predicts will help. If the frame is bandwidth-bound &mdash;
+  and on mobile it very often is &mdash; you will get back perhaps 1&ndash;2 ms of the 45 ms frame
+  and conclude that mobile is hopeless. The same day spent switching a full-screen bloom to a
+  half-resolution pass and turning off a depth-texture requirement can return 8&ndash;10 ms,
+  because those changes remove whole screen-sized reads and writes from DRAM. Same effort,
+  five times the return, and the only thing that separates the two is knowing which budget you are
+  actually spending.</p></div>
+
+  <div class="box field"><div class="lbl">From the reading</div>
+  <p>Xin (2009) is old enough to feel like a historical document, and that is precisely why it is
+  assigned: read it for the shape of the cross-platform problem, which has not changed even though
+  every specific number in it has. Fragmentation, per-device capability probing, and building one
+  content pipeline that targets many capability tiers are still the job. Ul Abidin et al. (2023)
+  is the modern counterpart &mdash; hybrid optimization means you do not get to pick one technique
+  and declare victory; you combine asset-side, render-side, and code-side changes and measure the
+  combination. Kazmi et al. (2018) supplies the discipline you will need for your test plan:
+  weight what you test by what players actually do, in proportion to how often they do it.</p></div>
+
+  <h2><span class="num">2</span>Bandwidth is the real budget</h2>
+
+  <p>Start with the arithmetic, because it is the part students never do. A 2340&times;1080 phone
+  screen is 2.53 million pixels. Writing that once in RGBA8 is 10.1 MB. At 60 fps, writing the
+  screen <em>once per frame and nothing else</em> is 0.6 GB/s. That sounds trivial until you count
+  how many times a real frame touches a screen-sized surface: the opaque resolve, a depth texture
+  store, three post passes each reading and writing a full-screen target, a UI pass that blends
+  over the top, and the texture reads behind every shaded fragment multiplied by your overdraw.
+  Ten screen-sized touches per frame at 60 fps is 6 GB/s before you have sampled a single texture,
+  and on a budget device your usable share of the bus may be 8.</p>
+
+  <p>The calculator below does that arithmetic with the tile-based rules applied. Change one input
+  at a time and watch which term dominates &mdash; that ranking, not the total, is the useful
+  output.</p>
+
+  <div class="widget" id="w-bw">
+    <div class="whd"><span class="wt">Mobile bandwidth &amp; tile budget calculator</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Estimates per-frame DRAM traffic for a tile-based mobile GPU and compares it to
+    a device tier's usable ceiling. Simplified but honest: geometry-pass color and depth traffic is
+    assumed to stay in tile memory (that is the whole point of TBDR), texture sampling is charged at
+    a fixed <b>6 bytes of DRAM traffic per shaded fragment</b> after cache hits, vertex and index
+    fetch is charged a flat 6.0 MB/frame (a tiler reads geometry twice &mdash; once to bin it, once per tile), and each full-screen post pass is charged one read plus
+    one write of the color target. Real numbers depend on your cache behaviour; the <em>ranking</em>
+    of the terms is what transfers.</p>
+
+    <div class="split">
+      <div>
+        <div class="ctl"><label>Resolution</label>
+          <div class="seg" id="bw-res">
+            <button data-v="0">720p</button><button data-v="1">1080p</button>
+            <button data-v="2" class="on">2340&times;1080</button><button data-v="3">2778&times;1284</button>
+            <button data-v="4">1440p</button>
+          </div><output id="bw-reso">2.53 MP</output></div>
+        <div class="ctl"><label>Render scale</label>
+          <input type="range" id="bw-scale" min="50" max="100" step="5" value="100"><output id="bw-scaleo">100%</output></div>
+        <div class="ctl"><label>Color format</label>
+          <div class="seg" id="bw-fmt">
+            <button data-v="4" class="on">RGBA8 (4 B)</button><button data-v="8">RGBA16F HDR (8 B)</button>
+          </div><output id="bw-fmto">4 B/px</output></div>
+        <div class="ctl"><label>MSAA</label>
+          <div class="seg" id="bw-msaa">
+            <button data-v="1">Off</button><button data-v="2">2&times;</button>
+            <button data-v="4" class="on">4&times;</button>
+          </div><output id="bw-msaao">4&times;</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Overdraw factor</label>
+          <input type="range" id="bw-od" min="10" max="50" value="25"><output id="bw-odo">2.5&times;</output></div>
+        <div class="ctl"><label>Full-screen post passes</label>
+          <input type="range" id="bw-post" min="0" max="6" value="3"><output id="bw-posto">3</output></div>
+        <div class="ctl"><label>Depth texture required</label>
+          <div class="seg" id="bw-depth">
+            <button data-v="0" class="on">No</button><button data-v="1">Yes (store + read)</button>
+          </div><output id="bw-deptho">no</output></div>
+        <div class="ctl"><label>Target frame rate</label>
+          <div class="seg" id="bw-fps">
+            <button data-v="30">30 fps</button><button data-v="60" class="on">60 fps</button>
+          </div><output id="bw-fpso">60</output></div>
+        <div class="ctl"><label>Device tier ceiling</label>
+          <div class="seg" id="bw-tier">
+            <button data-v="0">A &mdash; flagship</button><button data-v="1" class="on">B &mdash; mid</button>
+            <button data-v="2">C &mdash; budget</button>
+          </div><output id="bw-tiero">16 GB/s</output></div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Per frame</div><div class="v" id="bw-frame">0 MB</div></div>
+      <div class="cell"><div class="k">Bandwidth</div><div class="v" id="bw-total">0 GB/s</div></div>
+      <div class="cell"><div class="k">% of ceiling</div><div class="v" id="bw-pct">0%</div></div>
+      <div class="cell"><div class="k">Tile storage</div><div class="v" id="bw-tile">8 B/px</div></div>
+      <div class="cell"><div class="k">DRAM power</div><div class="v" id="bw-pw">0.0 W</div></div>
+    </div>
+
+    <div class="bars" id="bw-bars"></div>
+    <div class="verdict" id="bw-verdict">Move a control.</div>
+    <div class="btnrow">
+      <button class="btn ghost" data-bwpreset="naive">Desktop settings, shipped as-is</button>
+      <button class="btn ghost" data-bwpreset="fixed">After one afternoon of mobile work</button>
+    </div>
+  </div>
+
+  <p>Two results are worth staring at. First, run the "desktop settings" preset and notice that
+  MSAA is <em>not</em> the top line item &mdash; the post stack and the texture traffic behind
+  overdraw are. That is the TBDR effect: multisampling lives on-chip. Second, push MSAA to
+  4&times; with the HDR color format and watch the tile-storage readout go red. Tile-based GPUs
+  budget a fixed number of bytes per pixel of on-chip storage &mdash; on Mali hardware the working
+  rule is 16 bytes per pixel &mdash; and when your color format plus depth plus MSAA samples
+  exceeds it, the driver silently shrinks the tile. Smaller tiles mean the same geometry gets
+  processed against more tiles, so your vertex and binning traffic climbs. Nothing errors. Your
+  frame just gets slower for a reason that is invisible in a frame-rate counter.</p>
+
+  <div class="box warn"><div class="lbl">The trap in the middle of that widget</div>
+  <p>Overdraw is charged here through <em>texture reads</em>, not through color writes, and that is
+  the mobile-specific insight. On a desktop GPU, drawing a full-screen transparent quad five times
+  costs five screen-sized writes to VRAM. On a TBDR part those writes land in tile memory and cost
+  almost nothing &mdash; but every one of those fragments still runs its shader, and every shader
+  invocation still samples textures that live in DRAM. Which means the fix for mobile overdraw is
+  often not "reduce transparency" but "make the transparent shader cheaper and its textures
+  smaller", plus sorting front-to-back so the early-Z and hidden-surface removal hardware can throw
+  fragments away before they shade.</p></div>
+
+  <div class="check">
+    <p class="q">Your 1080p mobile scene runs at 41 ms/frame. A capture shows 4&times; MSAA enabled,
+    an RGBA8 color target, 3.1&times; average overdraw, and a post stack of bloom, color grading and
+    vignette at full resolution. What do you cut first?</p>
+    <button class="opt" data-correct="0">MSAA &mdash; multisampling is four times the pixel work, so it is always the biggest single win on a phone.</button>
+    <button class="opt" data-correct="1">The post stack &mdash; collapse three full-screen passes into one and run bloom at quarter resolution before touching MSAA.</button>
+    <button class="opt" data-correct="0">Resolution &mdash; drop the render scale to 70%, which cuts every term at once with one line of code.</button>
+    <div class="exp"><b>Why the post stack:</b> at RGBA8 with depth, 4&times; MSAA needs 8&nbsp;B&nbsp;&times;&nbsp;4 = 32 bytes per pixel of tile storage, which does hurt &mdash; but each full-screen post pass is an unconditional read plus write of a 1080p RGBA8 target, about 16.6 MB of DRAM traffic per pass per frame, and you have three of them. Collapsing to a single uber-pass and running bloom at quarter resolution removes roughly two thirds of that traffic and costs you almost nothing visually. Measure, then revisit MSAA.
+      <div class="ex"><span class="who">Why MSAA is tempting</span><br>
+      It is the answer on desktop, where multisampling multiplies framebuffer traffic across the
+      PCIe-adjacent memory bus. On a tile-based GPU the samples resolve on-chip, so 4&times; MSAA is
+      frequently in the 5&ndash;15% range rather than 300%. It is still worth checking the tile
+      storage number &mdash; but check it, do not assume it.</div>
+      <div class="ex"><span class="who">Why render scale is tempting</span><br>
+      It genuinely does cut every term at once, and dynamic resolution is a legitimate shipping
+      technique. But it is the change your players see most directly, especially on UI-heavy and
+      text-heavy games, and reaching for it first means you never learned which term was actually
+      dominant. Spend the cheap invisible wins before the visible ones.</div>
+    </div>
+  </div>
+  <h2><span class="num">3</span>The ten-minute number</h2>
+
+  <p>Here is the single most common defect in student mobile performance reports: the measurement
+  was taken in the first two minutes. A phone that has been sitting on a desk is a phone with an
+  empty heat budget. It will run at boost clocks, post a beautiful number, and then spend the next
+  eight minutes discovering that its chassis is the only heatsink it has.</p>
+
+  <p>The physical model is not complicated. The chip converts electrical power into heat at a rate
+  roughly proportional to frequency times voltage squared &mdash; and since voltage has to rise
+  with frequency, power grows faster than performance does. That heat flows into the SoC package,
+  then into the chassis, then into the air and your hand. Two time constants matter. The junction
+  temperature of the silicon responds in <em>seconds</em>, and a fast governor manages it. The
+  skin temperature of the phone responds over <em>minutes</em>, and that is the one with the
+  regulatory and comfort limit attached &mdash; roughly the mid-40s Celsius. When the chassis
+  approaches that limit, the operating system stops being polite: Android reports escalating
+  thermal status levels, iOS clamps hard, and the clock floor you get is well below the one the
+  fast governor was targeting. Then hysteresis keeps you there until the device has genuinely
+  cooled, which takes minutes, not seconds.</p>
+
+  <p>The net effect is a <strong>sustained power ceiling</strong>: over a long session, the average
+  power your game may draw is fixed by how well the device sheds heat into its environment, and
+  everything else follows from that. Run the simulator. Set a load, pick a cooling class, and then
+  toggle between a 60 fps target and a 30 fps cap.</p>
+
+  <div class="widget" id="w-thermal">
+    <div class="whd"><span class="wt">Thermal throttle simulator</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Fifteen simulated minutes of sustained play. Simplified but physical: power is
+    <code>idle + dynamic &times; clock&sup2; &times; duty</code>, heat accumulates into a fast
+    junction node and a slow chassis node, a fast governor trims clocks above 72&nbsp;&deg;C, and a
+    slow chassis limit at 45&nbsp;&deg;C triggers a hard clamp with hysteresis (release at
+    41.5&nbsp;&deg;C) &mdash; the simplified stand-in for Android's thermal status ladder.
+    Presentation is quantised to a 60&nbsp;Hz display, so a frame that misses its vsync slot waits
+    for the next one. The ten-minute readout is a 60-second window average rather than one
+    instantaneous sample, for the same reason your report should be: a single frame is not a
+    measurement. The dim line is the mode you are <em>not</em> looking at, drawn for comparison.</p>
+
+    <div class="split">
+      <div>
+        <div class="ctl"><label>Sustained load level</label>
+          <input type="range" id="th-load" min="10" max="80" value="36"><output id="th-loado">36%</output></div>
+        <div class="ctl"><label>Ambient temperature</label>
+          <input type="range" id="th-amb" min="20" max="40" value="30"><output id="th-ambo">30 &deg;C</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Cooling class</label>
+          <div class="seg" id="th-cool">
+            <button data-v="thin" class="on">Thin phone</button>
+            <button data-v="flag">Vapour chamber</button>
+            <button data-v="tab">Tablet</button>
+          </div><output id="th-coolo">thin</output></div>
+        <div class="ctl"><label>Frame rate target</label>
+          <div class="seg" id="th-mode">
+            <button data-v="60" class="on">Unlocked 60</button>
+            <button data-v="30">Capped 30</button>
+          </div><output id="th-modeo">60</output></div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">FPS at t = 0</div><div class="v" id="th-f0">&mdash;</div></div>
+      <div class="cell"><div class="k">FPS at 10 min (60 s window)</div><div class="v" id="th-f10">&mdash;</div></div>
+      <div class="cell"><div class="k">Median fps (5&ndash;15 min)</div><div class="v" id="th-fmed">&mdash;</div></div>
+      <div class="cell"><div class="k">Frame-time &sigma;</div><div class="v" id="th-sd">&mdash;</div></div>
+      <div class="cell"><div class="k">1% low</div><div class="v" id="th-low">&mdash;</div></div>
+      <div class="cell"><div class="k">Sustained ceiling</div><div class="v" id="th-ceil">&mdash;</div></div>
+    </div>
+
+    <canvas id="th-canvas" height="330" aria-label="Frame rate and temperature over fifteen simulated minutes"></canvas>
+    <div class="legend">
+      <span><i style="background:#4da3ff"></i>fps, selected target</span>
+      <span><i style="background:#3a4757"></i>fps, other target</span>
+      <span><i style="background:#f85149"></i>chassis temperature</span>
+      <span><i style="background:#d29922"></i>chassis limit &amp; clamp regions</span>
+    </div>
+    <div class="btnrow">
+      <button class="btn" id="th-play">Play 15 minutes</button>
+      <button class="btn ghost" id="th-stop">Stop</button>
+      <button class="btn ghost" id="th-reset">Show full run</button>
+    </div>
+    <div class="verdict" id="th-verdict">Move a control.</div>
+  </div>
+
+  <p>At the default settings the story is stark. The unlocked target opens at 60 fps, holds it for
+  four or five minutes, trips the chassis limit, and then oscillates: clamp, cool, release, boost,
+  trip again. Its median frame rate over minutes 5&ndash;15 collapses to 20 fps &mdash; the
+  50 ms vsync slot &mdash; with a frame-time standard deviation above 15 ms, which is the numerical
+  signature of visible judder. The
+  30 fps cap never draws enough power to reach the limit at all. It sits at a flat 33.3 ms for the
+  whole session, with a standard deviation of zero and a cooler device. <strong>The capped
+  configuration is slower for two minutes and better for thirteen.</strong></p>
+
+  <div class="box why"><div class="lbl">Why a cap can beat an unlocked target</div>
+  <p>Three mechanisms stack. First, energy per frame falls as clocks fall &mdash; work is fixed and
+  voltage scales with frequency, so a frame rendered at 70% clock costs meaningfully less energy
+  than the same frame at 100%. Rendering fewer frames at lower clocks keeps you under the ceiling
+  instead of paying the ceiling's enforcement penalty. Second, vsync quantisation: on a 60&nbsp;Hz
+  panel you can only present at 16.7, 33.3, 50 or 66.7 ms. A renderer hovering at 17 ms does not
+  deliver 58 fps, it alternates 16.7 and 33.3 &mdash; the worst-looking state a game can be in.
+  A cap parks you inside a slot with headroom. Third, hysteresis: once the clamp engages you stay
+  clamped for minutes, so avoiding the trip is worth far more than the frames you gave up to avoid
+  it. This is why so many shipped mobile games target 30, and why "unlock the frame rate" is a
+  setting, not a default.</p></div>
+
+  <p>Now use the widget as an argument tool rather than a toy. Drop the load to 25% and switch to
+  the vapour-chamber class: the unlocked target holds 60 fps for the full fifteen minutes and the
+  cap is simply worse. Push the load to 55%: neither target holds anything and the honest verdict
+  is that the content is too heavy for the tier, which is a scoping decision, not a settings
+  decision. The point is that <em>which frame-rate target is correct is a measured property of your
+  content on your target device</em>, and you now have a way to say that in a meeting.</p>
+
+  <div class="check">
+    <p class="q">A classmate reports: "I profiled on a Pixel for 90 seconds and got a solid 58 fps
+    average, so the port is done." What is the first thing wrong with that sentence?</p>
+    <button class="opt" data-correct="0">58 is not 60, so the port has failed its target and needs more optimization work before it is presentable.</button>
+    <button class="opt" data-correct="1">A 90-second run on a cold device measures the boost budget, not the sustained state; and an average hides the vsync alternation that 58 fps implies.</button>
+    <button class="opt" data-correct="0">One device is not a device matrix, so the result cannot be generalised to other phones.</button>
+    <div class="exp"><b>Why the second option:</b> two independent errors, both fatal to the claim.
+    The run is too short to leave the burst window &mdash; the number would be different at minute
+    ten on the same device with the same build. And "58 fps average" on a 60 Hz panel almost
+    certainly means most frames present in 16.7 ms and some present in 33.3 ms, so the player is
+    seeing a stutter pattern that the average is specifically designed not to show. Report a
+    frame-time distribution from a run long enough to reach thermal equilibrium.
+      <div class="ex"><span class="who">Why the first is tempting</span><br>
+      It sounds rigorous, and holding a target is a real exit criterion. But it treats the average
+      as trustworthy and then argues about its value. The problem is not that the number is 58; the
+      problem is that the number is not measuring what the sentence claims it measures.</div>
+      <div class="ex"><span class="who">Why the third is tempting</span><br>
+      It is true, and it is a real weakness of the report &mdash; it is just not <em>first</em>. A
+      device matrix fixes generalisation across hardware. It does nothing about a measurement
+      protocol that is wrong on every device in the matrix.</div>
+    </div>
+  </div>
+  <h2><span class="num">4</span>Choosing target tiers without testing everything</h2>
+
+  <p>Android alone ships thousands of distinct device models with a dozen GPU families and a decade
+  of driver quality between the best and the worst. You cannot test them all and you cannot test
+  none of them. What you can do is exactly what you did in Topic 5 with optimization flags: define
+  a small number of capability tiers, define what each tier is allowed to run, and use combinatorial
+  coverage to keep the matrix from exploding.</p>
+
+  <div class="tiers">
+    <div class="tier"><h5>Tier A &mdash; flagship</h5>
+      <p>Recent flagship SoC, vapour chamber, 8&nbsp;GB+ RAM, 120&nbsp;Hz panel. Target 60 fps at
+      native resolution, full post stack, ASTC 6&times;6, shadows on. This tier is where you can
+      afford quality; it is not where you find your bugs.</p></div>
+    <div class="tier t2"><h5>Tier B &mdash; mid-range volume</h5>
+      <p>Two-to-three-year-old mid SoC, 4&ndash;6&nbsp;GB RAM, 60&nbsp;Hz. Target 30 fps locked,
+      render scale 85%, one combined post pass, ASTC 8&times;8, baked shadows. This is where most
+      of your players actually are, so this is your default configuration for profiling.</p></div>
+    <div class="tier t3"><h5>Tier C &mdash; minimum spec</h5>
+      <p>Entry SoC, 3&nbsp;GB RAM, narrow bus, an OS version two majors behind. Target 30 fps,
+      render scale 70%, no post, ETC2 fallback, half-resolution shadows or none. Define this tier by
+      writing down the cheapest device you promise to support &mdash; and then buy one.</p></div>
+  </div>
+
+  <p>The matrix is not just tiers. It is tiers crossed with quality presets, OS major versions,
+  aspect-ratio and cutout classes, and the interruption cases from section 8. Multiply those out and
+  a modest-sounding plan becomes a hundred and forty-four device-hours. Pairwise reduction &mdash;
+  the same technique Niu, Raunak and Mercan argue for in the Topic 5 readings &mdash; gets you a
+  set that covers every pair of parameter values in a fraction of the runs, on the empirical
+  observation that most interaction defects involve two factors, not five.</p>
+
+  <div class="widget" id="w-matrix">
+    <div class="whd"><span class="wt">Device tier matrix planner</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Real combinatorics: the exhaustive count is the product of the factor sizes,
+    and the reduced set is generated by an actual greedy pairwise-covering algorithm run on your
+    selected factors (deterministic seed, so the class gets the same answer). Every pair of values
+    from every two factors appears in at least one row of the generated set &mdash; the coverage
+    check below is computed, not asserted.</p>
+
+    <div class="split">
+      <div>
+        <div class="ctl"><label>Device tiers</label>
+          <input type="range" id="mx-tier" min="2" max="5" value="3"><output id="mx-tiero">3</output></div>
+        <div class="ctl"><label>Quality presets</label>
+          <input type="range" id="mx-qual" min="2" max="4" value="3"><output id="mx-qualo">3</output></div>
+        <div class="ctl"><label>OS versions</label>
+          <input type="range" id="mx-os" min="1" max="4" value="3"><output id="mx-oso">3</output></div>
+      </div>
+      <div>
+        <div class="ctl"><label>Aspect / cutout classes</label>
+          <input type="range" id="mx-asp" min="1" max="4" value="2"><output id="mx-aspo">2</output></div>
+        <div class="ctl"><label>Network conditions</label>
+          <input type="range" id="mx-net" min="1" max="3" value="2"><output id="mx-neto">2</output></div>
+        <div class="ctl"><label>Minutes per run</label>
+          <input type="range" id="mx-min" min="5" max="30" step="5" value="20"><output id="mx-mino">20</output></div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Exhaustive runs</div><div class="v" id="mx-full">0</div></div>
+      <div class="cell"><div class="k">Pairwise runs</div><div class="v" id="mx-pw">0</div></div>
+      <div class="cell"><div class="k">Reduction</div><div class="v" id="mx-red">0%</div></div>
+      <div class="cell"><div class="k">Exhaustive time</div><div class="v" id="mx-th">0 h</div></div>
+      <div class="cell"><div class="k">Pairwise time</div><div class="v" id="mx-tp">0 h</div></div>
+      <div class="cell"><div class="k">Pair coverage</div><div class="v" id="mx-cov">0%</div></div>
+    </div>
+    <div class="tblwrap"><table class="matrixtbl" id="mx-table"></table></div>
+    <div class="verdict" id="mx-verdict">Move a slider.</div>
+  </div>
+
+  <div class="box warn"><div class="lbl">What pairwise does not cover</div>
+  <p>Pairwise coverage is a budget technique, not a proof. It guarantees every two-factor
+  combination appears; it says nothing about a defect that needs Tier C <em>and</em> the low quality
+  preset <em>and</em> Android 11 <em>and</em> a cutout display simultaneously. Two rules keep this
+  honest. Pin the combinations you already know are dangerous &mdash; your minimum-spec device on
+  your lowest preset always gets a full manual pass, regardless of what the generator says. And
+  when a bug does turn out to need three factors, add that triple to the plan permanently, because
+  you have just learned something about your system that the algorithm could not know.</p></div>
+
+  <h2><span class="num">5</span>The test plan as a real document</h2>
+
+  <p>The graded deliverable asks for a "detailed test plan", and the difference between a passing
+  one and a professional one is that the professional one can be handed to someone else. A test
+  plan that only you can execute is a set of notes. Here is the structure to use, with the level of
+  specificity that makes each section actually load-bearing.</p>
+
+  <div class="plan">
+    <div class="sec"><div class="n">1</div><div><b>Scope and objectives</b>
+      <p>What build, what content, what you are and are not testing. The exclusions matter more
+      than the inclusions, because they are what stops an argument in week two.</p>
+      <div class="eg">In scope: single-player levels 1-3, main menu, settings, save/resume.
+Out of scope: IAP flows (not implemented), cloud save, localisation.
+Build under test: 0.9.4-mobile, commit 8f2ac1d, IL2CPP arm64, development build.</div></div></div>
+
+    <div class="sec"><div class="n">2</div><div><b>Device matrix</b>
+      <p>Named devices, not tiers, with the tier each one represents and why it is in the list.
+      One row per device with OS version, RAM, GPU family, and screen class.</p>
+      <div class="eg">Tier A  Pixel 8            Android 14  8 GB  Mali-G715  1080x2400 punch-hole
+Tier B  Galaxy A54         Android 13  6 GB  Mali-G68   1080x2340 punch-hole
+Tier C  Moto G Power 2021  Android 11  3 GB  Adreno 610 720x1600  no cutout
+Tier A  iPhone 13          iOS 17      4 GB  Apple A15  1170x2532 notch</div></div></div>
+
+    <div class="sec"><div class="n">3</div><div><b>Entry criteria</b>
+      <p>What must be true before testing starts, so that you do not burn a device day on a build
+      that was never going to work.</p>
+      <div class="eg">Build installs and reaches main menu on all four matrix devices.
+Automated smoke suite green in CI. Symbols uploaded. Test route documented.</div></div></div>
+
+    <div class="sec"><div class="n">4</div><div><b>Measurable exit criteria</b>
+      <p>Numbers with comparison operators. "Runs smoothly" is not an exit criterion. Every
+      threshold gets a tier, a metric, a measurement window, and a statistic.</p>
+      <div class="eg">Tier B, level 2 route, minutes 5-15 of a 15-min run, median of 5 runs:
+  median frame time  &lt;= 33.3 ms
+  1% low frame time  &lt;= 50.0 ms
+  cold load to playable &lt;= 12 s
+  peak resident memory &lt;= 1.4 GB
+  battery drain  &lt;= 12% per 30 min at 50% brightness
+  zero crashes, zero ANRs across 5 runs and 20 suspend/resume cycles</div></div></div>
+
+    <div class="sec"><div class="n">5</div><div><b>Automated strategy</b>
+      <p>What runs without a human, where it runs, what it asserts, and what it captures when it
+      fails. Name the suite and the trigger.</p>
+      <div class="eg">On every push: EditMode unit tests (pure logic, no device).
+Nightly on device farm: PlayMode smoke (boot -> level 1 -> save -> quit) on 4 devices.
+Nightly: 15-min automated route on Tier B with frame-time capture to CSV,
+  fails the build if median frame time regresses &gt; 8% vs the last tagged baseline.
+On failure: attach logcat, the CSV, a screenshot, and the device thermal log.</div></div></div>
+
+    <div class="sec"><div class="n">6</div><div><b>Manual charters</b>
+      <p>Time-boxed exploratory sessions in the session-based format from Topic 7. Mission, areas,
+      oracle, time box &mdash; and a debrief that produces either a bug or a note.</p>
+      <div class="eg">Charter M-04 (45 min, Tier C): explore interruption handling during
+  level transitions, using suspend, incoming call, low-memory warning
+  and orientation change. Oracle: game resumes to the same state with
+  audio restored and no lost progress. Log every state that differs.</div></div></div>
+
+    <div class="sec"><div class="n">7</div><div><b>Telemetry plan</b>
+      <p>Kazmi et al.'s argument, made operational: instrument what players actually do, and weight
+      your test route by the observed distribution rather than by what is convenient to test.</p>
+      <div class="eg">Events: level_start, level_end, death, settings_changed, session_end.
+Sampled each 10 s in play: fps bucket, resident MB, thermal status, battery %.
+Weekly review: route weights updated from the level-time histogram.
+No device identifiers, no PII, opt-in per Topic 7 privacy rules.</div></div></div>
+
+    <div class="sec"><div class="n">8</div><div><b>Measurement protocol</b>
+      <p>The reproducibility section &mdash; section 9 of this lesson, written down as procedure.
+      This is the part that makes your before/after numbers mean anything.</p>
+      <div class="eg">Airplane mode on, brightness fixed 50%, battery 60-80%, no other apps.
+Device idle 10 min to a known thermal state before each run. 5 runs per config.
+Identical scripted route (recorded input playback), 15 min each.
+Report median and 1% low over minutes 5-15. Discard no runs; report all.</div></div></div>
+  </div>
+
+  <div class="box why"><div class="lbl">Why exit criteria are the section that saves you</div>
+  <p>Without a written threshold, "done" is decided by whoever is most tired. With one, the
+  conversation changes shape entirely: you are no longer arguing about whether the game feels
+  smooth, you are reporting that Tier B's median frame time is 38.1 ms against a 33.3 ms
+  criterion and the build does not pass. Notice also what the criterion above does that a frame-rate
+  target cannot: it specifies the <em>window</em> (minutes 5&ndash;15) and the <em>statistic</em>
+  (median of five runs, plus a 1% low). Those two qualifiers are the difference between a number
+  and evidence.</p></div>
+  <h2><span class="num">6</span>What the code has to stop doing</h2>
+
+  <p>Below is a director script and camera setup that is entirely normal on a desktop build and
+  actively hostile on a phone. Every line is something a student has shipped. Click the highlighted
+  lines: the note explains the <em>mobile-specific</em> reason, which is usually different from the
+  desktop reason.</p>
+
+  <div class="annot"><div class="rows">
+    <div class="arow"><div class="gut">1</div><div class="ln">public class WaveDirector : MonoBehaviour {</div></div>
+    <div class="arow"><div class="gut">2</div><div class="ln">  void Update() {</div></div>
+    <div class="arow hasnote"><div class="gut">3</div><div class="ln">    var enemies = FindObjectsOfType&lt;Enemy&gt;();</div></div>
+    <div class="note"><b>A full scene graph walk, sixty times a second.</b> On desktop this is
+    wasteful; on mobile it is worse than wasteful because it is a pointer chase across managed heap
+    objects that will not be in a 512 KB shared L2. Every miss is a DRAM access competing with the
+    GPU's texture fetches on the same bus. It also allocates an array every call, which on a phone
+    with a small heap means more frequent collections. Keep a registry the spawner writes into.</div>
+    <div class="arow"><div class="gut">4</div><div class="ln">    foreach (var e in enemies) {</div></div>
+    <div class="arow hasnote"><div class="gut">5</div><div class="ln">      float d = Vector3.Distance(e.transform.position, player.position);</div></div>
+    <div class="note"><b>A square root and two native transform reads per enemy per frame.</b>
+    <code>transform.position</code> crosses the managed/native boundary and can force a transform
+    hierarchy sync. Compare squared distances against a squared threshold instead &mdash; and more
+    importantly, do not run this test for every enemy every frame. Nothing in this game changes fast
+    enough to need a proximity check at 60 Hz for an actor forty metres away.</div>
+    <div class="arow hasnote"><div class="gut">6</div><div class="ln">      if (d &lt; 30f) e.GetComponent&lt;Renderer&gt;().material.color = Color.red;</div></div>
+    <div class="note"><b>Three separate mobile sins in one line.</b> <code>GetComponent</code> is a
+    lookup you could have cached. Accessing <code>.material</code> (rather than
+    <code>.sharedMaterial</code>) <em>instantiates a copy of the material</em>, permanently, on
+    first touch &mdash; so each highlighted enemy leaks a material, breaks out of its batch, and
+    adds a draw call. On a tiler, extra draw calls are extra binning work and extra state changes in
+    the vertex phase, which is exactly the phase that is already stressed by small tiles. Use a
+    <code>MaterialPropertyBlock</code>, or a per-instance shader property.</div>
+    <div class="arow hasnote"><div class="gut">7</div><div class="ln">      var hits = Physics.RaycastAll(e.transform.position, Vector3.down, Mathf.Infinity);</div></div>
+    <div class="note"><b>Unbounded, unmasked, and allocating.</b> <code>RaycastAll</code> returns a
+    freshly allocated array every call &mdash; N enemies &times; 60 frames of garbage per second.
+    <code>Mathf.Infinity</code> makes the broadphase traverse the entire world instead of stopping
+    four metres down, and with no layer mask the query tests against every collider including
+    triggers and the player. Use <code>RaycastNonAlloc</code> with a preallocated buffer, a real
+    maximum distance, and a layer mask.</div>
+    <div class="arow"><div class="gut">8</div><div class="ln">      if (hits.Length &gt; 0) e.SnapToGround(hits[0].point);</div></div>
+    <div class="arow"><div class="gut">9</div><div class="ln">    }</div></div>
+    <div class="arow hasnote"><div class="gut">10</div><div class="ln">    hud.text = "Wave " + wave + " / " + total + "  Enemies: " + enemies.Length;</div></div>
+    <div class="note"><b>Four string allocations and a full UI rebuild, every frame, for text that
+    changes once a minute.</b> Each concatenation allocates; the int-to-string conversions box and
+    allocate; and assigning to <code>.text</code> dirties the canvas, which re-tessellates and
+    re-uploads the mesh &mdash; a bandwidth cost, not just a CPU cost. Set the text only when the
+    value changes, and use <code>TMP_Text.SetText</code> with format arguments so no string is
+    created at all.</div>
+    <div class="arow hasnote"><div class="gut">11</div><div class="ln">    if (Input.GetTouch(0).phase == TouchPhase.Began) SpawnWave();</div></div>
+    <div class="note"><b>This throws the moment nobody is touching the screen.</b>
+    <code>GetTouch(0)</code> is an index into a list that is empty most frames. Guard with
+    <code>Input.touchCount</code> and iterate. This is also the line where safe-area handling
+    belongs: a touch at the very top of the screen may be inside the system gesture region or under
+    a cutout, and on some devices you will never receive it &mdash; which is a bug report you will
+    only ever get from a player, never from your editor.</div>
+    <div class="arow"><div class="gut">12</div><div class="ln">  }</div></div>
+    <div class="arow"><div class="gut">13</div><div class="ln">  void Awake() {</div></div>
+    <div class="arow hasnote"><div class="gut">14</div><div class="ln">    cam.allowHDR = true;  QualitySettings.antiAliasing = 4;</div></div>
+    <div class="note"><b>These two settings interact, and the interaction is invisible.</b> HDR
+    makes the color target 8 bytes per pixel instead of 4. Add a 4-byte depth-stencil and multiply
+    by 4 MSAA samples and you are asking for 48 bytes per pixel of on-chip tile storage against a
+    budget of about 16. The driver responds by shrinking the tile, so the same geometry is binned
+    and re-processed against more tiles. Nothing warns you. Pick one: HDR with 2&times; MSAA, or
+    RGBA8 with 4&times;. Check the tile-storage readout in the calculator above.</div>
+    <div class="arow hasnote"><div class="gut">15</div><div class="ln">    postStack.SetActive(true);   // bloom, grade, vignette, DOF &mdash; all full res</div></div>
+    <div class="note"><b>Four full-screen passes, each a read and a write of the whole screen.</b>
+    At 2340&times;1080 RGBA8 that is roughly 20 MB of DRAM traffic per pass per frame; at 60 fps the
+    stack alone is about 4.9 GB/s, which on a Tier C device is most of your budget. Merge grade and
+    vignette into the tonemap pass, run bloom at quarter resolution, and delete depth of field on
+    mobile &mdash; on a five-inch screen nobody can see it and it needs a depth texture.</div>
+    <div class="arow hasnote"><div class="gut">16</div><div class="ln">    Shader.EnableKeyword("_SOFT_PARTICLES");</div></div>
+    <div class="note"><b>This one line can cost more than everything else on this screen.</b> Soft
+    particles need to sample scene depth, which means the depth buffer &mdash; which was living
+    happily in tile memory and being thrown away &mdash; must now be resolved out to DRAM and read
+    back. You have converted a free on-chip resource into a full-screen write plus a full-screen
+    read every frame, and broken the render pass into two. Any feature described as "reads the
+    scene" (soft particles, refraction, grab pass, screen-space anything) deserves this scrutiny on
+    mobile.</div>
+    <div class="arow"><div class="gut">17</div><div class="ln">  }</div></div>
+    <div class="arow"><div class="gut">18</div><div class="ln">}</div></div>
+  </div><p class="hint">Click any highlighted line to see the mobile-specific reasoning.</p></div>
+
+  <p>Now the rewrite. The goal is not to make the code clever; it is to remove per-frame work,
+  per-frame allocation, and per-frame DRAM traffic, while leaving the gameplay observably
+  identical. Both engines get the same treatment.</p>
+
+  <div class="tabs">
+    <div class="tabhd">
+      <button data-engine="unity" data-tab="u" class="on">Unity</button>
+      <button data-engine="unreal" data-tab="e">Unreal</button>
+    </div>
+    <div class="tabbody">
+      <div class="tabpane on" data-pane="u">
+        <p class="small subtle">C# / URP. Time-sliced updates, zero per-frame allocation, batched
+        highlighting, and settings chosen from the tile budget rather than from habit.</p>
+        <div class="annot"><div class="rows">
+          <div class="arow hasnote"><div class="gut">1</div><div class="ln">readonly List&lt;Enemy&gt; _active = new List&lt;Enemy&gt;(64);</div></div>
+          <div class="note"><b>A registry with its capacity reserved up front.</b> The spawner adds
+          and removes; nothing ever scans the scene. Reserving 64 means the list never grows and
+          re-copies mid-session, which on a phone matters twice over: the copy itself is bandwidth,
+          and the abandoned backing array is garbage that brings the next collection closer.</div>
+          <div class="arow hasnote"><div class="gut">2</div><div class="ln">readonly RaycastHit[] _hit = new RaycastHit[1];</div></div>
+          <div class="note"><b>One buffer, allocated once, reused forever.</b> This is the
+          preallocation pattern from Topic 6 applied to the physics API. Combined with
+          <code>RaycastNonAlloc</code> it turns a per-frame allocation into zero.</div>
+          <div class="arow hasnote"><div class="gut">3</div><div class="ln">static readonly int Ground = 1 &lt;&lt; 8;  const float RangeSq = 900f;</div></div>
+          <div class="note"><b>A layer mask and a squared threshold, both constants.</b> The mask
+          keeps the physics broadphase from testing colliders that could never be the ground. The
+          squared threshold removes a square root from a loop that runs thousands of times a
+          second &mdash; small on its own, free to do, and it composes with everything else.</div>
+          <div class="arow"><div class="gut">4</div><div class="ln">void OnEnable()  { Enemy.Spawned += Add; Enemy.Despawned += Remove; }</div></div>
+          <div class="arow hasnote"><div class="gut">5</div><div class="ln">void OnDisable() { Enemy.Spawned -= Add; Enemy.Despawned -= Remove; }</div></div>
+          <div class="note"><b>The unsubscribe that most student code omits.</b> A static event
+          holding a reference to a destroyed <code>MonoBehaviour</code> is the classic managed
+          retention bug from Topic 6. On a phone the consequence is not a slow leak you notice next
+          week &mdash; it is a low-memory kill twenty minutes into a session, reported by a player
+          as "the game closes itself".</div>
+          <div class="arow"><div class="gut">6</div><div class="ln">void Update() {</div></div>
+          <div class="arow hasnote"><div class="gut">7</div><div class="ln">  int budget = Mathf.Min(8, _active.Count);</div></div>
+          <div class="note"><b>Budgeted, time-sliced updates.</b> Eight enemies are considered this
+          frame, the next eight on the following frame. With 200 enemies each one is re-evaluated
+          about every 25 frames, or 0.4 s &mdash; imperceptible for a ground-snap, and it converts a
+          spike that scales with enemy count into a constant cost. This is the single most effective
+          CPU change on mobile because it flattens the frame-time distribution rather than lowering
+          the mean.</div>
+          <div class="arow"><div class="gut">8</div><div class="ln">  for (int i = 0; i &lt; budget; i++) {</div></div>
+          <div class="arow"><div class="gut">9</div><div class="ln">    var e = _active[(_cursor + i) % _active.Count];</div></div>
+          <div class="arow"><div class="gut">10</div><div class="ln">    if ((e.Pos - _playerPos).sqrMagnitude &gt;= RangeSq) continue;</div></div>
+          <div class="arow hasnote"><div class="gut">11</div><div class="ln">    if (Physics.RaycastNonAlloc(e.Pos, Vector3.down, _hit, 4f, Ground) &gt; 0)</div></div>
+          <div class="note"><b>Bounded, masked, non-allocating.</b> Four metres instead of infinity
+          means the broadphase stops early. The mask means fewer narrowphase tests. The
+          <code>NonAlloc</code> variant writes into the buffer from line 2. Three changes, one line,
+          and the GC.Alloc column in the profiler goes to zero for this system.</div>
+          <div class="arow"><div class="gut">12</div><div class="ln">      e.SnapToGround(_hit[0].point);</div></div>
+          <div class="arow hasnote"><div class="gut">13</div><div class="ln">    e.SetHighlight(true);   // MaterialPropertyBlock, shared material preserved</div></div>
+          <div class="note"><b>Highlighting without breaking the batch.</b> A property block
+          overrides a shader property per renderer without instantiating a material, so the SRP
+          Batcher keeps the objects in one batch and no material is leaked. Same visual result, no
+          extra draw calls, no extra binning work for the tiler.</div>
+          <div class="arow"><div class="gut">14</div><div class="ln">  }</div></div>
+          <div class="arow"><div class="gut">15</div><div class="ln">  _cursor = _active.Count &gt; 0 ? (_cursor + budget) % _active.Count : 0;</div></div>
+          <div class="arow hasnote"><div class="gut">16</div><div class="ln">  if (_wave != _shownWave) { hud.SetText("Wave {0} / {1}", _wave, _total); _shownWave = _wave; }</div></div>
+          <div class="note"><b>Update the HUD when the HUD changes.</b> <code>SetText</code> with
+          format arguments writes into TextMeshPro's internal character buffer without allocating a
+          string, and the guard means the canvas is only dirtied on an actual wave change instead of
+          sixty times a second. Canvas rebuilds are a mesh upload; on mobile that is bus traffic.</div>
+          <div class="arow"><div class="gut">17</div><div class="ln">  for (int t = 0; t &lt; Input.touchCount; t++) { /* ... */ }</div></div>
+          <div class="arow"><div class="gut">18</div><div class="ln">}</div></div>
+          <div class="arow hasnote"><div class="gut">19</div><div class="ln">void Awake() { Application.targetFrameRate = 30; QualitySettings.vSyncCount = 0; }</div></div>
+          <div class="note"><b>The frame-rate cap, set explicitly.</b> On Android
+          <code>vSyncCount</code> does not control the cap &mdash; <code>targetFrameRate</code> does,
+          and the platform default of 30 on some devices and "as fast as possible" on others is
+          exactly the inconsistency you do not want across a device matrix. Set it deliberately,
+          from the thermal evidence in section 3, and expose it as a setting for Tier A players.</div>
+        </div><p class="hint">Click any highlighted line for the reasoning.</p></div>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>URP asset &amp; player settings for Tier B</div><pre>
+<span class="c">// URP Asset</span>
+Render Scale            <span class="n">0.85</span>      <span class="c">// cuts every screen-sized term at once</span>
+MSAA                    <span class="n">4</span>x        <span class="c">// cheap on-chip; verify tile storage &lt;= 16 B/px</span>
+HDR                     <span class="k">off</span>       <span class="c">// halves color target bytes, keeps MSAA affordable</span>
+Depth Texture           <span class="k">off</span>       <span class="c">// the single biggest tiling win</span>
+Opaque Texture          <span class="k">off</span>       <span class="c">// a grab pass in disguise</span>
+Shadow Cascades         <span class="n">1</span>         <span class="c">// one cascade, 30 m distance, soft shadows off</span>
+SRP Batcher             <span class="k">on</span>
+<span class="c">// Player settings</span>
+Texture compression     ASTC      <span class="c">// 6x6 Tier A, 8x8 Tier B/C; never uncompressed</span>
+Scripting backend       IL2CPP, arm64
+Managed stripping       High
+Graphics API            Vulkan (Auto Graphics API off, so you know what you tested)
+</pre></div>
+      </div>
+      <div class="tabpane" data-pane="e">
+        <p class="small subtle">C++ / Unreal mobile renderer. Same three ideas: tick less often,
+        bound the queries, and pick render settings from the tile budget.</p>
+        <div class="annot"><div class="rows">
+          <div class="arow hasnote"><div class="gut">1</div><div class="ln">PrimaryActorTick.TickInterval = 0.1f;   // in the constructor</div></div>
+          <div class="note"><b>Tick this actor ten times a second, not every frame.</b> Unreal gives
+          you the throttle for free and almost nobody uses it. A wave director does not need
+          frame-rate resolution; neither does most AI, most UI logic, and most spawn management.
+          Anything that still needs per-frame smoothness should interpolate in its own component
+          rather than force the whole actor to tick.</div>
+          <div class="arow"><div class="gut">2</div><div class="ln">void AWaveDirector::BeginPlay() {</div></div>
+          <div class="arow hasnote"><div class="gut">3</div><div class="ln">  Active.Reserve(64);</div></div>
+          <div class="note"><b><code>TArray</code> growth is a reallocate-and-copy.</b> Reserving the
+          expected count once removes a family of mid-session hitches that show up in Unreal Insights
+          as unexplained spikes in the game thread &mdash; and on mobile, where the allocator is
+          fighting the GPU for the same bus, those copies cost more than the same code costs on a
+          desktop.</div>
+          <div class="arow hasnote"><div class="gut">4</div><div class="ln">  Params.bTraceComplex = false;  Params.AddIgnoredActor(this);</div></div>
+          <div class="note"><b>Simple collision, explicitly.</b> A complex trace runs against the
+          render mesh's per-triangle collision. On a phone that is a cache-hostile walk through
+          vertex data you did not want to touch. Set it once in a shared
+          <code>FCollisionQueryParams</code> rather than accepting the default at every call site.</div>
+          <div class="arow"><div class="gut">5</div><div class="ln">}</div></div>
+          <div class="arow"><div class="gut">6</div><div class="ln">void AWaveDirector::Tick(float Dt) {</div></div>
+          <div class="arow hasnote"><div class="gut">7</div><div class="ln">  const int32 Budget = FMath::Min(8, Active.Num());</div></div>
+          <div class="note"><b>The same time-slicing idea, in C++.</b> Combined with the 0.1 s tick
+          interval this evaluates 80 enemies a second regardless of how many exist, so a designer
+          doubling the spawn count changes the game's difficulty and not its frame-time
+          distribution. Write that guarantee down in the test plan &mdash; it is an invariant you
+          can assert in an automated test.</div>
+          <div class="arow"><div class="gut">8</div><div class="ln">  for (int32 i = 0; i &lt; Budget; ++i) {</div></div>
+          <div class="arow"><div class="gut">9</div><div class="ln">    AEnemy* E = Active[(Cursor + i) % Active.Num()];</div></div>
+          <div class="arow hasnote"><div class="gut">10</div><div class="ln">    if (FVector::DistSquared(E-&gt;GetActorLocation(), P) &gt; RangeSq) continue;</div></div>
+          <div class="note"><b>Squared distance, and an early out before the expensive work.</b>
+          <code>DistSquared</code> avoids the square root; the <code>continue</code> means the trace
+          below never runs for the ninety per cent of enemies that are out of range. Ordering your
+          rejection tests cheapest-first is free performance in every hot loop you will ever
+          write.</div>
+          <div class="arow hasnote"><div class="gut">11</div><div class="ln">    GetWorld()-&gt;LineTraceSingleByChannel(Hit, Start, Start - FVector(0,0,400.f), ECC_GameTraceChannel1, Params);</div></div>
+          <div class="note"><b>Single, bounded, on a dedicated channel.</b> <code>Single</code>
+          instead of <code>Multi</code> returns one hit and stops. The 400-unit extent bounds the
+          broadphase traversal. A custom trace channel with only the ground set to Block means the
+          query never even considers enemy capsules or triggers &mdash; the Unreal equivalent of a
+          layer mask, and the reason your collision channel setup belongs in the test plan.</div>
+          <div class="arow"><div class="gut">12</div><div class="ln">  }</div></div>
+          <div class="arow"><div class="gut">13</div><div class="ln">  Cursor = Active.Num() ? (Cursor + Budget) % Active.Num() : 0;</div></div>
+          <div class="arow"><div class="gut">14</div><div class="ln">}</div></div>
+        </div><p class="hint">Click any highlighted line for the reasoning.</p></div>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>DefaultDeviceProfiles.ini &mdash; Tier B mobile profile</div><pre>
+[Android_Mid DeviceProfile]
++CVars=<span class="s">r.MobileHDR=0</span>                    <span class="c">; LDR path: no full-screen resolve for tonemap</span>
++CVars=<span class="s">r.MobileMSAA=4</span>                   <span class="c">; resolves inside tile memory</span>
++CVars=<span class="s">r.MobileContentScaleFactor=0.85</span>  <span class="c">; render scale, cuts every screen-sized term</span>
++CVars=<span class="s">sg.PostProcessQuality=0</span>          <span class="c">; kills bloom/DOF chain on this tier</span>
++CVars=<span class="s">sg.ShadowQuality=1</span>
++CVars=<span class="s">r.MobileNumDynamicPointLights=0</span>  <span class="c">; each one is another shader permutation</span>
++CVars=<span class="s">r.Mobile.AllowDitheredLODTransition=0</span>
++CVars=<span class="s">t.MaxFPS=30</span>                      <span class="c">; the cap, chosen from thermal data</span>
+</pre></div>
+        <p class="small subtle">Verify on device with <code>stat unit</code> (game / draw / GPU
+        thread split), <code>stat rhi</code> for draw counts and memory, and
+        <code>profilegpu</code> for a pass-by-pass breakdown. If <code>stat unit</code> shows GPU
+        time far above game and draw, your problem is on the tiler and the bandwidth calculator
+        above is the right tool. If draw is the tall bar, you have a draw-call and state-change
+        problem instead.</p>
+      </div>
+    </div>
+  </div>
+  <h2><span class="num">7</span>Profiling on the device, not in the editor</h2>
+
+  <p>The editor is a different machine again: a desktop CPU, a desktop GPU, a JIT-compiled scripting
+  backend, and profiler instrumentation running inside the same process. Editor numbers are useful
+  for one thing &mdash; comparing your own changes to each other on the same machine &mdash; and
+  useless for predicting device behaviour. Every number that goes in your report comes off a phone,
+  from a development build, over a cable.</p>
+
+  <div class="tabs">
+    <div class="tabhd">
+      <button data-engine="unity" data-tab="u" class="on">Unity</button>
+      <button data-engine="unreal" data-tab="e">Unreal</button>
+    </div>
+    <div class="tabbody">
+      <div class="tabpane on" data-pane="u">
+        <p>Build a <b>Development Build</b> with <b>Autoconnect Profiler</b> and
+        <b>Deep Profiling Support</b> off (deep profiling changes the thing you are measuring badly
+        enough on mobile to invert conclusions). Connect over USB, not Wi-Fi, so the profiler stream
+        does not compete with your game's own network traffic.</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>Device workflow</div><pre>
+adb devices                                  <span class="c"># confirm the phone is visible</span>
+adb logcat -s Unity                          <span class="c"># crashes, GC messages, shader compile warnings</span>
+adb shell dumpsys thermalservice             <span class="c"># current thermal status &mdash; check before every run</span>
+adb shell dumpsys batterystats --charged &gt; bs.txt
+adb shell am start -n com.you.game/com.unity3d.player.UnityPlayerActivity
+</pre></div>
+        <ul>
+          <li><b>Unity Profiler</b> (remote): the CPU/GPU/Memory modules give you the main-thread
+          breakdown, <code>GC.Alloc</code> per frame, and render-thread time. Record, then use the
+          frame-by-frame view to find the worst frame, not the average one.</li>
+          <li><b>Memory Profiler package</b>: take a snapshot on device, play for ten minutes, take
+          another, and diff. That diff is the entire Topic 6 workflow and it works identically over
+          a cable.</li>
+          <li><b>Frame Debugger</b>: step the draw calls to see batching breaks and the actual
+          number of full-screen passes. It runs against the connected player, so you see the
+          device's real render pipeline, not the editor's.</li>
+          <li><b>Adaptive Performance</b> (Android): exposes the device's thermal warning level and
+          performance-bottleneck hints to your game, so you can drop render scale <em>before</em> the
+          OS clamps you. Reading its <code>WarningLevel</code> in your telemetry also gives your test
+          report the thermal-state column it needs.</li>
+          <li><b>Android GPU Inspector</b> or <b>Xcode Instruments / Metal frame capture</b> for the
+          GPU side: counters for bandwidth, tile utilisation, shader cycles and overdraw. This is
+          where you confirm or refute the estimate from the bandwidth calculator.</li>
+        </ul>
+      </div>
+      <div class="tabpane" data-pane="e">
+        <p>Package a <b>Development</b> configuration with Insights enabled, then launch with tracing
+        on and pull the trace back. <code>stat unit</code> on screen during a manual run is the
+        fastest triage you have: it splits frame time into game thread, draw thread and GPU, and the
+        tallest bar tells you which half of this lesson to read again.</p>
+        <div class="codeblock"><div class="hd"><span class="dot"></span>Device workflow</div><pre>
+<span class="c"># launch with tracing channels enabled</span>
+adb shell am start -n com.you.game/com.epicgames.unreal.GameActivity \
+  --es cmdline <span class="s">"-trace=cpu,gpu,frame,bookmark -tracehost=192.168.1.20"</span>
+
+<span class="c"># in-game console (or Exec on a key binding)</span>
+stat unit          <span class="c"># frame / game / draw / GPU  &mdash; start here, always</span>
+stat rhi           <span class="c"># draw calls, primitives, render target memory</span>
+stat memory        <span class="c"># and 'memreport -full' for the full picture</span>
+profilegpu         <span class="c"># one-frame pass-by-pass GPU breakdown</span>
+</pre></div>
+        <ul>
+          <li><b>Unreal Insights</b>: the timeline view over a ten-minute capture is where thermal
+          throttling becomes visible as a slow upward drift in GPU time with identical CPU work.
+          Bookmarks let you mark route waypoints so runs are comparable.</li>
+          <li><b>Low Level Memory Tracker</b> (<code>-LLM</code>): per-subsystem memory attribution,
+          which is what you need when the phone kills you and you have to say <em>which</em> pool
+          grew.</li>
+          <li><b>Gauntlet</b>: run the automated route on a connected device from CI, gather the
+          artifacts, and fail the job on a regression threshold. This is how the automated half of
+          your test plan actually executes.</li>
+          <li><b>RenderDoc</b> or <b>Android GPU Inspector</b> for a frame capture; Xcode's Metal
+          capture on iOS. Confirm the pass list matches what you think you configured &mdash;
+          finding an extra full-screen pass you did not know about is a common and very profitable
+          surprise.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <p>The diagnostic below is the one you will actually run on the assignment. It is the question
+  every mobile port produces in week one.</p>
+
+  <div class="tree" id="treeMobile"><p class="path"></p><div class="body"></div></div>
+
+  <h2><span class="num">8</span>Lifecycle, interruptions, and the things cert fails you for</h2>
+
+  <p>Performance is the visible half of a mobile port. The half that fails certification is
+  lifecycle. Your process does not own the machine; the OS suspends you, restores you, kills your
+  graphics context, changes your screen size, and takes audio focus away without warning. Each of
+  those is a testable case with a written expected result, and each belongs in the manual charter
+  section of your plan.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Interruption</th><th>How to trigger it deliberately</th><th>Expected result</th><th>The failure you will actually find</th></tr></thead>
+    <tbody>
+      <tr><td><b>Background / foreground</b></td><td>Home button, then reopen after 5 s, 60 s, and 10 min</td><td>Pauses, mutes, resumes to the same state; timers do not advance</td><td>Physics catches up in one giant step; the player is dead on resume</td></tr>
+      <tr><td><b>Incoming call / alarm</b></td><td>Call the device from another phone mid-level</td><td>Game pauses, audio ducks then restores, no input lost</td><td>Audio never comes back because focus was never re-requested</td></tr>
+      <tr><td><b>Low-memory warning</b></td><td><code>adb shell am send-trim-memory &lt;pid&gt; RUNNING_CRITICAL</code></td><td>Non-essential caches released, no crash</td><td>Nothing is released; the OS kills the process a minute later</td></tr>
+      <tr><td><b>Screen lock / unlock</b></td><td>Power button, wait past the display timeout, unlock</td><td>Clean pause and resume; graphics resources still valid</td><td>Black screen or corrupted render targets after context loss</td></tr>
+      <tr><td><b>Rotation / multi-window</b></td><td>Rotate; then split-screen the app</td><td>UI reflows, no crash, safe area respected</td><td>UI anchored to a hardcoded aspect ratio, buttons off-screen</td></tr>
+      <tr><td><b>Notch / cutout / gesture bar</b></td><td>Run on a cutout device and a gesture-navigation device</td><td>Nothing interactive inside the unsafe area</td><td>The pause button lives under the camera hole on exactly one device</td></tr>
+      <tr><td><b>Network transition</b></td><td>Wi-Fi to cellular mid-session; then airplane mode</td><td>Reconnect or degrade gracefully with a visible state</td><td>Infinite spinner with no timeout and no cancel</td></tr>
+      <tr><td><b>Storage pressure</b></td><td>Fill the device to under 200 MB free, then save</td><td>Clear error, no data loss, previous save intact</td><td>Save is truncated over the top of the good one</td></tr>
+      <tr><td><b>Cold vs warm start</b></td><td>Force-stop, then launch; measure to first input</td><td>Within the load-time exit criterion</td><td>The first run after install is four times slower &mdash; shader compilation</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box crit"><div class="lbl">The one that will bite you on the assignment</div>
+  <p>Cold-start shader compilation. The first time your game runs on a device, every shader variant
+  it uses has to be compiled by the driver, and a variant-heavy project can spend twenty seconds
+  doing it &mdash; scattered through gameplay as multi-hundred-millisecond hitches rather than
+  concentrated at load. Your second run looks fine because the driver cached them. If you measure
+  load time on the second run and report it as your load time, your number is wrong in the direction
+  that flatters you. Measure a cold start after a force-stop and a cache clear, warm up your
+  variants deliberately at load, and say in your report which one you measured.</p></div>
+
+  <div class="check">
+    <p class="q">Your build passes every performance criterion on all four matrix devices. During
+    an exploratory charter you find that answering a phone call during a boss fight returns you to
+    the game with no audio, and the player must restart the app to get sound back. Where does this
+    belong in your report?</p>
+    <button class="opt" data-correct="0">As a note in the "future work" section &mdash; it is an audio bug, not a performance issue, so it is out of scope for a mobile optimization project.</button>
+    <button class="opt" data-correct="1">As a blocking defect in the results, because interruption handling is a certification requirement and the plan's exit criteria include zero interruption failures.</button>
+    <button class="opt" data-correct="0">In the appendix as a known issue, with the severity lowered because it requires an unusual action that most players will not perform.</button>
+    <div class="exp"><b>Why the second option:</b> the test plan you wrote in section 5 has an exit
+    criterion covering suspend and resume. A build that fails an exit criterion does not pass,
+    regardless of how good the frame-time numbers are &mdash; and platform holders test exactly this
+    case, so it is also a cert blocker, which by the Topic 1 ladder is S0 by definition. The fact
+    that you found it in an exploratory charter rather than an automated suite is worth saying out
+    loud in the video: it is evidence your manual strategy is doing work the automation cannot.
+      <div class="ex"><span class="who">Why "out of scope" is tempting</span><br>
+      The assignment is called Mobile Game Optimization, so audio focus feels like someone else's
+      problem. But scope is what your plan says it is, and your plan said save/resume was in scope.
+      Rescoping after you find a defect is the exact behaviour Topic 7 asks you to refuse.</div>
+      <div class="ex"><span class="who">Why "unusual action" is tempting</span><br>
+      It is a real exposure argument and it belongs in <em>priority</em>. It does not belong in
+      severity, and it is factually weak here: receiving a phone call on a phone is not an unusual
+      action. This is the severity/priority conflation from Topic 1, arriving fourteen weeks
+      later wearing a mobile hat.</div>
+    </div>
+  </div>
+
+  <h2><span class="num">9</span>Reporting a result honestly</h2>
+
+  <p>You will finish this project with a claim of the form "this change made the game faster". The
+  entire value of the claim rests on whether someone else could check it. Two students can implement
+  the same optimization and produce reports of completely different worth, and the difference is
+  never the optimization &mdash; it is the protocol around the measurement.</p>
+
+  <p>The controls that matter, in the order they are usually violated:</p>
+
+  <ul>
+    <li><b>Same scene, same route.</b> "I walked around for a bit" is not data, and it is not data
+    twice, because you walked around differently after the change. Script the route with recorded
+    input playback, or define it as an exact sequence of waypoints you can re-run.</li>
+    <li><b>Same device, same build configuration.</b> One physical unit, named in the report, with
+    the OS version. Not "an Android phone".</li>
+    <li><b>Same thermal state.</b> Idle the device for ten minutes between runs and check the
+    thermal status before starting. A "before" run on a hot phone and an "after" run on a cold one
+    can manufacture a 30% improvement out of nothing.</li>
+    <li><b>Same environment.</b> Airplane mode, fixed brightness, battery in a stated band, no
+    other apps, charger disconnected. Charging changes both thermal behaviour and, on some devices,
+    the governor's aggression.</li>
+    <li><b>N runs, and N is at least five.</b> One run is an anecdote. Report every run you did,
+    including the ugly one; discarding outliers without a stated rule is how honest people produce
+    dishonest graphs.</li>
+    <li><b>Median and 1% low, not average.</b> The median resists the one run that hit a background
+    OS update. The 1% low is the number that corresponds to what the player calls stutter. An
+    average frame rate hides both.</li>
+    <li><b>The window.</b> Minutes 5&ndash;15 of a fifteen-minute run, so the measurement describes
+    the sustained state from section 3 rather than the boost.</li>
+  </ul>
+
+  <p>Then present it as a table, in frame-time milliseconds rather than frames per second. Frame
+  time is linear in the thing you actually changed; frame rate is a reciprocal, which is why
+  "10 fps" means something different at 30 than at 120 and why improvements in fps look bigger at
+  the bottom of the range than they are.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Config</th><th>Median frame time</th><th>1% low frame time</th><th>Peak resident</th><th>Cold load</th><th>Battery / 30 min</th></tr></thead>
+    <tbody>
+      <tr><td>Before (Tier B, 5 runs)</td><td>41.2 ms</td><td>78.5 ms</td><td>1.62 GB</td><td>18.4 s</td><td>19%</td></tr>
+      <tr><td>After opt 1 &mdash; post stack merged, bloom &frac14; res</td><td>34.0 ms</td><td>61.0 ms</td><td>1.61 GB</td><td>18.2 s</td><td>16%</td></tr>
+      <tr><td>After opt 2 &mdash; ASTC 8&times;8 + time-sliced AI</td><td>31.6 ms</td><td>44.8 ms</td><td>1.14 GB</td><td>11.9 s</td><td>14%</td></tr>
+      <tr><td><b>Net change</b></td><td><b>&minus;23.3%</b></td><td><b>&minus;42.9%</b></td><td><b>&minus;29.6%</b></td><td><b>&minus;35.3%</b></td><td><b>&minus;5 pts</b></td></tr>
+    </tbody>
+  </table></div>
+
+  <p>Read that table the way a reviewer would. The median improved by 23%, which is respectable.
+  The 1% low improved by 43%, which is what the player will actually notice, and it improved more
+  than the median did &mdash; that is the signature of removing a periodic spike rather than shaving
+  a constant cost. Memory dropped by a third from a texture format change that also cut the load
+  time, because a compressed texture is smaller to read from storage as well as smaller to hold.
+  Every one of those sentences is an observation you can defend, and none of them required an
+  adjective.</p>
+
+  <div class="box why"><div class="lbl">Why the 1% low is the number that gets you hired</div>
+  <p>A frame-time series with a median of 33 ms and a 1% low of 45 ms feels smooth. A series with
+  the same 33 ms median and a 1% low of 90 ms feels broken, and both report "30 fps average". The
+  1% low is the ninety-ninth percentile of frame time &mdash; the worst one frame in a hundred,
+  which at 30 fps is something the player hits roughly every three seconds. When you show a
+  reviewer that you tracked it, you are demonstrating that you know average frame rate is a summary
+  statistic chosen for marketing, and that is a distinction most junior candidates cannot make.</p></div>
+
+  <div class="check">
+    <p class="q">Your before/after numbers came out as: before, 5 runs, medians 40.9 / 41.2 / 41.0 /
+    52.7 / 41.3 ms. After, 5 runs, medians 33.8 / 34.1 / 34.0 / 33.9 / 34.2 ms. How do you report
+    the "before" number?</p>
+    <button class="opt" data-correct="0">Drop the 52.7 ms run as an obvious outlier and report the mean of the remaining four, 41.1 ms, noting that one run was discarded.</button>
+    <button class="opt" data-correct="1">Report the median of all five runs, 41.2 ms, list all five values, and investigate the 52.7 ms run as a possible defect before deciding it was noise.</button>
+    <button class="opt" data-correct="0">Report the best before run and the best after run, 40.9 ms and 33.8 ms, since both represent the optimization's true potential on a clean device.</button>
+    <div class="exp"><b>Why the second option:</b> the median of five is 41.2 ms whether or not the
+    slow run exists, which is exactly why the median is the right statistic &mdash; you get
+    robustness without having to make a discretionary decision about which data to keep. Publishing
+    all five values lets the reader judge the spread themselves. And a single run that is 28% slower
+    than its siblings is a lead, not a nuisance: it might be a background process, or it might be
+    the intermittent hitch that your 1% low is trying to tell you about.
+      <div class="ex"><span class="who">Why discarding the outlier is tempting</span><br>
+      It is defensible practice in some contexts and you did disclose it. The problem is the
+      precedent: once "obviously an outlier" is a category you are allowed to use, it will get used
+      on the run that disagrees with the conclusion you want. Use a statistic that does not require
+      the judgement call.</div>
+      <div class="ex"><span class="who">Why best-vs-best is tempting</span><br>
+      It sounds like you are isolating the optimization from environmental noise. What it actually
+      does is report the most favourable pair of numbers you observed, which systematically
+      overstates the improvement and cannot be reproduced by anyone who runs the build five times
+      and averages honestly.</div>
+    </div>
+  </div>
+  <h2><span class="num">10</span>What the final exam expects you to be able to do</h2>
+
+  <p>The final is 90 minutes and 110 points, and it is not a mobile exam. It is a course exam
+  written on the assumption that Topic 8 is where all eight topics have to work together, because
+  that is what a mobile port demands: you find a defect, describe it so someone else can reproduce
+  it, decide whether it is worth automating, measure it, optimize it, check what it did to memory,
+  ask whether the fix harmed accessibility, and report the result honestly. The table below is the
+  spine of your review. For each row, be able to <em>do</em> the thing, not recognise it.</p>
+
+  <div class="tblwrap"><table class="finaltbl">
+    <thead><tr><th>Topic</th><th>What you will be asked to do</th><th>The mistake that loses the points</th></tr></thead>
+    <tbody>
+      <tr><td>1 &middot; Understanding bugs</td>
+        <td>Given a described defect, assign a severity with a consequence-based justification, a
+        separate priority, and name the root-cause category and one sibling defect to go hunt.</td>
+        <td>Collapsing severity and priority into one number, or justifying severity with "it's
+        really bad" instead of what happens to the player.</td></tr>
+      <tr><td>2 &middot; Test design &amp; reporting</td>
+        <td>Write a PAL-format title and second-person imperative repro steps with expected and
+        actual results; produce boundary values and a pairwise-reduced table for a stated
+        parameter set.</td>
+        <td>Repro steps written as narrative past tense, and titles that are sentences rather than
+        search keys.</td></tr>
+      <tr><td>3 &middot; Automated testing</td>
+        <td>Choose the right test level for a scenario, name which of the six defect triggers a
+        given test exercises, and identify the seam that makes untestable code testable.</td>
+        <td>Proposing a PlayMode test for something that is pure logic, or forgetting that a test
+        needing a fixed timestep and a seeded RNG is a design decision, not an afterthought.</td></tr>
+      <tr><td>4 &middot; Profiling</td>
+        <td>Read a frame-time trace and name the bound &mdash; CPU, GPU, bandwidth, or I/O &mdash;
+        then say which tool you would open next and what you expect to see in it.</td>
+        <td>Quoting average FPS. Every trace question on this exam is answerable only in
+        percentiles and frame time.</td></tr>
+      <tr><td>5 &middot; Optimization</td>
+        <td>Apply Amdahl's law to rank two candidate optimizations by whole-frame return, and
+        defend a fidelity trade to a designer in one sentence.</td>
+        <td>Optimising the subsystem that is easiest to change rather than the one with the largest
+        share of frame time.</td></tr>
+      <tr><td>6 &middot; Memory</td>
+        <td>Distinguish a retention bug, a native leak, and fragmentation from a described symptom,
+        and name the tool and the exact procedure that would confirm it.</td>
+        <td>Saying "memory leak" for a managed retention bug without naming the reference that is
+        keeping the object alive.</td></tr>
+      <tr><td>7 &middot; Ethics &amp; compliance</td>
+        <td>Evaluate a scenario for accessibility, privacy, and integrity failures; compute or
+        judge a contrast ratio; decide whether something is a compliance blocker and say why.</td>
+        <td>Treating accessibility as a preference rather than a testable requirement, or shading a
+        severity to protect a schedule.</td></tr>
+      <tr><td>8 &middot; Mobile</td>
+        <td>Given a device, a target, and a symptom, produce a diagnostic order and a measurement
+        protocol; explain why a frame-rate cap can improve sustained performance.</td>
+        <td>Measuring for ninety seconds, reporting an average, and skipping the thermal state.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>Three cross-topic questions are worth rehearsing out loud with a classmate, because they are
+  the kind the exam is built from. <em>You have four hours and one device &mdash; what do you
+  measure first and why?</em> <em>Your optimization improved the median by 4% and the 1% low by 35%
+  &mdash; what did you probably fix, and how would you prove it?</em> <em>The fix that gets you to
+  30 fps on Tier C also removes the outline shader that colour-blind players rely on to
+  distinguish enemies &mdash; what do you do?</em> None of those has a single correct answer. All
+  of them have wrong answers, and the wrong answers are the ones that skip a step you were taught.</p>
+
+  <details class="more"><summary>A 45-minute review protocol that actually works</summary>
+    <p>Do not re-read eight lessons. For each topic, open the widget and set it to the state that
+    demonstrates the topic's central claim, then say the claim out loud in one sentence without
+    looking. Severity is a property of the bug and priority is a property of the schedule. Average
+    frame rate can stay flat while 1% lows collapse. A pairwise set covers every pair and no
+    triples. Three hundred megabytes free can still fail a forty-megabyte allocation. A 30 fps cap
+    can beat an unlocked 60 because energy per frame falls with clock. If a sentence does not come
+    out cleanly, that is your revision list &mdash; and it will be shorter than you expect.</p>
+  </details>
+
+  <div class="deliver">
+    <h3>Bring to the assignment</h3>
+    <p><b>Mobile Game Optimization</b> &middot; due Dec 20 &middot; detailed test plan, on-device
+    profiling of frame rate, load time, memory and battery, at least two implemented and measured
+    optimizations, 3&ndash;5 minute video. Plus the <b>Final Exam</b>, 90 minutes, 110 points.</p>
+    <p>Arrive at session 29 with these already in hand; the sprint session is for optimizing, not
+    for discovering that you have no baseline.</p>
+    <ul>
+      <li><b>A test plan with all eight sections from section 5</b>, and specifically a device
+      matrix naming real devices you can actually get hold of, plus exit criteria written as
+      numbers with comparison operators, a window, and a statistic. If any criterion contains the
+      word "smooth", rewrite it.</li>
+      <li><b>A scripted test route</b> you can re-run identically &mdash; recorded input playback,
+      or a documented waypoint sequence with a stopwatch. This is the single highest-leverage thing
+      you can prepare, because every number in your report depends on it.</li>
+      <li><b>A baseline capture from a real device</b>, fifteen minutes long, five runs, with the
+      thermal state recorded before each run. Report median and 1% low frame time over minutes
+      5&ndash;15, peak resident memory, cold-start load time after a force-stop, and battery
+      percentage drop per 30 minutes at fixed brightness.</li>
+      <li><b>A ranked optimization list with predictions.</b> Before you change anything, write down
+      what you expect each candidate to buy back and in which budget &mdash; "merging the post
+      stack should return about 5 ms of GPU time because it removes two full-screen read/write
+      pairs". Being wrong on the record is worth more in the video than being vaguely right.</li>
+      <li><b>Two implemented optimizations from different layers</b> &mdash; one render/asset-side,
+      one code/memory-side is the combination that shows range, and it is the "hybrid" argument in
+      Ul Abidin et al. Measure each one separately as well as together, or you cannot attribute the
+      result.</li>
+      <li><b>The before/after table</b> in the format of section 9, in frame-time milliseconds, with
+      every run listed and nothing discarded.</li>
+      <li><b>A quality trade named explicitly.</b> What got visually worse, who would notice, and
+      why the trade is acceptable &mdash; including whether it touched anything an accessibility
+      requirement from Topic 7 depends on.</li>
+      <li><b>One interruption test result</b> from the section 8 table, showing the procedure and
+      the outcome. It takes four minutes and it is the part of the plan most students skip.</li>
+      <li><b>The measurement protocol, stated on camera.</b> Device, OS, build configuration,
+      thermal state, run count, statistic, window. Thirty seconds of your video, and it is the
+      thirty seconds that makes the other four minutes credible.</li>
+    </ul>
+    <p class="small subtle">Session 30 is final presentations and exam review. Bring the report in a
+    form you can put on screen, and be ready to be asked "how do I reproduce that number?" &mdash;
+    which is the only question that matters and the only one worth rehearsing.</p>
+  </div>
+
+  <footer class="lf"><a href="../index.html">&larr; Course hub</a><span>Advanced Game Testing and Debugging</span></footer>
+</div>
+<script id="lesson-kit-js">
+/* ---------- reading progress ---------- */
+(function(){
+  var b=document.createElement('div'); b.className='progressbar';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(b);});
+  addEventListener('scroll',function(){
+    var h=document.documentElement, m=h.scrollHeight-h.clientHeight;
+    b.style.width=(m>0?(h.scrollTop/m*100):0)+'%';
+  },{passive:true});
+})();
+
+/* ---------- engine tabs ---------- */
+function GDTtabs(root){
+  root.querySelectorAll('.tabhd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      root.querySelectorAll('.tabhd button').forEach(function(b){b.classList.remove('on')});
+      root.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('on')});
+      btn.classList.add('on');
+      var pane=root.querySelector('.tabpane[data-pane="'+btn.dataset.tab+'"]');
+      if(pane) pane.classList.add('on');
+    });
+  });
+}
+
+/* ---------- annotated code ---------- */
+function GDTannot(root){
+  root.querySelectorAll('.arow.hasnote').forEach(function(row){
+    row.addEventListener('click',function(){
+      var note=row.nextElementSibling;
+      var open=row.classList.contains('open');
+      row.classList.toggle('open',!open);
+      if(note&&note.classList.contains('note')) note.classList.toggle('open',!open);
+    });
+  });
+}
+
+/* ---------- knowledge check ---------- */
+function GDTcheck(root){
+  var done=false;
+  root.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      if(done) return; done=true;
+      var correct = opt.dataset.correct==='1';
+      root.querySelectorAll('.opt').forEach(function(o){
+        if(o.dataset.correct==='1'){o.classList.add('right');
+          o.insertAdjacentHTML('beforeend','<span class="tag">CORRECT</span>');}
+        else if(o===opt){o.classList.add('wrong');
+          o.insertAdjacentHTML('beforeend','<span class="tag">NOT QUITE</span>');}
+        o.style.cursor='default';
+      });
+      var exp=root.querySelector('.exp'); if(exp) exp.classList.add('on');
+    });
+  });
+}
+
+/* ---------- decision tree ----------
+   Usage: new GDTTree(document.getElementById('t1'), NODES, 'start')
+   NODES = { start:{q:'', hint:'', choices:[{t:'',sub:'',go:'nodeId'}]},
+             leafId:{leaf:true, title:'', body:'<p>…</p>'} }              */
+function GDTTree(root,nodes,startId){
+  var pathEl=root.querySelector('.path'), body=root.querySelector('.body');
+  var trail=[];
+  function render(id){
+    var n=nodes[id]; if(!n) return;
+    pathEl.innerHTML = trail.length? trail.map(function(t){return '<span>'+t+'</span>'}).join(' &rsaquo; ') : '&nbsp;';
+    if(n.leaf){
+      body.innerHTML='<div class="leaf"><h5>'+n.title+'</h5>'+n.body+'</div>'+
+        '<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>';
+    }else{
+      body.innerHTML='<p class="qq">'+n.q+'</p>'+(n.hint?'<p class="qh">'+n.hint+'</p>':'')+
+        '<div class="choices">'+n.choices.map(function(c,i){
+          return '<button data-go="'+c.go+'" data-lbl="'+(c.lbl||c.t).replace(/"/g,'&quot;')+'">'+c.t+
+                 (c.sub?'<span class="sub">'+c.sub+'</span>':'')+'</button>';}).join('')+'</div>'+
+        (trail.length?'<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>':'');
+    }
+    body.querySelectorAll('[data-go]').forEach(function(b){
+      b.addEventListener('click',function(){trail.push(b.dataset.lbl); render(b.dataset.go);});
+    });
+    var rs=body.querySelector('[data-restart]');
+    if(rs) rs.addEventListener('click',function(){trail=[]; render(startId);});
+  }
+  render(startId);
+}
+
+/* ---------- auto-wire everything ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.tabs').forEach(GDTtabs);
+  document.querySelectorAll('.annot').forEach(GDTannot);
+  document.querySelectorAll('.check').forEach(GDTcheck);
+});
+
+/* ---------- small helpers for simulators ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(n,d){return Number(n).toFixed(d===undefined?1:d)}
+function lerp(a,b,t){return a+(b-a)*t}
+/* deterministic pseudo-random so demos are reproducible for a class */
+function rng(seed){var s=seed||1;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296;}}
+</script>
+<script>
+/* ============================================================
+   Topic 8 lesson widgets. All arithmetic is real; the models
+   are simplified and each simplification is stated in the UI.
+   ============================================================ */
+
+/* ---------- shared canvas helper ---------- */
+function fitCanvas(cv, cssH){
+  var dpr = window.devicePixelRatio || 1;
+  var w = cv.clientWidth || cv.parentNode.clientWidth || 900;
+  cv.style.height = cssH + 'px';
+  cv.width = Math.max(320, Math.round(w * dpr));
+  cv.height = Math.round(cssH * dpr);
+  var ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx: ctx, w: cv.width / dpr, h: cssH };
+}
+function segWire(rootId, fn){
+  var root = document.getElementById(rootId);
+  if(!root) return;
+  root.addEventListener('click', function(ev){
+    var b = ev.target.closest('button'); if(!b) return;
+    $$('button', root).forEach(function(o){ o.classList.remove('on'); });
+    b.classList.add('on');
+    fn(b.dataset.v);
+  });
+}
+function segSet(rootId, v){
+  var root = document.getElementById(rootId); if(!root) return;
+  $$('button', root).forEach(function(o){ o.classList.toggle('on', o.dataset.v === String(v)); });
+}
+
+/* ============================================================
+   1. MOBILE BANDWIDTH / TILE BUDGET CALCULATOR
+   ============================================================ */
+(function(){
+  var host = document.getElementById('w-bw'); if(!host) return;
+
+  var RES = [[1280,720],[1920,1080],[2340,1080],[2778,1284],[2560,1440]];
+  var RESN = ['720p','1080p','2340x1080','2778x1284','1440p'];
+  var TIERS = [
+    {n:'A (flagship)', c:30},
+    {n:'B (mid-range)', c:16},
+    {n:'C (budget)', c:8}
+  ];
+  var TEX_BYTES_PER_FRAG = 6;      /* DRAM bytes per shaded fragment after cache */
+  var GEOM_MB = 6.0;               /* vertex + index + binning traffic, both tiler phases */
+  var TILE_BUDGET = 16;            /* bytes of on-chip storage per pixel */
+  var PJ_PER_BYTE_W = 0.12;        /* watts per GB/s of DRAM traffic */
+
+  var S = { res:2, scale:100, fmt:4, msaa:4, od:25, post:3, depth:0, fps:60, tier:1 };
+
+  function compute(){
+    var r = RES[S.res], k = S.scale/100;
+    var W = Math.round(r[0]*k), H = Math.round(r[1]*k);
+    var px = W*H;
+    var cb = S.fmt;
+    var od = S.od/10;
+
+    var tileBpp = (cb + 4) * S.msaa;
+    var splits = tileBpp > TILE_BUDGET ? Math.ceil(Math.log(tileBpp/TILE_BUDGET)/Math.LN2) : 0;
+
+    var terms = [
+      {k:'Texture reads (overdraw)', v: px*od*TEX_BYTES_PER_FRAG,
+       fix:'Cut overdraw: sort opaque front-to-back, shrink transparent quads, and reduce texture resolution on the layers that overdraw most.'},
+      {k:'Full-screen post passes', v: S.post*2*px*cb,
+       fix:'Merge the post chain into one pass and run bloom at quarter resolution. Each pass you remove is a full read plus a full write of the screen.'},
+      {k:'Color resolve', v: px*cb,
+       fix:'Lower render scale or drop the HDR color format; this term scales directly with both.'},
+      {k:'UI / overlay pass', v: px*cb,
+       fix:'Merge the UI into the main render pass so it is not a separate resolve, and stop rebuilding canvases every frame.'},
+      {k:'Depth texture store+read', v: S.depth ? px*4*2 : 0,
+       fix:'Turn off the depth texture: disable soft particles, screen-space effects and anything that samples scene depth.'},
+      {k:'Geometry & binning', v: GEOM_MB*1e6 + GEOM_MB*1e6*0.35*splits,
+       fix:'Reduce vertex count and vertex attribute size, and get the per-pixel tile storage back under 16 bytes so the driver stops splitting tiles.'}
+    ];
+    var total = terms.reduce(function(a,t){return a+t.v;},0);
+    var gbs = total*S.fps/1e9;
+    var ceil = TIERS[S.tier].c;
+    return {W:W,H:H,px:px,terms:terms,total:total,gbs:gbs,ceil:ceil,
+            pct:gbs/ceil*100, tileBpp:tileBpp, splits:splits,
+            watts: gbs*PJ_PER_BYTE_W};
+  }
+
+  function render(){
+    var r = compute();
+    $('#bw-reso').textContent = (r.px/1e6).toFixed(2)+' MP';
+    $('#bw-scaleo').textContent = S.scale+'%';
+    $('#bw-fmto').textContent = S.fmt+' B/px';
+    $('#bw-msaao').textContent = S.msaa===1?'off':S.msaa+'x';
+    $('#bw-odo').textContent = (S.od/10).toFixed(1)+'x';
+    $('#bw-posto').textContent = S.post;
+    $('#bw-deptho').textContent = S.depth?'yes':'no';
+    $('#bw-fpso').textContent = S.fps;
+    $('#bw-tiero').textContent = r.ceil+' GB/s';
+
+    $('#bw-frame').textContent = (r.total/1e6).toFixed(1)+' MB';
+    $('#bw-total').textContent = r.gbs.toFixed(2)+' GB/s';
+    var pctEl = $('#bw-pct');
+    pctEl.textContent = r.pct.toFixed(0)+'%';
+    pctEl.className = 'v ' + (r.pct>100?'crit':(r.pct>70?'warn':'ok'));
+    var tEl = $('#bw-tile');
+    tEl.textContent = r.tileBpp+' B/px';
+    tEl.className = 'v ' + (r.splits>1?'crit':(r.splits===1?'warn':'ok'));
+    $('#bw-pw').textContent = r.watts.toFixed(2)+' W';
+
+    var sorted = r.terms.slice().sort(function(a,b){return b.v-a.v;});
+    var max = sorted[0].v || 1;
+    var cls = ['','f2','f3','f4','f5',''];
+    $('#bw-bars').innerHTML = sorted.map(function(t,i){
+      var mb = t.v/1e6, share = t.v/r.total*100;
+      return '<div class="b"><span>'+t.k+'</span>'+
+        '<span class="track"><span class="fill '+cls[i]+'" style="width:'+(t.v/max*100).toFixed(1)+'%"></span></span>'+
+        '<span class="val">'+mb.toFixed(1)+' MB &middot; '+share.toFixed(0)+'%</span></div>';
+    }).join('');
+
+    var top = sorted[0];
+    var v = $('#bw-verdict');
+    var msg = '';
+    if(r.splits===1){
+      msg += '<b>Tile halved.</b> '+r.tileBpp+' bytes per pixel against the 16-byte full-tile budget, so the hardware drops from 16&times;16 to 16&times;8 tiles and re-bins geometry against twice as many of them. That is the ordinary price of 4&times; MSAA on a tiler and it is usually worth paying &mdash; but it is not free, so verify it against a capture. ';
+    } else if(r.splits>1){
+      msg += '<b>Tile storage blown.</b> '+r.tileBpp+' bytes per pixel against a 16-byte full-tile budget means the tile shrinks twice over, and the binning and vertex work multiplies with it. This is the HDR-plus-4&times;-MSAA combination; pick one of them, not both. ';
+    }
+    msg += '<b>Biggest term: '+top.k.toLowerCase()+'</b> at '+(top.v/1e6).toFixed(1)+
+      ' MB/frame ('+(top.v/r.total*100).toFixed(0)+'% of traffic). '+top.fix+' ';
+    if(r.pct>100){
+      v.className='verdict crit';
+      msg += 'You are asking for '+r.gbs.toFixed(1)+' GB/s from a tier with '+r.ceil+
+        ' &mdash; this frame cannot be delivered at '+S.fps+' fps on this device, and the '+
+        r.watts.toFixed(2)+' W of DRAM traffic alone will push you into the thermal clamp.';
+    } else if(r.pct>70){
+      v.className='verdict warn';
+      msg += 'At '+r.pct.toFixed(0)+'% of the tier ceiling you have no headroom for a busy scene, and DRAM traffic alone is drawing '+r.watts.toFixed(2)+' W.';
+    } else {
+      v.className='verdict ok';
+      msg += 'At '+r.pct.toFixed(0)+'% of the tier ceiling this frame fits, with room for a heavier scene. Check the tile storage number before you celebrate.';
+    }
+    v.innerHTML = msg;
+  }
+
+  segWire('bw-res', function(v){ S.res=+v; render(); });
+  segWire('bw-fmt', function(v){ S.fmt=+v; render(); });
+  segWire('bw-msaa', function(v){ S.msaa=+v; render(); });
+  segWire('bw-depth', function(v){ S.depth=+v; render(); });
+  segWire('bw-fps', function(v){ S.fps=+v; render(); });
+  segWire('bw-tier', function(v){ S.tier=+v; render(); });
+  $('#bw-scale').addEventListener('input', function(){ S.scale=+this.value; render(); });
+  $('#bw-od').addEventListener('input', function(){ S.od=+this.value; render(); });
+  $('#bw-post').addEventListener('input', function(){ S.post=+this.value; render(); });
+
+  $$('[data-bwpreset]', host).forEach(function(b){
+    b.addEventListener('click', function(){
+      if(b.dataset.bwpreset==='naive'){
+        S = { res:4, scale:100, fmt:8, msaa:4, od:38, post:5, depth:1, fps:60, tier:1 };
+      } else {
+        S = { res:2, scale:85, fmt:4, msaa:4, od:20, post:1, depth:0, fps:30, tier:1 };
+      }
+      segSet('bw-res',S.res); segSet('bw-fmt',S.fmt); segSet('bw-msaa',S.msaa);
+      segSet('bw-depth',S.depth); segSet('bw-fps',S.fps); segSet('bw-tier',S.tier);
+      $('#bw-scale').value=S.scale; $('#bw-od').value=S.od; $('#bw-post').value=S.post;
+      render();
+    });
+  });
+  render();
+})();
+
+/* ============================================================
+   2. THERMAL THROTTLE SIMULATOR
+   ============================================================ */
+(function(){
+  var host = document.getElementById('w-thermal'); if(!host) return;
+
+  var COOL = { thin:{k:0.25, tau:200, n:'thin phone'},
+               flag:{k:0.36, tau:300, n:'vapour chamber'},
+               tab :{k:0.50, tau:430, n:'tablet'} };
+  var DT = 0.5, N = 1800;              /* 0.5 s steps, 15 minutes */
+  var T_JUNC = 72, T_SKIN = 45, T_REL = 41.5, S_CLAMP = 0.45, S_FLOOR = 0.35;
+  var SLOT = 1000/60;
+
+  var S = { load:36, amb:30, cool:'thin', mode:60 };
+  var anim = null, shown = N;
+
+  function run(mode){
+    var L = S.load/100;
+    var ftFull = 8.5 + 20*L;          /* ms at full clocks */
+    var Pcoef  = 3.0 + 9.0*L;         /* W of dynamic power at full clock, 100% duty */
+    var Pidle  = 0.55;
+    var c = COOL[S.cool], kS = c.k, cS = c.k*c.tau, kJ = 0.09, cJ = 26;
+    var Tj = S.amb, Ts = S.amb, s = 1, clamped = false;
+    var R = rng(7), out = [];
+    for(var i=0;i<=N;i++){
+      var ftG = (ftFull/s) * (1 + (R()-0.5)*0.03);
+      var pres = Math.ceil(ftG/SLOT)*SLOT;
+      if(mode===30) pres = Math.max(2*SLOT, pres);
+      var duty = Math.min(1, ftG/pres);
+      var P = Pidle + Pcoef*s*s*duty;
+      out.push({t:i*DT, ft:pres, fps:1000/pres, Ts:Ts, s:s, cl:clamped});
+      Tj += (P - kJ*(Tj-S.amb))*DT/cJ;
+      Ts += (P - kS*(Ts-S.amb))*DT/cS;
+      if(!clamped && Ts >= T_SKIN) clamped = true;
+      if(clamped && Ts <= T_REL) clamped = false;
+      var st = Math.max(S_FLOOR, Math.min(1, 1 - 0.05*(Tj - T_JUNC)));
+      if(clamped) st = Math.min(st, S_CLAMP);
+      s += (st - s)*0.25;
+    }
+    return out;
+  }
+  function stats(o){
+    var w = o.filter(function(d){ return d.t>=300; });
+    var fts = w.map(function(d){ return d.ft; });
+    var mean = fts.reduce(function(a,b){return a+b;},0)/fts.length;
+    var sd = Math.sqrt(fts.reduce(function(a,b){return a+(b-mean)*(b-mean);},0)/fts.length);
+    var srt = fts.slice().sort(function(a,b){return a-b;});
+    var win = o.filter(function(d){ return d.t>=570 && d.t<=630; });
+    var wft = win.reduce(function(a,d){return a+d.ft;},0)/win.length;
+    return { f0:o[0].fps, f600:1000/wft,
+             med:1000/srt[Math.floor(srt.length/2)],
+             sd:sd, low1:1000/srt[Math.floor(srt.length*0.99)] };
+  }
+
+  var cv = document.getElementById('th-canvas');
+
+  function draw(){
+    var A = run(S.mode), B = run(S.mode===60?30:60);
+    var g = fitCanvas(cv, 330), ctx = g.ctx, W = g.w, H = g.h;
+    var padL = 44, padR = 46, padT = 16, padB = 26;
+    var pw = W-padL-padR, ph = H-padT-padB;
+    var fpsMax = 70, tLo = 20, tHi = 50;
+    function X(t){ return padL + (t/900)*pw; }
+    function Yf(f){ return padT + ph - (f/fpsMax)*ph; }
+    function Yt(T){ return padT + ph - ((T-tLo)/(tHi-tLo))*ph; }
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#0a0d12'; ctx.fillRect(0,0,W,H);
+
+    /* clamp shading */
+    ctx.fillStyle='rgba(210,153,34,.10)';
+    var runStart = -1;
+    for(var i=0;i<=shown;i++){
+      if(A[i].cl && runStart<0) runStart = i;
+      if((!A[i].cl || i===shown) && runStart>=0){
+        ctx.fillRect(X(A[runStart].t), padT, Math.max(1, X(A[i].t)-X(A[runStart].t)), ph);
+        runStart = -1;
+      }
+    }
+    /* grid */
+    ctx.strokeStyle='#222b36'; ctx.lineWidth=1; ctx.font='10px ui-monospace,monospace';
+    ctx.fillStyle='#6e7f92'; ctx.textAlign='right';
+    [0,15,30,45,60].forEach(function(f){
+      ctx.beginPath(); ctx.moveTo(padL, Yf(f)); ctx.lineTo(W-padR, Yf(f)); ctx.stroke();
+      ctx.fillText(f, padL-6, Yf(f)+3);
+    });
+    ctx.textAlign='left'; ctx.fillStyle='#a07a37';
+    [30,40,45].forEach(function(T){ ctx.fillText(T+'°', W-padR+5, Yt(T)+3); });
+    ctx.textAlign='center'; ctx.fillStyle='#6e7f92';
+    [0,3,6,9,12,15].forEach(function(m){
+      ctx.beginPath(); ctx.moveTo(X(m*60), padT); ctx.lineTo(X(m*60), padT+ph);
+      ctx.strokeStyle='#1b222c'; ctx.stroke();
+      ctx.fillText(m+' min', X(m*60), H-8);
+    });
+    /* 30 fps reference */
+    ctx.strokeStyle='#2f4a63'; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(padL, Yf(30)); ctx.lineTo(W-padR, Yf(30)); ctx.stroke();
+    ctx.setLineDash([]);
+    /* chassis limit */
+    ctx.strokeStyle='rgba(210,153,34,.55)'; ctx.setLineDash([2,4]);
+    ctx.beginPath(); ctx.moveTo(padL, Yt(45)); ctx.lineTo(W-padR, Yt(45)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    function line(arr, key, col, wd, yf){
+      ctx.strokeStyle=col; ctx.lineWidth=wd; ctx.beginPath();
+      for(var i=0;i<=shown;i++){
+        var x=X(arr[i].t), y=yf(arr[i][key]);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+    line(B,'fps','#54677d',1.5,Yf);
+    line(A,'Ts','#f85149',1.4,Yt);
+    line(A,'fps','#4da3ff',2,Yf);
+
+    var st = stats(A), so = stats(B);
+    function setv(id, txt, cls){ var e=$(id); e.textContent=txt; e.className='v '+(cls||''); }
+    setv('#th-f0', st.f0.toFixed(0)+' fps', st.f0>=55?'ok':'');
+    setv('#th-f10', st.f600.toFixed(1)+' fps', st.f600>=29?'ok':(st.f600>=24?'warn':'crit'));
+    setv('#th-fmed', st.med.toFixed(1)+' fps', st.med>=29?'ok':'warn');
+    setv('#th-sd', st.sd.toFixed(1)+' ms', st.sd<2?'ok':(st.sd<8?'warn':'crit'));
+    setv('#th-low', st.low1.toFixed(1)+' fps', st.low1>=29?'ok':'crit');
+    var ceil = COOL[S.cool].k*(T_SKIN - S.amb);
+    setv('#th-ceil', ceil.toFixed(1)+' W', ceil>4?'ok':'warn');
+
+    var v = $('#th-verdict'), other = S.mode===60?'a 30 fps cap':'an unlocked 60 target';
+    var msg = '<b>'+(S.mode===60?'Unlocked 60':'Capped 30')+' on a '+COOL[S.cool].n+' at '+
+      S.amb+'°C ambient:</b> opens at '+st.f0.toFixed(0)+' fps, averages '+st.f600.toFixed(1)+
+      ' fps across the minute either side of the ten-minute mark, median '+st.med.toFixed(1)+' fps with a frame-time spread of '+
+      st.sd.toFixed(1)+' ms. ';
+    if(st.med > so.med + 0.5 && st.sd <= so.sd + 0.5){
+      v.className='verdict ok';
+      msg += 'This is the better target here &mdash; '+other+' gives a median of '+so.med.toFixed(1)+
+        ' fps with a spread of '+so.sd.toFixed(1)+' ms. Ship this one.';
+    } else if(so.med > st.med + 0.5 || so.sd < st.sd - 2){
+      v.className='verdict warn';
+      msg += 'Switch targets: '+other+' delivers a median of '+so.med.toFixed(1)+' fps with a spread of '+
+        so.sd.toFixed(1)+' ms on the same content and the same device. Sustained frame time, not the opening number, is what the player experiences.';
+    } else {
+      v.className='verdict';
+      msg += 'Both targets land in about the same place ('+so.med.toFixed(1)+' fps, '+so.sd.toFixed(1)+
+        ' ms for '+other+'), which means the constraint is the content, not the cap. Cut work, or drop a tier.';
+    }
+    if(ceil < 3.2) msg += ' Note the sustained ceiling: '+ceil.toFixed(1)+
+      ' W is a hot-environment budget, and no frame-rate policy can buy that back.';
+    v.innerHTML = msg;
+  }
+
+  function stopAnim(){ if(anim){ cancelAnimationFrame(anim); anim=null; } }
+  document.getElementById('th-play').addEventListener('click', function(){
+    stopAnim(); shown = 0;
+    var t0 = performance.now();
+    (function step(now){
+      var p = Math.min(1, (now-t0)/12000);
+      shown = Math.round(p*N);
+      draw();
+      if(p<1) anim = requestAnimationFrame(step); else anim=null;
+    })(t0);
+  });
+  document.getElementById('th-stop').addEventListener('click', stopAnim);
+  document.getElementById('th-reset').addEventListener('click', function(){
+    stopAnim(); shown = N; draw();
+  });
+
+  $('#th-load').addEventListener('input', function(){
+    S.load=+this.value; $('#th-loado').textContent=S.load+'%'; stopAnim(); shown=N; draw();
+  });
+  $('#th-amb').addEventListener('input', function(){
+    S.amb=+this.value; $('#th-ambo').textContent=S.amb+' °C'; stopAnim(); shown=N; draw();
+  });
+  segWire('th-cool', function(v){ S.cool=v; $('#th-coolo').textContent=COOL[v].n; stopAnim(); shown=N; draw(); });
+  segWire('th-mode', function(v){ S.mode=+v; $('#th-modeo').textContent=v; stopAnim(); shown=N; draw(); });
+
+  var rt;
+  addEventListener('resize', function(){ clearTimeout(rt); rt=setTimeout(draw,120); });
+  draw();
+})();
+
+/* ============================================================
+   3. DEVICE TIER MATRIX PLANNER (real pairwise generation)
+   ============================================================ */
+(function(){
+  var host = document.getElementById('w-matrix'); if(!host) return;
+
+  var POOL = [
+    {n:'Device tier', v:['Tier A','Tier B','Tier C','Tier D','Tier E'], id:'mx-tier'},
+    {n:'Quality preset', v:['Low','Medium','High','Ultra'], id:'mx-qual'},
+    {n:'OS version', v:['OS n-2','OS n-1','OS n','OS beta'], id:'mx-os'},
+    {n:'Aspect / cutout', v:['16:9 flat','19.5:9 notch','20:9 cutout','foldable'], id:'mx-asp'},
+    {n:'Network', v:['Wi-Fi','LTE','offline'], id:'mx-net'}
+  ];
+
+  function pairwise(factors, seed){
+    var R = rng(seed||11);
+    var pairs = {}, keys = [];
+    for(var i=0;i<factors.length;i++) for(var j=i+1;j<factors.length;j++)
+      for(var a=0;a<factors[i].length;a++) for(var b=0;b<factors[j].length;b++){
+        var k = i+':'+a+'|'+j+':'+b; pairs[k]=false; keys.push(k);
+      }
+    function newlyCovered(row){
+      var n=0;
+      for(var i=0;i<row.length;i++) for(var j=i+1;j<row.length;j++)
+        if(row[i]>=0 && row[j]>=0 && !pairs[i+':'+row[i]+'|'+j+':'+row[j]]) n++;
+      return n;
+    }
+    function markRow(row){
+      for(var i=0;i<row.length;i++) for(var j=i+1;j<row.length;j++)
+        pairs[i+':'+row[i]+'|'+j+':'+row[j]] = true;
+    }
+    var rows = [], guard = 0, open;
+    function openPairs(){ return keys.filter(function(k){ return !pairs[k]; }); }
+    while((open = openPairs()).length && guard++ < 500){
+      var best=null, bestN=-1;
+      for(var c=0;c<40;c++){
+        /* seed each candidate row with an uncovered pair so every row makes progress */
+        var seedKey = open[Math.floor(R()*open.length)].split('|');
+        var p1 = seedKey[0].split(':'), p2 = seedKey[1].split(':');
+        var row = factors.map(function(){ return -1; });
+        row[+p1[0]] = +p1[1]; row[+p2[0]] = +p2[1];
+        var order = [];
+        factors.forEach(function(_,i){ if(row[i]<0) order.push(i); });
+        for(var z=order.length-1;z>0;z--){ var q=Math.floor(R()*(z+1)); var t=order[z]; order[z]=order[q]; order[q]=t; }
+        order.forEach(function(fi){
+          var bv=0, bn=-1;
+          for(var vi=0; vi<factors[fi].length; vi++){
+            row[fi]=vi; var n=newlyCovered(row);
+            if(n>bn || (n===bn && R()<0.4)){ bn=n; bv=vi; }
+          }
+          row[fi]=bv;
+        });
+        var nc = newlyCovered(row);
+        if(nc>bestN){ bestN=nc; best=row.slice(); }
+      }
+      if(!best) break;
+      markRow(best); rows.push(best);
+    }
+    var covered = keys.filter(function(k){return pairs[k];}).length;
+    return { rows:rows, cov: keys.length? covered/keys.length*100 : 100, pairs:keys.length };
+  }
+
+  function render(){
+    var sizes = POOL.map(function(f){ return +document.getElementById(f.id).value; });
+    POOL.forEach(function(f,i){ document.getElementById(f.id+'o').textContent = sizes[i]; });
+    var mins = +$('#mx-min').value; $('#mx-mino').textContent = mins;
+
+    var full = sizes.reduce(function(a,b){return a*b;},1);
+    var active = [], names = [];
+    POOL.forEach(function(f,i){ if(sizes[i]>1){ active.push(f.v.slice(0,sizes[i])); names.push(f.n); } });
+    var res;
+    if(active.length>1){ res = pairwise(active, 11); }
+    else if(active.length===1){ res = {rows: active[0].map(function(_,i){return [i];}), cov:100, pairs:0}; }
+    else { res = {rows:[], cov:100, pairs:0}; }
+
+    var pw = Math.max(1, res.rows.length);
+    $('#mx-full').textContent = full;
+    $('#mx-pw').textContent = pw;
+    $('#mx-red').textContent = (100 - pw/full*100).toFixed(0)+'%';
+    $('#mx-th').textContent = (full*mins/60).toFixed(1)+' h';
+    $('#mx-tp').textContent = (pw*mins/60).toFixed(1)+' h';
+    var cEl = $('#mx-cov'); cEl.textContent = res.cov.toFixed(0)+'%';
+    cEl.className = 'v ' + (res.cov>99.5?'ok':'warn');
+
+    var head = '<thead><tr><th>#</th>'+names.map(function(n){return '<th>'+n+'</th>';}).join('')+'</tr></thead>';
+    var body = res.rows.slice(0,26).map(function(r,i){
+      return '<tr><td>'+(i+1)+'</td>'+r.map(function(vi,fi){
+        return '<td>'+active[fi][vi]+'</td>';
+      }).join('')+'</tr>';
+    }).join('');
+    if(res.rows.length>26) body += '<tr><td>&hellip;</td><td colspan="'+names.length+'">'+(res.rows.length-26)+' further rows</td></tr>';
+    document.getElementById('mx-table').innerHTML = head+'<tbody>'+body+'</tbody>';
+
+    var v = $('#mx-verdict');
+    var saved = (full-pw)*mins/60;
+    if(full<=6){
+      v.className='verdict ok';
+      v.innerHTML = '<b>Small enough to run exhaustively.</b> '+full+' configurations at '+mins+
+        ' minutes each is '+(full*mins/60).toFixed(1)+' hours. Do not reach for a reduction technique you do not need &mdash; run them all and spend the saved thinking on the route.';
+    } else {
+      v.className = saved>8 ? 'verdict warn' : 'verdict';
+      v.innerHTML = '<b>'+full+' exhaustive configurations → '+pw+' pairwise rows</b>, covering '+
+        res.cov.toFixed(0)+'% of all '+res.pairs+' value pairs. That is '+(full*mins/60).toFixed(1)+
+        ' hours of device time reduced to '+(pw*mins/60).toFixed(1)+' hours, saving '+saved.toFixed(1)+
+        ' hours. Add your minimum-spec device on the lowest preset as a pinned row regardless &mdash; the generator does not know which combination your engine has historically broken on.';
+    }
+  }
+  ['mx-tier','mx-qual','mx-os','mx-asp','mx-net','mx-min'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', render);
+  });
+  render();
+})();
+
+/* ============================================================
+   4. DECISION TREE
+   ============================================================ */
+(function(){
+  var el = document.getElementById('treeMobile'); if(!el) return;
+  var N = {
+    start:{ q:'The game runs at 60 in the editor and 22 on the phone. Where do you look first?',
+      hint:'Before you look at anything, characterise the shape of the problem in time.',
+      choices:[
+        {t:'It is 22 fps from the first second', sub:'Cold device, first run of the level', go:'bound', lbl:'22 from t=0'},
+        {t:'It opens near 60 and decays over five to ten minutes', sub:'Device is warm to the touch', go:'thermal', lbl:'decays over minutes'},
+        {t:'It averages around 40 but looks like it is stuttering', sub:'The average looks acceptable and it still feels wrong', go:'pacing', lbl:'average fine, feels bad'},
+        {t:'It is fine until a specific moment, then hitches', sub:'Reproducible spike at a known event', go:'spike', lbl:'event-driven hitch'}
+      ]},
+    bound:{ q:'Put stat unit (Unreal) or the profiler CPU/GPU modules (Unity) on screen. Which bar is tall?',
+      hint:'Sixty seconds of work that determines which half of the lesson applies.',
+      choices:[
+        {t:'GPU time dominates', sub:'Game and draw threads are waiting on it', go:'gpu', lbl:'GPU-bound'},
+        {t:'Game / main thread dominates', sub:'GPU is idle waiting for work', go:'cpu', lbl:'CPU-bound'},
+        {t:'Draw / render thread dominates', sub:'Not the GPU itself, the work of feeding it', go:'draws', lbl:'draw-thread-bound'},
+        {t:'All three are low but the frame is long', sub:'Time unaccounted for between frames', go:'wait', lbl:'waiting'}
+      ]},
+    gpu:{ q:'Take a frame capture with Android GPU Inspector, RenderDoc or Xcode Metal capture. Where does the GPU time go?',
+      hint:'You are looking for passes and counters, not for a single expensive object.',
+      choices:[
+        {t:'Full-screen passes: post chain, blits, resolves', go:'lpost', lbl:'post/resolves'},
+        {t:'Fragment shading with high overdraw', go:'lover', lbl:'overdraw'},
+        {t:'The vertex / binning phase is disproportionately long', go:'ltile', lbl:'binning phase'},
+        {t:'Bandwidth counters saturated, texture stalls everywhere', go:'lband', lbl:'bandwidth'}
+      ]},
+    cpu:{ q:'Is the main-thread cost flat or spiky?',
+      choices:[
+        {t:'Flat and high every frame', go:'lscript', lbl:'flat CPU cost'},
+        {t:'Spiky, and GC.Alloc / allocator activity tracks the spikes', go:'lgc', lbl:'GC spikes'},
+        {t:'Spiky only in the first minute of a fresh install', go:'lshader', lbl:'first-minute spikes'}
+      ]},
+    thermal:{ leaf:true, title:'Thermal throttling &mdash; measure the sustained state, then decide the cap',
+      body:'<p>A decay over minutes with unchanged CPU work is thermal, not a leak and not a bug in your code. '+
+        'Confirm it before you act: <span class="tool">adb shell dumpsys thermalservice</span> during the run, or Adaptive Performance warning level in Unity, or a slow upward drift in GPU time in an Unreal Insights timeline with flat game-thread cost.</p>'+
+        '<p>Then do three things. Re-measure with a documented protocol &mdash; ten minutes idle, fifteen-minute run, median over minutes 5-15. Reduce sustained power by cutting bandwidth, which is where most mobile watts go. And choose the frame-rate target from the data rather than from ambition: use the thermal simulator above with your measured load to see whether a 30 cap gives a flatter, faster sustained result.</p>'+
+        '<p>What it is <em>not</em>: a reason to keep testing for ninety seconds because the number looks better there.</p>' },
+    pacing:{ leaf:true, title:'Frame pacing &mdash; you are alternating vsync slots',
+      body:'<p>On a 60 Hz panel you can only present at 16.7, 33.3, 50 or 66.7 ms. An average of 40 fps means you are alternating between the 16.7 and 33.3 ms slots, which reads to the eye as constant judder even though the average looks respectable.</p>'+
+        '<p>Confirm with a frame-time histogram, not a frame-rate counter: you will see two spikes rather than one distribution. Fix by getting comfortably inside one slot &mdash; either cut enough work to hold 16.7 with headroom, or cap to 30 and hold 33.3 exactly. <span class="tool">Application.targetFrameRate</span> / <span class="tool">t.MaxFPS</span>, plus Android Frame Pacing (Swappy) or Unity Adaptive Performance.</p>'+
+        '<p>This is why your report quotes a median and a 1% low. An average frame rate is structurally incapable of showing this defect.</p>' },
+    spike:{ leaf:true, title:'An event-driven hitch &mdash; find the event, not the frame rate',
+      body:'<p>A reproducible hitch at a known moment is the easiest class of mobile performance bug and the one students most often report as "bad performance". Capture the frame it happens on, not an average.</p>'+
+        '<p>The usual suspects in order of likelihood on mobile: a shader variant compiling on first use, an asset bundle or Addressable loading synchronously, a GC collection triggered by a burst of allocation, an audio clip decompressing on the main thread, or a physics scene rebuild when a large object spawns.</p>'+
+        '<p><span class="tool">Unity Profiler frame view / Unreal Insights bookmark around the event</span>. Prewarm variants at load, load asynchronously, pool the objects, and never decompress audio on demand.</p>' },
+    lpost:{ leaf:true, title:'Full-screen passes &mdash; the highest-return fix on a tiler',
+      body:'<p>Each full-screen pass is a read plus a write of the entire screen through DRAM, and on a tile-based GPU it also breaks the render pass, forcing a resolve of something that was living on-chip for free.</p>'+
+        '<p>Merge the chain into one uber-pass, run bloom at quarter resolution, delete depth of field, and hunt down anything that forces a depth texture or an opaque texture &mdash; soft particles, refraction, screen-space effects. Use the bandwidth calculator in section 2 to predict the saving, then measure to confirm.</p>' },
+    lover:{ leaf:true, title:'Overdraw &mdash; and remember what it actually costs on mobile',
+      body:'<p>On a TBDR part the extra color writes are cheap; the expensive part is that every overdrawn fragment still runs a shader that samples textures out of DRAM.</p>'+
+        '<p>So the fixes are: sort opaques front-to-back so hidden-surface removal can reject early, shrink the geometry of transparent effects to their visible extent, reduce the number of stacked particle layers, and make the transparent shader and its textures cheaper. <span class="tool">Overdraw visualisation in the Unity Scene view / Quad Overdraw in Unreal / AGI overdraw counters</span>.</p>' },
+    ltile:{ leaf:true, title:'The binning phase is long &mdash; check tile storage and vertex cost',
+      body:'<p>Two causes. Your per-pixel tile storage may exceed the hardware budget, which makes the driver shrink the tile so the same geometry is binned against more of them &mdash; check the tile readout in section 2 and reduce MSAA or drop the HDR color format. Or your vertex load is simply too high: too many objects, too many attributes, no LODs, skinned meshes with more bones than the tier can afford.</p>'+
+        '<p>Tilers read geometry twice, once for binning and once per tile for fragment work, so vertex bandwidth costs more here than your desktop intuition expects.</p>' },
+    lband:{ leaf:true, title:'Bandwidth-bound &mdash; count screen-sized touches and texture bytes',
+      body:'<p>Confirm with hardware counters (AGI, Instruments, or Mali/Adreno performance counters) rather than inferring it. Then attack the two big terms: the number of screen-sized surfaces you read and write per frame, and the bytes behind every texture sample.</p>'+
+        '<p>Texture compression is the highest-return single change most student projects have available: ASTC 8x8 versus uncompressed RGBA is roughly a 20x reduction in bytes read, and it improves load time and memory at the same time. Add mipmaps &mdash; a missing mip chain is a bandwidth defect, because minified textures sample across cache lines chaotically.</p>' },
+    lscript:{ leaf:true, title:'Flat, high CPU cost &mdash; budget and time-slice',
+      body:'<p>Flat cost means work proportional to entity count happening every frame. Time-slice it: process a fixed budget of entities per frame, LOD the behaviour by distance, and raise the tick interval for anything that does not need frame-rate resolution.</p>'+
+        '<p>Then look for per-frame API costs that are invisible in editor profiling but expensive on ARM: component lookups, transform hierarchy syncs, unbounded physics queries, and string work. The rewrite in section 6 is this fix, line by line.</p>' },
+    lgc:{ leaf:true, title:'Allocation-driven spikes &mdash; a Topic 6 problem wearing a mobile hat',
+      body:'<p>The metric is allocation <em>rate</em>, not heap size: every kilobyte per frame brings the next collection closer, and on a phone with a small heap the collections are frequent enough to show up as periodic 1% low damage.</p>'+
+        '<p>Find them with the GC.Alloc column in the Unity Profiler (or LLM plus the allocator stats in Unreal), then remove them: preallocated buffers and NonAlloc physics queries, pooling, no per-frame string concatenation, no LINQ in Update, no closures capturing locals in hot paths.</p>' },
+    lshader:{ leaf:true, title:'First-run shader compilation &mdash; measure a cold start or your load number is fiction',
+      body:'<p>The driver compiles each shader variant the first time it is used, and a variant-heavy project can spend tens of seconds doing it, scattered as hitches through gameplay. The second run is fast because the driver cached them.</p>'+
+        '<p>Prewarm deliberately at load (shader variant collections in Unity, PSO caches in Unreal), cut the variant count by stripping keywords you do not ship, and measure load time only after a force-stop and a cache clear. Report which one you measured.</p>' },
+    draws:{ leaf:true, title:'Draw-thread bound &mdash; too many draw calls and state changes',
+      body:'<p>The GPU is not the problem; feeding it is. Every draw call carries state validation cost, and on mobile drivers that cost is higher than you are used to.</p>'+
+        '<p>Batch: static batching for level geometry, GPU instancing for repeated props, the SRP Batcher in Unity or instanced static meshes in Unreal, one atlas per material family, and no accidental material instantiation (the <code>.material</code> trap from section 6). Check the draw count with <span class="tool">stat rhi</span> or the Unity Frame Debugger and set a per-tier budget in your test plan.</p>' },
+    wait:{ leaf:true, title:'Nothing is busy and the frame is still long &mdash; you are waiting',
+      body:'<p>Look for a synchronous wait: a readback from the GPU to the CPU (any <code>ReadPixels</code>, occlusion query, or async operation someone made blocking), a file or network read on the main thread, or vsync itself when you have just missed a slot.</p>'+
+        '<p>A frame that spends 18 ms doing nothing at 60 Hz is usually the 16.7 ms slot you missed by 1.3 ms. Confirm on a frame-time histogram before you optimise anything: the fix for missing a slot by a hair is completely different from the fix for being genuinely slow.</p>' }
+  };
+  new GDTTree(el, N, 'start');
+})();
+</script>
+</body></html>

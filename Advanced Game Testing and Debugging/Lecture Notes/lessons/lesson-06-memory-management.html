@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Topic 6 &middot; Memory Management in Games — Advanced Game Testing and Debugging</title>
+<style id="lesson-kit">
+:root{
+  --bg:#0e1116; --bg2:#161b22; --bg3:#1c232d; --line:#2a3441; --line2:#3a4757;
+  --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#4da3ff; --acc2:#1f6feb;
+  --ok:#3fb950; --warn:#d29922; --crit:#f85149; --info:#a371f7; --teal:#39c5bb;
+  --unity:#5ec8f2; --unreal:#f0a44a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --sh:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 120px}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .crumb{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.topbar .spacer{flex:1}
+.topbar a{color:var(--tx2);text-decoration:none;font-size:13.5px;padding:5px 10px;
+  border-radius:7px;border:1px solid transparent}
+.topbar a:hover{color:var(--tx);background:var(--bg3);border-color:var(--line)}
+.progressbar{position:fixed;top:0;left:0;height:3px;background:var(--acc);
+  width:0;z-index:60;transition:width .12s linear}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero .kicker{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.14;margin:0 0 14px;
+  letter-spacing:-.02em;font-weight:800}
+.hero .lede{font-size:19px;color:var(--tx2);max-width:70ch;margin:0}
+.metarow{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:12.5px;color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+
+/* ---------- typography ---------- */
+h2{font-size:27px;margin:56px 0 6px;letter-spacing:-.015em;font-weight:750;
+  scroll-margin-top:80px}
+h2 .num{color:var(--acc);font-family:var(--mono);font-size:16px;
+  margin-right:11px;font-weight:600}
+h3{font-size:20px;margin:34px 0 6px;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16.5px;margin:24px 0 4px;font-weight:700;color:var(--tx)}
+p{margin:13px 0}
+a{color:var(--acc)}
+ul,ol{margin:13px 0;padding-left:24px}
+li{margin:7px 0}
+li::marker{color:var(--tx3)}
+strong{color:#fff;font-weight:650}
+em{color:var(--tx)}
+code{font-family:var(--mono);font-size:.885em;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;padding:1.5px 6px;color:#bfe3ff}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.subtle{color:var(--tx2)}
+.small{font-size:14px}
+
+/* ---------- callouts ---------- */
+.box{border:1px solid var(--line);border-left:3px solid var(--acc);
+  background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin:22px 0}
+.box .lbl{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:800;color:var(--acc);margin-bottom:7px}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+.box.why{border-left-color:var(--info)}   .box.why .lbl{color:var(--info)}
+.box.warn{border-left-color:var(--warn)}  .box.warn .lbl{color:var(--warn)}
+.box.crit{border-left-color:var(--crit)}  .box.crit .lbl{color:var(--crit)}
+.box.ok{border-left-color:var(--ok)}      .box.ok .lbl{color:var(--ok)}
+.box.field{border-left-color:var(--teal)} .box.field .lbl{color:var(--teal)}
+
+/* ---------- objectives / goals ---------- */
+.goals{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;margin:26px 0}
+.goals h4{margin:0 0 10px;font-size:12px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx3)}
+.goals ol{margin:0;padding-left:20px}
+
+/* ---------- code ---------- */
+.codeblock{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  margin:20px 0;overflow:hidden}
+.codeblock .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);font-size:12.5px;
+  color:var(--tx2);font-family:var(--mono)}
+.codeblock .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);
+  font-size:13.4px;line-height:1.62;color:#d5e2f0}
+.codeblock pre .c{color:#6a7d91;font-style:italic}   /* comment */
+.codeblock pre .k{color:#ff7b9c}                     /* keyword */
+.codeblock pre .t{color:#7ee0c6}                     /* type    */
+.codeblock pre .s{color:#ffcf8f}                     /* string  */
+.codeblock pre .n{color:#c3a6ff}                     /* number  */
+.codeblock pre .f{color:#82c8ff}                     /* func    */
+
+/* annotated code: clickable gutter markers */
+.annot{display:grid;grid-template-columns:1fr;gap:0;margin:22px 0}
+.annot .rows{background:#0a0d12;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.annot .arow{display:grid;grid-template-columns:34px 1fr;align-items:stretch;
+  border-bottom:1px solid rgba(42,52,65,.55)}
+.annot .arow:last-child{border-bottom:0}
+.annot .arow.hasnote{cursor:pointer}
+.annot .arow.hasnote:hover{background:rgba(77,163,255,.07)}
+.annot .gut{display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--tx3);font-family:var(--mono);font-size:11px;
+  border-right:1px solid var(--line);user-select:none}
+.annot .arow.hasnote .gut{color:#fff;background:var(--acc2);font-weight:700}
+.annot .arow.open .gut{background:var(--acc)}
+.annot .ln{font-family:var(--mono);font-size:13.3px;line-height:1.65;padding:2px 14px;
+  white-space:pre;overflow-x:auto;color:#d5e2f0}
+.annot .note{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--line);
+  padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease;
+  font-size:14.6px;color:var(--tx2)}
+.annot .arow.open + .note,.annot .note.open{max-height:600px;padding:13px 18px}
+.annot .note b{color:var(--tx)}
+.annot .hint{font-size:12.5px;color:var(--tx3);margin:8px 2px 0}
+
+/* ---------- engine tabs (Unity / Unreal) ---------- */
+.tabs{margin:24px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tabs .tabhd{display:flex;background:var(--bg3);border-bottom:1px solid var(--line)}
+.tabs .tabhd button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:14px;font-weight:650;padding:11px 20px;cursor:pointer}
+.tabs .tabhd button:hover{color:var(--tx2)}
+.tabs .tabhd button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tabs .tabhd button[data-engine="unity"].on{border-bottom-color:var(--unity);color:var(--unity)}
+.tabs .tabhd button[data-engine="unreal"].on{border-bottom-color:var(--unreal);color:var(--unreal)}
+.tabs .tabbody{padding:4px 20px 16px;background:var(--bg2)}
+.tabs .tabpane{display:none}.tabs .tabpane.on{display:block}
+.tabs .tabbody .codeblock{margin:16px -6px}
+
+/* ---------- quiz / check ---------- */
+.check{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin:26px 0}
+.check .q{font-weight:650;margin:0 0 14px}
+.check .opt{display:block;width:100%;text-align:left;background:var(--bg3);
+  border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin:8px 0;
+  color:var(--tx);font:inherit;font-size:15.2px;cursor:pointer;transition:.12s}
+.check .opt:hover{border-color:var(--line2);background:#222b36}
+.check .opt.right{border-color:var(--ok);background:rgba(63,185,80,.11)}
+.check .opt.wrong{border-color:var(--crit);background:rgba(248,81,73,.11)}
+.check .opt .tag{float:right;font-size:12px;font-weight:700;letter-spacing:.06em}
+.check .opt.right .tag{color:var(--ok)}.check .opt.wrong .tag{color:var(--crit)}
+.check .exp{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--tx2)}
+.check .exp.on{display:block}
+.check .exp b{color:var(--tx)}
+.check .exp .ex{margin:9px 0}
+.check .exp .ex .who{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em}
+
+/* ---------- widgets / simulators ---------- */
+.widget{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.widget > .whd{display:flex;align-items:baseline;gap:10px;margin:-2px 0 4px}
+.widget > .whd .wt{font-weight:750;font-size:17px}
+.widget > .whd .wk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--teal);font-weight:800;border:1px solid rgba(57,197,187,.35);
+  border-radius:5px;padding:2px 7px}
+.widget > .wsub{color:var(--tx2);font-size:14.5px;margin:4px 0 16px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;align-items:center;
+  gap:12px;margin:11px 0}
+.ctl label{font-size:14px;color:var(--tx2)}
+.ctl output{font-family:var(--mono);font-size:13.5px;color:var(--acc);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:22px}
+.btn{background:var(--acc2);border:1px solid var(--acc);color:#fff;font:inherit;
+  font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--acc)}
+.btn.ghost{background:var(--bg3);border-color:var(--line2);color:var(--tx2)}
+.btn.ghost:hover{background:#242e3a;color:var(--tx)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:10px;margin:16px 0 0}
+.readout .cell{background:var(--bg3);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px}
+.readout .cell .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.readout .cell .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.readout .cell .v.ok{color:var(--ok)}.readout .cell .v.warn{color:var(--warn)}
+.readout .cell .v.crit{color:var(--crit)}
+.verdict{margin:16px 0 0;padding:13px 16px;border-radius:9px;font-size:14.8px;
+  background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--acc)}
+.verdict.ok{border-left-color:var(--ok)}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict.crit{border-left-color:var(--crit)}
+canvas{display:block;width:100%;background:#0a0d12;border:1px solid var(--line);
+  border-radius:9px;margin:16px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;
+  color:var(--tx2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;
+  margin-right:6px;vertical-align:-1px}
+
+/* ---------- decision tree ---------- */
+.tree{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  padding:20px 22px;margin:28px 0;box-shadow:var(--sh)}
+.tree .path{font-family:var(--mono);font-size:12px;color:var(--tx3);
+  margin:0 0 14px;min-height:17px}
+.tree .path span{color:var(--acc)}
+.tree .qq{font-size:17.5px;font-weight:700;margin:0 0 6px}
+.tree .qh{color:var(--tx2);font-size:14.5px;margin:0 0 14px}
+.tree .choices{display:grid;gap:9px}
+.tree .choices button{text-align:left;background:var(--bg3);border:1px solid var(--line);
+  border-radius:9px;padding:12px 15px;color:var(--tx);font:inherit;font-size:15px;
+  cursor:pointer;transition:.12s}
+.tree .choices button:hover{border-color:var(--acc);background:#222c38}
+.tree .choices button .sub{display:block;color:var(--tx3);font-size:13px;margin-top:3px}
+.tree .leaf{border-left:3px solid var(--ok);background:var(--bg3);border-radius:9px;
+  padding:15px 18px}
+.tree .leaf h5{margin:0 0 8px;font-size:16.5px;color:var(--ok)}
+.tree .leaf p{margin:9px 0;font-size:15px}
+.tree .leaf .tool{font-family:var(--mono);font-size:13px;color:#bfe3ff}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:14.6px}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+th{background:var(--bg3);font-weight:700;font-size:13px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--tx2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.017)}
+td code{font-size:.85em}
+
+/* ---------- misc ---------- */
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2.5px 9px;border-radius:999px;vertical-align:1px}
+.pill.s0{background:rgba(248,81,73,.16);color:var(--crit);border:1px solid rgba(248,81,73,.4)}
+.pill.s1{background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4)}
+.pill.s2{background:rgba(77,163,255,.14);color:var(--acc);border:1px solid rgba(77,163,255,.4)}
+.pill.s3{background:rgba(159,176,195,.13);color:var(--tx2);border:1px solid var(--line2)}
+.pill.unity{background:rgba(94,200,242,.14);color:var(--unity);border:1px solid rgba(94,200,242,.4)}
+.pill.unreal{background:rgba(240,164,74,.14);color:var(--unreal);border:1px solid rgba(240,164,74,.4)}
+
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);
+  padding:0 18px;margin:20px 0}
+details.more > summary{cursor:pointer;padding:13px 0;font-weight:650;font-size:15.5px;
+  list-style:none;color:var(--tx)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"▸ ";color:var(--acc);font-weight:800}
+details.more[open] > summary::before{content:"▾ "}
+details.more[open]{padding-bottom:14px}
+details.more > summary:hover{color:var(--acc)}
+
+.deliver{background:linear-gradient(180deg,rgba(77,163,255,.07),transparent);
+  border:1px solid var(--acc2);border-radius:12px;padding:20px 24px;margin:40px 0 0}
+.deliver h3{margin-top:0;color:var(--acc)}
+
+footer.lf{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:13.5px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap}
+footer.lf a{color:var(--tx2);text-decoration:none}
+footer.lf a:hover{color:var(--acc)}
+
+@media (max-width:720px){
+  body{font-size:16px}
+  .ctl{grid-template-columns:1fr;gap:4px}
+  .ctl output{text-align:left}
+  .hero{padding:34px 0 24px}
+}
+@media print{
+  .topbar,.progressbar{display:none}
+  body{background:#fff;color:#111}
+  .widget,.tree,.check,.box,.goals{break-inside:avoid}
+}
+</style>
+<style id="lesson-local">
+/* lesson-specific additions only */
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.seg button{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button:hover{border-color:var(--line2);color:var(--tx)}
+.seg button.on{background:var(--acc2);border-color:var(--acc);color:#fff;font-weight:650}
+select{background:var(--bg3);color:var(--tx);border:1px solid var(--line2);border-radius:7px;
+  font:inherit;font-size:13.5px;padding:6px 9px}
+.pools{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:14px;margin:22px 0}
+.pools .pl{background:var(--bg2);border:1px solid var(--line);border-top:3px solid var(--acc);
+  border-radius:9px;padding:14px 17px}
+.pools .pl h5{margin:0 0 6px;font-size:15.5px}
+.pools .pl p{margin:0;font-size:14.3px;color:var(--tx2)}
+.pools .pl .tg{font-family:var(--mono);font-size:11px;color:var(--tx3);letter-spacing:.08em;
+  text-transform:uppercase;display:block;margin-bottom:4px}
+.pools .pl.p2{border-top-color:var(--warn)} .pools .pl.p3{border-top-color:var(--teal)}
+.pools .pl.p4{border-top-color:var(--info)}
+.difftbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+.difftbl th,.difftbl td{border:1px solid var(--line);padding:6px 10px}
+.difftbl th{background:var(--bg3);font-size:11px;letter-spacing:.05em}
+.difftbl td.n{font-family:var(--mono);text-align:right}
+.difftbl td.grow{color:var(--crit);font-weight:650}
+.difftbl td.flat{color:var(--tx3)}
+.difftbl tr.leak td{background:rgba(248,81,73,.09)}
+.difftbl tr.okrow td{background:rgba(63,185,80,.06)}
+.readlist{font-size:14.6px;color:var(--tx2)}
+.readlist li b{color:var(--tx)}
+.mini{font-size:13px;color:var(--tx3);margin:8px 0 0}
+.leakgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin:20px 0}
+.leakgrid .lk{background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--crit);
+  border-radius:8px;padding:12px 14px}
+.leakgrid .lk b{display:block;font-size:14.5px;color:#fff}
+.leakgrid .lk p{margin:5px 0 0;font-size:13.6px;color:var(--tx2)}
+.hstrip{display:flex;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--tx2);margin-top:10px}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <span class="crumb">Advanced Game Testing and Debugging &middot; Topic 6</span><span class="spacer"></span>
+  <a href="../index.html">Course hub</a>
+  <a href="lesson-05-optimization-techniques.html">&larr; Prev</a>
+  <a href="lesson-07-ethics-compliance.html">Next &rarr;</a>
+</div></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Topic 6 &middot; Nov 9&ndash;22 &middot; Weeks 10&ndash;11 &middot; Sessions 19&ndash;22</div>
+    <h1>Memory Management in Games</h1>
+    <p class="lede">Frame time degrades. Memory does not. When you run out you do not get a slower
+    game &mdash; you get a crash report, a certification failure, or a process the operating system
+    kills without asking. This topic is about seeing that ceiling coming, and proving with numbers
+    that you moved it.</p>
+    <div class="metarow">
+      <span class="chip"><b>Reading:</b> Hizon et al. (2002) + 3 papers</span>
+      <span class="chip"><b>Assignment:</b> Memory Optimization &middot; 100 pts &middot; due Nov 22</span>
+      <span class="chip"><b>Sessions:</b> 19&ndash;22</span>
+      <span class="chip"><b>Est. time:</b> 130 min + reading</span>
+    </div>
+  </header>
+
+  <div class="goals"><h4>By the end you will be able to</h4><ol>
+    <li>Evaluate memory-related issues &mdash; leaks, retention, fragmentation, churn &mdash; and quantify their performance impact rather than describing it.</li>
+    <li>Apply memory management techniques: pooling, fixed-size allocators, segregated heaps, streaming budgets, and allocation-rate discipline.</li>
+    <li>Use tools that track allocation, deallocation, and fragmentation in both engines, with snapshot diffing as your primary method.</li>
+    <li>Develop cross-platform prevention strategies that survive the jump from a 32&nbsp;GB desktop to a 4&nbsp;GB phone or a fixed-budget console.</li>
+    <li>Balance memory optimization against gameplay and visual quality, and defend the trade in a design conversation.</li>
+  </ol></div>
+
+  <h2><span class="num">1</span>Memory is a cliff, not a slope</h2>
+
+  <p>Topic 4 taught you to treat 16.6&nbsp;ms as a currency you spend. Overspend it and the game
+  gets worse in a way players can feel but survive: 55&nbsp;fps instead of 60, a hitch on a corner,
+  a soft complaint in a review. Memory does not work like that. A memory budget is a wall. You are
+  under it or you are not, and the failure at the wall is discontinuous &mdash; an allocation
+  returns null, a texture fails to stream in and renders as a magenta placeholder, the console's
+  fixed partition refuses the request, or the mobile OS low-memory killer terminates your process
+  between two frames with no callback you can usefully handle.</p>
+
+  <p>That discontinuity is why memory bugs are the ones that ship. A frame-time regression shows up
+  on every machine that runs the benchmark scene. A memory regression shows up only on the machine
+  with the smallest budget, in the session that ran longest, after the player did the thing your
+  test plan never did &mdash; usually "played for two hours without returning to the main menu."
+  Your desktop has 32&nbsp;GB and a page file; it will absorb a 400&nbsp;MB leak for the entire
+  development cycle and never say a word. The phone will not.</p>
+
+  <div class="box why"><div class="lbl">Why the ceiling is lower than the spec sheet says</div>
+  <p>Students size their budget from the device's advertised RAM. Nobody gets that. On a current
+  console, a chunk of physical memory is reserved for the system, and what remains is further split
+  between CPU-visible and GPU-visible pools with hard boundaries. On a 4&nbsp;GB Android device the
+  OS, the launcher, and background apps are already resident; a game that exceeds roughly a third to
+  a half of physical RAM is in the low-memory killer's sights, and on iOS the jetsam limit is a
+  documented fraction of device RAM. So a "4&nbsp;GB phone" is often a <em>1.5&nbsp;GB game</em>.
+  Write your budget as an absolute number of megabytes per platform, in a document, before you
+  profile &mdash; otherwise "we use 2.1&nbsp;GB" is a fact with no verdict attached.</p></div>
+
+  <p>The second consequence of the cliff is that <em>peak</em> matters more than average. A game
+  that idles at 1.2&nbsp;GB and touches 1.9&nbsp;GB for 400&nbsp;ms during a level transition, while
+  both the outgoing and incoming levels are resident, is a 1.9&nbsp;GB game. Every allocation
+  strategy in this lesson is ultimately aimed at that transient peak: keeping two things from being
+  resident at once, or making the transient thing come out of memory you already own.</p>
+
+  <h2><span class="num">2</span>Four heaps, four different failure modes</h2>
+
+  <p>"Memory usage" is not one number, and the single most common mistake in a student memory report
+  is quoting one. A game process has several allocators with different owners, different lifetimes,
+  and different tools. If you do not say which one grew, you have not diagnosed anything.</p>
+
+  <div class="pools">
+    <div class="pl"><span class="tg">Managed / GC heap</span><h5>C# objects in Unity, UObjects in Unreal</h5>
+      <p>Grows in pages; in Unity's Boehm collector it historically does not return pages to the OS,
+      so the high-water mark <em>is</em> your footprint for the rest of the session. Fails as: rising
+      baseline, GC pauses, eventual OOM on constrained platforms.</p></div>
+    <div class="pl p2"><span class="tg">Native heap</span><h5>Engine, plugins, physics, audio, C++ containers</h5>
+      <p>Real <code>malloc</code>/<code>new</code>. Real leaks are possible here &mdash; memory with
+      no reference at all. Fails as: steady linear growth invisible to a managed profiler, or
+      fragmentation of the address space.</p></div>
+    <div class="pl p3"><span class="tg">Graphics / VRAM</span><h5>Textures, meshes, render targets, shaders</h5>
+      <p>Usually the biggest number in the report and the one students forget to attribute. On
+      unified-memory devices (consoles, mobile) it comes out of the same pool as everything else.
+      Fails as: streaming stalls, texture pop-in, driver-level allocation failure.</p></div>
+    <div class="pl p4"><span class="tg">Streaming &amp; reserved pools</span><h5>Audio banks, level streaming, IO buffers</h5>
+      <p>Memory you deliberately reserved and now must live inside. Fails as: an audio bank that
+      cannot load, a streaming level that never finishes, a texture that stays at the lowest mip
+      forever because the streaming budget is exhausted.</p></div>
+  </div>
+
+  <p>Attribute before you optimize. A report that says "memory went from 1.9&nbsp;GB to 1.6&nbsp;GB"
+  is worth much less than one that says "managed heap 210&nbsp;MB &rarr; 118&nbsp;MB, texture memory
+  unchanged at 840&nbsp;MB, native down 40&nbsp;MB after we stopped double-buffering the navmesh."
+  The second version tells your reader which of the four failure modes you actually addressed, and
+  it is the form your assignment's before/after section should take.</p>
+  <h2><span class="num">3</span>In a GC language, a "leak" is a retention bug</h2>
+
+  <p>In C++ a leak is unambiguous: you called <code>new</code>, you never called <code>delete</code>,
+  and the allocation has no reference anywhere in the program. The memory is unreachable and
+  unfreeable. Valgrind will point at the exact call stack, because unreachability is a property a
+  tool can compute.</p>
+
+  <p>C# and Unreal's UObject system do not leak that way, and this trips up nearly every student the
+  first time. A garbage collector frees everything unreachable, correctly, every time. So if memory
+  is climbing in managed-land, the collector is not broken &mdash; <strong>something is still
+  pointing at the objects, and that something is code you wrote.</strong> The bug is not "we forgot
+  to free." It is "we forgot to forget." That reframing changes how you hunt: you stop looking for
+  missing cleanup calls and start looking for surviving <em>references</em>, which is exactly what a
+  memory profiler's reference path or retainer chain view shows you.</p>
+
+  <div class="leakgrid">
+    <div class="lk"><b>Static collections</b>
+      <p>A <code>static List&lt;T&gt;</code> is a GC root that lives as long as the domain. Anything
+      you add and never remove is immortal, along with everything it transitively references.</p></div>
+    <div class="lk"><b>Events never unsubscribed</b>
+      <p>Subscribing makes the <em>publisher</em> hold a reference to the <em>subscriber</em>. A
+      long-lived event source therefore keeps every short-lived listener alive. The arrow points the
+      opposite way from how students imagine it.</p></div>
+    <div class="lk"><b>Closures capturing <code>this</code></b>
+      <p>A lambda that touches an instance field compiles to a class holding a reference to the whole
+      instance. Store that lambda in a timer, a callback table, or an async continuation and you have
+      retained the object graph behind it.</p></div>
+    <div class="lk"><b>Orphaned persistent objects</b>
+      <p><code>DontDestroyOnLoad</code> in Unity, <code>AddToRoot()</code> in Unreal. Both say "never
+      collect this." Both are correct once and catastrophic on the second scene load, because now you
+      have two of them, then three.</p></div>
+  </div>
+
+  <div class="box why"><div class="lbl">Why this is the highest-value hour in the topic</div>
+  <p>Do the arithmetic on the second failure mode. A wave spawner that subscribes to a game-instance
+  event and never unsubscribes retains itself, its enemy prefab references, and its pooled particle
+  systems &mdash; call it 1.4&nbsp;MB of managed objects plus the textures they keep alive. That is
+  nothing. Now load the level 40 times during an eight-hour soak test, which is roughly what a QA
+  pass looks like, and you are holding 56&nbsp;MB of dead spawners plus their texture references.
+  On a 1.5&nbsp;GB mobile budget that single missing <code>-=</code> is 4% of the entire game. It
+  costs one line to fix and it is invisible in every test shorter than ten minutes.</p></div>
+
+  <h3>Read the leak: one component, four mechanisms</h3>
+
+  <p>Below is a component that works perfectly in the editor, passes its unit tests, and grows the
+  heap on every level load. Every line marked in the gutter contributes to retention. Click through
+  them; the note names the <em>mechanism</em> &mdash; what holds the reference and how long that
+  holder lives &mdash; and then the fix. The Unreal tab is the same four mechanisms expressed in
+  UObject terms, because the mechanisms are a property of reachability, not of a language.</p>
+
+  <div class="tabs"><div class="tabhd">
+    <button data-engine="unity" data-tab="u" class="on">Unity</button>
+    <button data-engine="unreal" data-tab="e">Unreal</button>
+  </div><div class="tabbody">
+  <div class="tabpane on" data-pane="u">
+
+  <div class="annot"><div class="rows">
+    <div class="arow"><div class="gut">1</div><div class="ln">public class WaveSpawner : MonoBehaviour</div></div>
+    <div class="arow"><div class="gut">2</div><div class="ln">{</div></div>
+    <div class="arow hasnote"><div class="gut">3</div><div class="ln">    static readonly List&lt;GameObject&gt; Spawned = new List&lt;GameObject&gt;();</div></div>
+    <div class="note"><b>Mechanism 1 &mdash; static collection.</b> A static field is a GC root for
+      the lifetime of the application domain. Every <code>GameObject</code> ever added here is
+      permanently reachable, and each one transitively retains its components, its meshes, and its
+      materials &mdash; so a 400-byte list entry can pin 3&nbsp;MB of texture. Worse, <code>Destroy()</code>
+      does not remove the entry: Unity's fake-null makes the managed wrapper survive as a destroyed
+      object that still occupies the list. <b>Fix:</b> make ownership explicit. Either the list is an
+      instance field cleared in <code>OnDestroy</code>, or it stays static and something removes
+      entries in <code>OnDestroy</code>. A static collection with no matching removal path is a
+      design error, not a style preference.</div>
+    <div class="arow"><div class="gut">4</div><div class="ln">    [SerializeField] EnemyDatabase db;</div></div>
+    <div class="arow"><div class="gut">5</div><div class="ln">    int tier;</div></div>
+    <div class="arow"><div class="gut">6</div><div class="ln"></div></div>
+    <div class="arow"><div class="gut">7</div><div class="ln">    void Start() {</div></div>
+    <div class="arow hasnote"><div class="gut">8</div><div class="ln">        DontDestroyOnLoad(gameObject);</div></div>
+    <div class="note"><b>Mechanism 4 &mdash; persistent orphan.</b> This moves the object into the
+      DontDestroyOnLoad scene, which is never unloaded. Load the same level twice and there are two
+      spawners; load it forty times in a soak test and there are forty, all running
+      <code>Update</code>, all subscribed to the same events, all holding the mechanism-1 list.
+      Memory growth here is <em>linear in scene loads</em>, which is precisely why it never appears
+      in a five-minute play session. <b>Fix:</b> singletons that survive scenes need a guard &mdash;
+      <code>if (Instance != null &amp;&amp; Instance != this) { Destroy(gameObject); return; }</code>
+      &mdash; and, better, should not be MonoBehaviours at all if they hold no scene state.</div>
+    <div class="arow hasnote"><div class="gut">9</div><div class="ln">        GameEvents.WaveCleared += OnWaveCleared;</div></div>
+    <div class="note"><b>Mechanism 2 &mdash; event subscription.</b> The direction of the reference is
+      the whole lesson. <code>GameEvents</code> is static, so its delegate's invocation list now holds
+      a strong reference to <em>this</em> spawner. The spawner cannot be collected while the static
+      event lives, even after the scene unloads and every other reference is gone. <b>Fix:</b> pair
+      every <code>+=</code> with a <code>-=</code> in the symmetric lifecycle callback &mdash;
+      subscribe in <code>OnEnable</code>, unsubscribe in <code>OnDisable</code>, never
+      <code>Start</code>/<code>OnDestroy</code>, because disabled objects should not receive events
+      either. If you cannot state where the <code>-=</code> lives while writing the
+      <code>+=</code>, you have just written the bug.</div>
+    <div class="arow hasnote"><div class="gut">10</div><div class="ln">        db.OnAssetsReloaded = () =&gt; RebuildCache(tier);</div></div>
+    <div class="note"><b>Mechanism 3 &mdash; closure capturing <code>this</code>.</b> The lambda reads
+      <code>tier</code>, an instance field, so the compiler generates a display class holding a
+      reference to the entire <code>WaveSpawner</code>. <code>db</code> is a
+      <code>ScriptableObject</code> asset that lives for the whole session, so the asset now retains
+      the component, which retains its GameObject, which retains the scene hierarchy under it. It
+      looks like you stored a function; you stored an object graph. <b>Fix:</b> capture the value, not
+      the instance (<code>int t = tier;</code> then use <code>t</code>), keep the returned handle and
+      clear it in <code>OnDisable</code>, or subscribe a plain method and unsubscribe it. Note the
+      <code>=</code> rather than <code>+=</code> hides a second bug: it silently stomps whatever
+      other system had registered.</div>
+    <div class="arow"><div class="gut">11</div><div class="ln">    }</div></div>
+    <div class="arow"><div class="gut">12</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">13</div><div class="ln">    void Update() {</div></div>
+    <div class="note"><b>Not a leak &mdash; a churn bug, and you will meet it in section 5.</b> Nothing
+      in this method retains anything. It allocates and abandons, every frame, which raises the
+      <em>rate</em> of garbage production rather than the live set. Two different diseases with two
+      different symptoms: retention raises the floor of the memory graph; churn raises the frequency
+      of GC spikes. Students routinely diagnose one and fix the other.</div>
+    <div class="arow hasnote"><div class="gut">14</div><div class="ln">        var live = Spawned.Where(g =&gt; g != null).ToList();</div></div>
+    <div class="note"><b>Per-frame allocation.</b> LINQ over a list allocates an iterator, a closure
+      for the predicate, and a new <code>List&lt;GameObject&gt;</code> with a backing array &mdash;
+      call it 200&ndash;600 bytes per frame at typical counts, or roughly 2&nbsp;MB per minute at
+      60&nbsp;fps, all of it garbage. <b>Fix:</b> a reusable member list plus a <code>for</code> loop
+      that indexes backwards and removes in place. Ugly, allocation-free, and the profiler will show
+      <code>GC.Alloc</code> for this line drop to zero.</div>
+    <div class="arow hasnote"><div class="gut">15</div><div class="ln">        hud.text = "Wave " + wave + " / " + total + " (" + live.Count + ")";</div></div>
+    <div class="note"><b>String concatenation in <code>Update</code>.</b> Strings are immutable, so
+      this builds three intermediate strings plus the final one, and boxes nothing only because the
+      ints hit an overload that still allocates their string forms. Sixty times a second, forever.
+      <b>Fix:</b> only rebuild when the value changes &mdash; cache the last-rendered tuple and
+      compare &mdash; which typically removes 99% of the calls outright. That beats micro-optimising
+      the concatenation you should not be performing at all.</div>
+    <div class="arow"><div class="gut">16</div><div class="ln">    }</div></div>
+    <div class="arow"><div class="gut">17</div><div class="ln">}</div></div>
+  </div><p class="hint">Click any highlighted line to see the retention mechanism and the fix.</p></div>
+
+  </div>
+  <div class="tabpane" data-pane="e">
+
+  <div class="annot"><div class="rows">
+    <div class="arow"><div class="gut">1</div><div class="ln">// AWaveSpawner.h / .cpp, condensed</div></div>
+    <div class="arow hasnote"><div class="gut">2</div><div class="ln">static TArray&lt;TStrongObjectPtr&lt;UEnemyWave&gt;&gt; GAllWaves;</div></div>
+    <div class="note"><b>Mechanism 1 &mdash; static collection, Unreal flavour.</b>
+      <code>TStrongObjectPtr</code> adds its target to the root set, so every wave you append here is
+      unreachable to the GC's sweep forever, along with everything its <code>UPROPERTY</code> fields
+      point at. Note the trap on the other side: if you had written
+      <code>static TArray&lt;UEnemyWave*&gt;</code> with raw pointers, you would have the opposite
+      bug &mdash; the GC does not see a plain static as a root, so it would collect the waves and
+      leave you a static array of dangling pointers that crashes on the next access. Neither raw nor
+      strong is a substitute for owning the lifetime. <b>Fix:</b> store <code>TWeakObjectPtr</code>
+      and compact the array, or give the array an owner object with a <code>UPROPERTY()</code> and
+      empty it in <code>EndPlay</code>.</div>
+    <div class="arow"><div class="gut">3</div><div class="ln"></div></div>
+    <div class="arow"><div class="gut">4</div><div class="ln">void AWaveSpawner::BeginPlay() {</div></div>
+    <div class="arow"><div class="gut">5</div><div class="ln">    Super::BeginPlay();</div></div>
+    <div class="arow hasnote"><div class="gut">6</div><div class="ln">    AddToRoot();</div></div>
+    <div class="note"><b>Mechanism 4 &mdash; forgotten root, the <code>DontDestroyOnLoad</code>
+      equivalent.</b> <code>AddToRoot()</code> tells the GC this UObject is never collectable. Actors
+      that survive a travel or a level unload accumulate exactly like Unity's persistent orphans, and
+      because they are still ticking they also keep their timers and delegates alive. <b>Fix:</b>
+      almost always delete this line &mdash; persistent systems belong in a
+      <code>UGameInstanceSubsystem</code>, whose lifetime the engine manages. If you genuinely must
+      root something, the <code>RemoveFromRoot()</code> goes in <code>EndPlay</code> on the same
+      screen, and you verify with <code>obj refs name=YourObject</code>.</div>
+    <div class="arow hasnote"><div class="gut">7</div><div class="ln">    UWaveSubsystem* Sub = GetGameInstance()-&gt;GetSubsystem&lt;UWaveSubsystem&gt;();</div></div>
+    <div class="note"><b>Lifetime asymmetry is the setup for the next two bugs.</b> The subsystem lives
+      as long as the game instance &mdash; across level loads, across travel. This actor lives for one
+      level. Whenever you connect a short-lived object to a long-lived one, the long-lived side wins,
+      and every reference that crosses that boundary is a candidate leak. Say the two lifetimes out
+      loud before you write the connection.</div>
+    <div class="arow hasnote"><div class="gut">8</div><div class="ln">    Sub-&gt;OnWaveCleared.AddUObject(this, &amp;AWaveSpawner::HandleCleared);</div></div>
+    <div class="note"><b>Mechanism 2 &mdash; delegate never removed.</b> <code>AddUObject</code> stores
+      a weak reference, so this will not keep the actor from being collected &mdash; but the binding
+      itself is never removed, so the subsystem's invocation list grows by one entry on every level
+      load and stale entries are checked and skipped on every broadcast. That is a slow leak in the
+      delegate array plus a per-broadcast cost that scales with how many times you have played.
+      <b>Fix:</b> <code>Sub-&gt;OnWaveCleared.RemoveAll(this);</code> in <code>EndPlay</code>, or keep
+      the <code>FDelegateHandle</code> and <code>Remove</code> it. Same rule as C#: write the removal
+      in the same sitting as the addition.</div>
+    <div class="arow hasnote"><div class="gut">9</div><div class="ln">    Sub-&gt;OnAssetsReloaded.AddLambda([this, Wave]() { RebuildCache(Wave); });</div></div>
+    <div class="note"><b>Mechanism 3 &mdash; closure capturing <code>this</code>, and the sharper
+      version of it.</b> <code>AddLambda</code> has no owner, so nothing unbinds it when the actor
+      dies: the captured raw <code>this</code> becomes a dangling pointer and the next broadcast is a
+      use-after-free crash whose stack trace points at the subsystem, not at you. If
+      <code>Wave</code> is a <code>TStrongObjectPtr</code>, you additionally root the wave asset
+      forever. <b>Fix:</b> <code>AddWeakLambda(this, ...)</code> so the binding self-cancels, or
+      <code>AddUObject</code> with a real member function, or keep the handle and remove it in
+      <code>EndPlay</code>. In C# the same mistake leaks quietly; in C++ it crashes. Prefer the
+      crash &mdash; you find it sooner.</div>
+    <div class="arow"><div class="gut">10</div><div class="ln">}</div></div>
+    <div class="arow"><div class="gut">11</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">12</div><div class="ln">UPROPERTY() TArray&lt;AEnemy*&gt; SpawnedEnemies;   // never emptied</div></div>
+    <div class="note"><b>The <code>UPROPERTY</code> you forgot to null.</b> The macro is what makes the
+      pointer visible to the reachability scan &mdash; which is correct and necessary, and also means
+      this array is a retention path. Destroyed actors leave entries behind, so the array grows across
+      the level's lifetime and keeps each dead enemy's UObject graph alive. <b>Fix:</b>
+      <code>SpawnedEnemies.RemoveAll([](AEnemy* E){ return !IsValid(E); });</code> on a cadence, and
+      <code>Empty()</code> in <code>EndPlay</code>. The general rule: <code>UPROPERTY</code> containers
+      are ownership declarations, so someone must own the emptying.</div>
+    <div class="arow"><div class="gut">13</div><div class="ln"></div></div>
+    <div class="arow hasnote"><div class="gut">14</div><div class="ln">void AWaveSpawner::EndPlay(const EEndPlayReason::Type R) { Super::EndPlay(R); }</div></div>
+    <div class="note"><b>The empty teardown is the actual defect.</b> Four mechanisms above, and the
+      one function whose job is to undo them does nothing. When you review a class for leaks, read its
+      teardown first and ask what is missing rather than reading its setup and asking what is wrong
+      &mdash; it is a shorter list and a much higher hit rate. A teardown that mirrors setup line for
+      line, in reverse order, is the cheapest memory-safety habit you can adopt in either engine.</div>
+  </div><p class="hint">Click any highlighted line to see the retention mechanism and the fix.</p></div>
+
+  </div></div></div>
+
+  <div class="check">
+    <p class="q">Your Unity game's managed heap grows by 6&nbsp;MB every time the player returns to
+    the hub level and never shrinks. Which finding would best <em>confirm</em> a retention bug rather
+    than normal growth?</p>
+    <button class="opt" data-correct="0">The Profiler shows a high <code>GC.Alloc</code> rate in <code>Update</code> &mdash; several hundred KB per frame.</button>
+    <button class="opt" data-correct="1">A memory snapshot taken after returning to the hub shows N copies of a manager object, and its reference path terminates in a static event's invocation list.</button>
+    <button class="opt" data-correct="0">Total reserved memory reported by the Profiler is far higher than used memory.</button>
+    <div class="exp"><b>Why B:</b> Retention is proven by a <em>reference path</em>, not by a size.
+      Duplicate live instances of something that should be unique, plus a retainer chain ending in a
+      root you control, is the signature; it names the mechanism and points at the fix in one step.
+      This is exactly what snapshot diffing plus a reference-path view is for.
+      <div class="ex"><span class="who">Why A is tempting</span><br>A high allocation rate is a real
+      and separate problem &mdash; it drives GC frequency and frame spikes &mdash; but garbage that is
+      immediately unreachable does not raise the floor. Churn and retention produce different graph
+      shapes: churn is a sawtooth at a constant average, retention is a staircase.</div>
+      <div class="ex"><span class="who">Why C is tempting</span><br>Reserved far above used means the
+      heap has expanded to a high-water mark and not returned pages, which explains why the number
+      never goes <em>down</em>. It is a consequence of a past peak, not evidence of what is being held
+      now &mdash; and chasing it leads you to fiddle with GC settings instead of finding the missing
+      <code>-=</code>.</div>
+    </div>
+  </div>
+  <h2><span class="num">4</span>Fragmentation: why 300&nbsp;MB free can fail a 40&nbsp;MB request</h2>
+
+  <p>Here is the failure that convinces students memory is its own discipline. The profiler says you
+  have 312&nbsp;MB free. The game asks for a 40&nbsp;MB contiguous buffer &mdash; a streamed texture
+  atlas, a decompression scratch buffer, an audio bank &mdash; and the allocation fails. Nothing
+  leaked. Nothing is over budget. The arithmetic is fine and the request still cannot be served.</p>
+
+  <p>The reason is that an allocator hands out <em>contiguous ranges of address space</em>, not
+  abstract megabytes. Free memory accumulates as a set of holes between live allocations, and the
+  size that matters is not the sum of the holes but the largest single one. Allocate a mix of block
+  sizes with a mix of lifetimes, free them in an order unrelated to the order you allocated them,
+  and the free space shatters into a hundred fragments none of which is big enough for a large
+  request. This is <strong>external fragmentation</strong>, and it is a property of the
+  <em>pattern</em> of allocation and release, not of how much memory you use.</p>
+
+  <div class="box why"><div class="lbl">Why consoles and phones get hit and your PC does not</div>
+  <p>A desktop process has a 64-bit virtual address space and an OS that maps physical pages behind
+  it on demand. Holes in the virtual address space are enormous and cheap, so external fragmentation
+  is mostly invisible to you. A console partition, a fixed-size reserved pool, or a mobile process
+  under a jetsam limit has none of that slack: you are allocating out of a bounded region, and the
+  holes are the only free memory there is. Hizon et al. (2002) were writing about exactly this
+  constraint on fixed-hardware consoles, and their conclusion has aged well &mdash; on a fixed budget
+  you do not manage memory by using less of it, you manage it by controlling the <em>shape</em> of
+  what you allocate. That is why shipped console engines route almost everything through pools and
+  arenas rather than a general-purpose heap.</p></div>
+
+  <p>Play with the sandbox below before reading further. It is a real free-list simulator: a
+  128&nbsp;MB asset region held as a block list, first-fit or best-fit placement, and adjacent-free
+  coalescing on every release. It starts already booted, because a real game's heap is never pristine
+  &mdash; the boot sequence allocated, peaked near 95&nbsp;MB, and left long-lived objects scattered
+  behind it. Run two or three level cycles on the single-heap setting, then press "request 40&nbsp;MB
+  contiguous". Watch the two readouts that matter disagree: total free stays near 90&nbsp;MB while the
+  largest contiguous run sits below 40, and the request genuinely fails, because the simulator walks
+  the whole free list and finds nothing long enough.</p>
+
+  <div class="widget" id="w-frag">
+    <div class="whd"><span class="wt">Fragmentation Sandbox</span><span class="wk">Simulator</span></div>
+    <p class="wsub">A 128&nbsp;MB asset region modelled as a real block list. Allocation walks the free
+    list (first-fit takes the first hole that fits; best-fit takes the smallest one that fits); release
+    coalesces with free neighbours. The segregated strategy splits the same 128&nbsp;MB into a
+    48&nbsp;MB pool of fixed 1&nbsp;MB slots for small objects, a 40&nbsp;MB reserved region for large
+    transient buffers, and a 40&nbsp;MB arena for level assets &mdash; the shape a console engine
+    actually ships. Honest simplifications: one flat address range, no alignment padding beyond slot
+    rounding, and a level cycle compressed into one step.</p>
+
+    <div class="ctl"><label>Allocator strategy</label>
+      <div class="seg" id="fr-mode">
+        <button data-v="0" class="on">Single heap &middot; first-fit</button>
+        <button data-v="1">Single heap &middot; best-fit</button>
+        <button data-v="2">Segregated: pool + reserve + arena</button>
+      </div><output id="fr-modeo">first-fit</output></div>
+    <div class="ctl"><label>Transient objects per cycle</label>
+      <input type="range" id="fr-churn" min="1" max="5" value="3"><output id="fr-churno">3 / cycle</output></div>
+
+    <div class="btnrow">
+      <button class="btn" id="fr-cycle">Run one level cycle</button>
+      <button class="btn ghost" id="fr-cycle10">Run 10 cycles</button>
+      <button class="btn ghost" id="fr-auto">Auto-churn: start</button>
+      <button class="btn" id="fr-req40">Request 40 MB contiguous</button>
+      <button class="btn ghost" id="fr-reset">Reset heap</button>
+    </div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Occupied</div><div class="v" id="fr-used">0 MB</div></div>
+      <div class="cell"><div class="k">Total free</div><div class="v" id="fr-free">128 MB</div></div>
+      <div class="cell"><div class="k">Largest contiguous</div><div class="v" id="fr-larg">128 MB</div></div>
+      <div class="cell"><div class="k">Free holes</div><div class="v" id="fr-nfree">1</div></div>
+      <div class="cell"><div class="k">Fragmentation</div><div class="v" id="fr-frag">0%</div></div>
+      <div class="cell"><div class="k">Wasted in slots</div><div class="v" id="fr-waste">0 MB</div></div>
+    </div>
+
+    <canvas id="fr-canvas" width="900" height="300" aria-label="Heap strip showing allocated and free blocks across a 128 MB region"></canvas>
+    <div class="legend">
+      <span><i style="background:#4da3ff"></i>short-lived small</span>
+      <span><i style="background:#39c5bb"></i>long-lived small</span>
+      <span><i style="background:#a371f7"></i>level asset (large)</span>
+      <span><i style="background:#f0a44a"></i>transient load buffer</span>
+      <span><i style="background:#d29922"></i>slot padding</span>
+      <span><i style="background:#3fb950"></i>largest free run</span>
+      <span><i style="background:#141a22"></i>free</span>
+    </div>
+
+    <div class="verdict" id="fr-verdict">Booted heap. Run a couple of level cycles, then ask for 40 MB.</div>
+  </div>
+
+  <p>Four things to notice. First, the heap is only about a quarter <em>occupied</em> when the request
+  fails. Fragmentation is not a symptom of being full; it is a symptom of the <em>pattern</em>. Second,
+  the failure survives every cycle from about the second one onward, because the long-lived small
+  objects scattered during the boot peak are immovable pins &mdash; and the free space between two pins
+  can never exceed the distance between them, no matter how much total memory you free.</p>
+
+  <p>Third, switch the strategy to best-fit and run the same cycles. It is not a fix and it is not
+  uniformly worse: best-fit consumes the smallest adequate hole, which preserves large runs longer, so
+  the request often still succeeds &mdash; while the number of free holes and the population of
+  unusable sub-2&nbsp;MB slivers grows steadily. Push the transient slider up and keep churning and it
+  fails too. That is the honest summary of the placement-policy literature: policies trade the shape of
+  the failure, none of them removes it, and this is why the industry answer is not "choose a smarter
+  heap."</p>
+
+  <p>Fourth, switch to the segregated strategy and keep churning. The 40&nbsp;MB request stops failing,
+  permanently. Not because the allocator got clever but because two structural decisions were made in
+  advance: short-lived small objects can only land in the slot pool, so they can never pin the middle of
+  a large region, and the region large transient buffers come from was <em>reserved at startup</em>, so
+  nothing else can take it. A fixed-size pool converts unbounded external fragmentation into bounded,
+  predictable <strong>internal</strong> fragmentation &mdash; the "wasted in slots" readout, which runs
+  around 10&nbsp;MB here and is the price you agree to pay up front. It also converts a failure you
+  cannot predict into one you can: undersize the pool and it refuses an allocation on a schedule you can
+  compute, rather than at 2 a.m. on a test kit. Trading an unpredictable failure for a predictable
+  overhead is the whole argument for pooling, and it is the sentence to put in your assignment.</p>
+
+  <h3>What this means in each engine</h3>
+
+  <div class="tabs"><div class="tabhd">
+    <button data-engine="unity" data-tab="u" class="on">Unity</button>
+    <button data-engine="unreal" data-tab="e">Unreal</button>
+  </div><div class="tabbody">
+  <div class="tabpane on" data-pane="u">
+    <p>You do not control the managed heap's placement policy, so your lever is the allocation pattern
+    itself. Pool GameObjects rather than <code>Instantiate</code>/<code>Destroy</code> per spawn: a
+    pool is a fixed-size allocator wearing a gameplay costume, and it removes the churn that shreds
+    both the managed heap and the native side. Pre-size collections with the capacity constructor so
+    they stop doubling their backing arrays mid-level. For large native buffers, allocate once at load
+    and reuse &mdash; <code>NativeArray&lt;T&gt;</code> with <code>Allocator.Persistent</code>
+    allocated during a loading screen fragments nothing; the same array allocated per wave does.
+    Addressables let you control <em>when</em> large blocks come and go, which is the same lever:
+    group assets by lifetime so that things released together were allocated together.</p>
+    <p>Watch for the specific Unity trap: the managed heap expands to its high-water mark and does not
+    hand pages back to the OS under the Boehm collector, so a single transient spike permanently
+    raises your floor. That is not fragmentation, but it has the same shape on a graph and students
+    misdiagnose it constantly. Distinguish them with the Memory Profiler: fragmentation shows as a
+    heap section with live objects scattered across many pages; a high-water mark shows as large
+    contiguous empty regions inside a reserved heap.</p>
+  </div>
+  <div class="tabpane" data-pane="e">
+    <p>Unreal gives you the allocator directly. <code>FMemory</code> routes to a pluggable allocator
+    (binned2/binned3 on most platforms), which is itself a segregated free-list design: small
+    allocations are served from size-class pools exactly like the sandbox's pool mode, and large ones
+    go to the OS. That is why most Unreal fragmentation problems show up in the large-block path, and
+    why the fix is usually about lifetime grouping rather than allocator tuning. Use
+    <code>TArray::Reserve</code> before a known-size fill so the array does not walk through five
+    intermediate capacities, leaving four holes behind. Prefer <code>TInlineAllocator</code> for small
+    hot arrays so they never touch the heap at all.</p>
+    <p>For the game-object equivalent, object pooling is built in as actor pooling patterns and, for
+    UObjects, cluster GC keeps related objects together so they are collected as a unit. When you need
+    hard evidence, <code>stat memory</code> and <code>memreport -full</code> give you the per-category
+    picture, and Low Level Memory Tracker (LLM) attributes allocations to subsystems &mdash; the only
+    way to say "the growth is in audio, not in rendering" without guessing.</p>
+  </div></div></div>
+
+  <div class="check">
+    <p class="q">Your console build fails a 40&nbsp;MB streaming allocation with 300&nbsp;MB free.
+    Which change is most likely to actually fix it?</p>
+    <button class="opt" data-correct="0">Switch the allocator from first-fit to best-fit so it packs blocks more tightly.</button>
+    <button class="opt" data-correct="0">Reduce total memory usage by 100&nbsp;MB through texture compression.</button>
+    <button class="opt" data-correct="1">Reserve the 40&nbsp;MB streaming buffer once at startup and reuse it, and route short-lived allocations through fixed-size pools.</button>
+    <div class="exp"><b>Why C:</b> A block you own from startup cannot be denied later, and pools stop
+      short-lived allocations from landing inside the region large requests need. You have removed the
+      failure mode rather than making it less likely &mdash; and "less likely" is a poor property for
+      a bug that only appears after two hours of play on the test kit.
+      <div class="ex"><span class="who">Why A is tempting</span><br>Best-fit sounds like it wastes
+      less, and in the sandbox it genuinely does delay the failure &mdash; which is exactly what makes
+      it a trap. It buys time while accumulating unusable slivers, so the bug reappears later, on a
+      different level, and now with a "we already fixed that" note in the ticket. No placement policy
+      solves fragmentation against arbitrary lifetimes.</div>
+      <div class="ex"><span class="who">Why B is tempting</span><br>Using less memory is good and you
+      should do it, but the request did not fail for lack of total free memory &mdash; there was
+      300&nbsp;MB. Freeing another 100&nbsp;MB in small scattered pieces can leave the largest
+      contiguous run exactly where it was. Fixing the wrong axis is the classic fragmentation
+      mistake.</div>
+    </div>
+  </div>
+  <h2><span class="num">5</span>Allocation rate, not allocation count, is the metric</h2>
+
+  <p>Once you accept that the collector always frees what is unreachable, the interesting question
+  stops being "how much garbage did I make" and becomes "how fast am I making it." A tracing
+  collector's cost is dominated by the <em>mark</em> phase, which walks the live object graph. That
+  cost is proportional to how much is <em>alive</em>, not to how much is garbage. Your allocation
+  rate sets how <em>often</em> you pay it.</p>
+
+  <p>So the frame-time damage from garbage collection is the product of two numbers you control
+  separately: <strong>rate</strong> (KB allocated per frame) determines collection frequency, and
+  <strong>live set</strong> (MB of reachable objects) determines the length of each pause. A game
+  with a small heap can allocate carelessly and get short, frequent, tolerable pauses. A game with a
+  200&nbsp;MB live heap that allocates 150&nbsp;KB per frame gets a 60&ndash;80&nbsp;ms stall every
+  few seconds, which is four or five dropped frames in a row &mdash; the exact pattern players
+  describe as "it stutters."</p>
+
+  <div class="box why"><div class="lbl">Why your average FPS will not show this and your review will</div>
+  <p>Do the arithmetic before you run the simulator. Take a 20-second capture &mdash; 1,200 frames at a
+  14&nbsp;ms baseline &mdash; and add nine collections of 64&nbsp;ms each. Total time rises by
+  576&nbsp;ms over 16.8&nbsp;s, so average frame time goes from 14.0 to about 14.5&nbsp;ms: 71 fps down
+  to 69 fps. Nobody files that. Meanwhile the twelve worst frames in the capture are nine 78&nbsp;ms
+  monsters and three ordinary ones, so the 1% low is about 62&nbsp;ms &mdash; roughly 16 fps, down from
+  about 68. This is the Topic 4 lesson arriving in memory form: the average is nearly unchanged and the
+  game feels broken. Report percentiles or you will optimize the wrong thing.</p></div>
+
+  <div class="widget" id="w-gc">
+    <div class="whd"><span class="wt">GC Spike Simulator</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Real arithmetic on a deliberately simple model, stated up front: a collection is
+    triggered once new allocations since the last collection reach 10% of the live heap; a
+    stop-the-world pause costs 0.6&nbsp;ms of fixed overhead plus 0.35&nbsp;ms per MB of live heap
+    (marking dominates); incremental mode does the same total work in slices, plus a 3% write-barrier
+    tax on every frame. Real collectors are more complicated; the <em>shape</em> is right, and the
+    shape is the lesson.</p>
+
+    <div class="ctl"><label>Allocation rate</label>
+      <input type="range" id="gc-rate" min="0" max="500" value="150"><output id="gc-rateo">150 KB/frame</output></div>
+    <div class="ctl"><label>Live managed heap</label>
+      <input type="range" id="gc-heap" min="10" max="400" value="180"><output id="gc-heapo">180 MB</output></div>
+    <div class="ctl"><label>Baseline frame time</label>
+      <input type="range" id="gc-base" min="60" max="160" value="140"><output id="gc-baseo">14.0 ms</output></div>
+    <div class="ctl"><label>Collector mode</label>
+      <div class="seg" id="gc-mode">
+        <button data-v="0" class="on">Stop-the-world</button>
+        <button data-v="1">Incremental (3 ms slice)</button>
+      </div><output id="gc-modeo">STW</output></div>
+    <div class="ctl"><label>Frame budget</label>
+      <div class="seg" id="gc-target">
+        <button data-v="60" class="on">60 fps</button>
+        <button data-v="30">30 fps</button>
+      </div><output id="gc-targeto">16.7 ms</output></div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Collect every</div><div class="v" id="gc-int">&mdash;</div></div>
+      <div class="cell"><div class="k">Pause cost</div><div class="v" id="gc-pause">&mdash;</div></div>
+      <div class="cell"><div class="k">Average fps</div><div class="v" id="gc-avg">&mdash;</div></div>
+      <div class="cell"><div class="k">1% low fps</div><div class="v" id="gc-low1">&mdash;</div></div>
+      <div class="cell"><div class="k">0.1% low fps</div><div class="v" id="gc-low01">&mdash;</div></div>
+      <div class="cell"><div class="k">Frames over budget</div><div class="v" id="gc-over">&mdash;</div></div>
+    </div>
+
+    <canvas id="gc-canvas" width="900" height="320" aria-label="Frame time series showing GC spikes against the frame budget"></canvas>
+    <div class="legend">
+      <span><i style="background:#4da3ff"></i>frame time</span>
+      <span><i style="background:#f85149"></i>collection frame</span>
+      <span><i style="background:#d29922"></i>frame budget</span>
+      <span><i style="background:#3fb950"></i>average</span>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn ghost" data-gcpreset="clean">Disciplined: 8 KB/frame, 90 MB heap</button>
+      <button class="btn ghost" data-gcpreset="linq">LINQ in Update: 150 KB/frame, 180 MB</button>
+      <button class="btn ghost" data-gcpreset="fat">Open-world: 60 KB/frame, 380 MB heap</button>
+      <button class="btn ghost" data-gcpreset="mobile">Mobile 30 fps target, 120 MB</button>
+    </div>
+
+    <div class="verdict" id="gc-verdict">Move a slider.</div>
+  </div>
+
+  <p>Run the "LINQ in Update" preset, note the 1% low, then switch the collector to incremental. The
+  average gets slightly <em>worse</em> &mdash; you added a write-barrier tax and you are doing the
+  same total marking work &mdash; while the 1% low improves dramatically, because a 64&nbsp;ms stall
+  became twenty-two 3&nbsp;ms slices spread over twenty-two frames. That is the correct trade for a
+  game and the wrong trade for a benchmark, which is a useful thing to be able to explain to whoever
+  is looking at the average.</p>
+
+  <p>Then do the thing that actually fixes it: drag the allocation rate down toward 10&nbsp;KB/frame
+  and watch the collection interval stretch from a few seconds to a few minutes. Incremental GC
+  manages the symptom. Not allocating manages the disease. In practice the disease has a short and
+  boring list of causes, and you will find most of them by sorting the Unity Profiler's hierarchy
+  view by <code>GC.Alloc</code>:</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Pattern</th><th>What allocates</th><th>The replacement</th></tr></thead>
+    <tbody>
+      <tr><td><code>"Score: " + value</code> in <code>Update</code></td><td>Intermediate strings; every frame, forever</td><td>Update only on change; <code>StringBuilder</code> or cached format for the rare rebuild</td></tr>
+      <tr><td>LINQ (<code>Where</code>, <code>Select</code>, <code>OrderBy</code>) in a hot path</td><td>Iterator objects, closures, and a new backing array per call</td><td>A reused <code>List&lt;T&gt;</code> and an indexed loop; sort in place</td></tr>
+      <tr><td>Boxing: <code>object</code> params, <code>enum</code> as dictionary key, <code>struct</code> to interface</td><td>A heap allocation per conversion, invisible in source</td><td>Generic overloads; <code>IEqualityComparer&lt;T&gt;</code> for enum keys</td></tr>
+      <tr><td><code>foreach</code> over a non-generic or interface-typed collection</td><td>An enumerator boxed on every loop</td><td>Concrete types (<code>List&lt;T&gt;</code> struct enumerator) or <code>for</code></td></tr>
+      <tr><td><code>GetComponent</code>, <code>Find</code>, <code>Camera.main</code> in <code>Update</code></td><td>Some allocate; all cost lookups you already paid for once</td><td>Cache in <code>Awake</code>; treat per-frame lookups as a code smell</td></tr>
+      <tr><td><code>Physics.RaycastAll</code>, <code>GetComponentsInChildren</code></td><td>A fresh array per call</td><td><code>NonAlloc</code> variants and the <code>List&lt;T&gt;</code> overloads that fill a buffer you own</td></tr>
+      <tr><td>Lambdas capturing locals passed to a callback each frame</td><td>A closure object per call site per frame</td><td>Hoist to a cached delegate field; capture nothing</td></tr>
+      <tr><td><code>new</code> anything in <code>Update</code> &mdash; including <code>Vector3[]</code>, <code>WaitForSeconds</code></td><td>The obvious one, and the one in coroutines nobody sees</td><td>Pool it; cache <code>WaitForSeconds</code> instances as fields</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box field"><div class="lbl">Unreal's version of the same trade</div>
+  <p>Unreal's UObject collector is generational only in the loose sense but it is <em>clustered</em>:
+  related objects (an actor and its components, an asset and its sub-objects) are collected as a unit,
+  which shrinks the graph the reachability pass has to walk. The tuning knobs are real and
+  measurable &mdash; <code>gc.TimeBetweenPurgingPendingKillObjects</code>,
+  incremental purge budgets, and cluster settings &mdash; and the diagnostic is
+  <code>stat gc</code> plus <code>gc.CollectGarbageEveryFrame 1</code> to force the worst case while
+  you profile. The advice mirrors C#: the number of UObjects is the cost driver, so a system that
+  spawns 10,000 tiny UObjects will pay on every collection, and the fix is to make them not be
+  UObjects &mdash; plain structs in a <code>TArray</code>, which is also the data-oriented answer
+  Wingqvist, Wickstrom &amp; Memeti (2022) measure.</p></div>
+
+  <div class="check">
+    <p class="q">A build allocates 40&nbsp;KB/frame with a 90&nbsp;MB live heap. Your fix candidates:
+    (i) cut allocation to 8&nbsp;KB/frame, or (ii) cut the live heap to 45&nbsp;MB by unloading unused
+    assets. Which has the bigger effect on <em>1% low fps</em>, and why?</p>
+    <button class="opt" data-correct="1">(i) &mdash; it stretches the interval between collections fivefold, so far fewer frames carry a pause at all.</button>
+    <button class="opt" data-correct="0">(ii) &mdash; halving the live heap halves the mark cost, which is what makes the spike.</button>
+    <button class="opt" data-correct="0">Neither &mdash; 1% lows are dominated by shader compilation and streaming, not GC.</button>
+    <div class="exp"><b>Why A:</b> Both help, but they act on different terms. Halving the live set
+      halves each pause (roughly 32&nbsp;ms to 16&nbsp;ms here) &mdash; still a dropped frame. Cutting
+      the rate by 5&times; means one fifth as many collections, so the number of <em>ruined frames</em>
+      drops by 80%. Since 1% low is a count-of-bad-frames statistic, frequency beats magnitude. Set the
+      simulator to 40&nbsp;KB/90&nbsp;MB and try each change to see it.
+      <div class="ex"><span class="who">Why B is tempting</span><br>It is the intuitive one, and it is
+      genuinely correct about the mechanism: mark cost really does scale with live objects. But a
+      16&nbsp;ms pause still blows a 16.6&nbsp;ms budget, so you have converted a catastrophic frame
+      into a merely bad one at the same frequency. Halving pain you take just as often is a weaker
+      result than taking it a fifth as often.</div>
+      <div class="ex"><span class="who">Why C is tempting</span><br>Shader hitches and streaming stalls
+      absolutely do dominate 1% lows in some titles &mdash; that was Topic 4's frame-time reader. But
+      the question hands you a measured allocation rate and heap size, which is precisely the case
+      where GC is the identified cause. Dismissing the measurement you have in favour of a general
+      truth is how investigations stall.</div>
+    </div>
+  </div>
+  <h2><span class="num">6</span>Snapshot diffing: the one technique to take away from this topic</h2>
+
+  <p>If you remember one method from these four sessions, make it this one. Almost every memory
+  investigation you will ever run reduces to the same three-step protocol, and it works identically
+  in Unity, in Unreal, in Visual Studio's diagnostic tools, and in Xcode Instruments:</p>
+
+  <ol>
+    <li><strong>Snapshot A.</strong> Get the game into a known steady state &mdash; a specific level,
+    a specific menu, nothing streaming. Force a collection. Take the snapshot.</li>
+    <li><strong>Act.</strong> Do the suspect thing N times, where N is large enough that a per-iteration
+    leak is unmistakable: open and close the inventory twenty times, load and unload the sub-level
+    three times, spawn and kill two hundred enemies.</li>
+    <li><strong>Snapshot B, back at the same state.</strong> Return the game to <em>exactly</em> the
+    state of snapshot A. Force a collection again. Take the second snapshot and diff it.</li>
+  </ol>
+
+  <p>Everything the diff shows is, by construction, something the action created and the return did
+  not release. You are not asking "what is using memory," a question whose answer is thousands of rows
+  of nothing in particular. You are asking "what survived a round trip that should have been
+  net-zero," a question with a short answer and a suspect list. That framing is why the technique
+  outperforms staring at a total.</p>
+
+  <div class="box warn"><div class="lbl">The two steps students skip, and what it costs them</div>
+  <p><b>Returning to the same state</b> is what makes the diff meaningful. Snapshot A in the hub and
+  snapshot B in the dungeon differ by an entire level, so the diff is noise and you learn nothing.
+  <b>Forcing a collection before each snapshot</b> is what removes false positives: uncollected garbage
+  is still resident, so without a collect you will see hundreds of objects "leaking" that the next GC
+  would have taken. In Unity that is <code>GC.Collect()</code> followed by
+  <code>Resources.UnloadUnusedAssets()</code>; in Unreal it is <code>obj gc</code> (or
+  <code>GEngine-&gt;ForceGarbageCollection(true)</code>). Toggle "force GC" off in the widget below
+  and watch a clean build sprout a dozen fake leaks.</p></div>
+
+  <div class="widget" id="w-snap">
+    <div class="whd"><span class="wt">Snapshot Diff Reader</span><span class="wk">Simulator</span></div>
+    <p class="wsub">Pick an action, run it N times, and read the diff the way a triage lead reads it.
+    The table is computed from a per-type model &mdash; baseline count, transient allocations per
+    iteration, retained objects per iteration &mdash; not from a canned screenshot. A type is flagged
+    only when its count survives the round trip.</p>
+
+    <div class="ctl"><label>Action under test</label>
+      <div class="seg" id="sn-scen">
+        <button data-v="0" class="on">Open/close inventory</button>
+        <button data-v="1">Load/unload sub-level</button>
+        <button data-v="2">Spawn/destroy enemies</button>
+      </div><output id="sn-sceno">inventory</output></div>
+    <div class="ctl"><label>Iterations (N)</label>
+      <input type="range" id="sn-n" min="1" max="60" value="20"><output id="sn-no">20</output></div>
+    <div class="ctl"><label>Discipline</label>
+      <div class="seg" id="sn-gc">
+        <button data-v="1" class="on">Force GC before each snapshot</button>
+        <button data-v="0">Skip the forced GC</button>
+      </div><output id="sn-gco">clean</output></div>
+    <div class="ctl"><label>Build</label>
+      <div class="seg" id="sn-fix">
+        <button data-v="0" class="on">Before the fix</button>
+        <button data-v="1">After the fix</button>
+      </div><output id="sn-fixo">before</output></div>
+
+    <div class="readout">
+      <div class="cell"><div class="k">Snapshot A</div><div class="v" id="sn-a">&mdash;</div></div>
+      <div class="cell"><div class="k">Snapshot B</div><div class="v" id="sn-b">&mdash;</div></div>
+      <div class="cell"><div class="k">Delta</div><div class="v" id="sn-d">&mdash;</div></div>
+      <div class="cell"><div class="k">Retained / iteration</div><div class="v" id="sn-per">&mdash;</div></div>
+      <div class="cell"><div class="k">Flagged types</div><div class="v" id="sn-flag">&mdash;</div></div>
+    </div>
+
+    <div style="overflow-x:auto"><table class="difftbl" id="sn-table"></table></div>
+    <div class="verdict" id="sn-verdict">Pick an action.</div>
+  </div>
+
+  <p>Read the "before the fix" inventory case carefully. The delta is dominated by objects that are
+  individually tiny &mdash; a few hundred bytes each &mdash; and the reason it matters is the
+  multiplier, not the size. Twenty round trips is thirty seconds of play. Now extrapolate to a
+  two-hour session, or to the QA soak that opens the inventory every time it changes an item, and the
+  same per-iteration number becomes a hundred megabytes. <em>Per-iteration retained bytes</em> is the
+  number to put in your report, because it is the only one that predicts the crash.</p>
+
+  <h3>Doing it for real</h3>
+
+  <div class="tabs"><div class="tabhd">
+    <button data-engine="unity" data-tab="u" class="on">Unity</button>
+    <button data-engine="unreal" data-tab="e">Unreal</button>
+  </div><div class="tabbody">
+  <div class="tabpane on" data-pane="u">
+    <p>Install the <b>Memory Profiler</b> package &mdash; the built-in Profiler's memory module gives
+    you totals, and totals do not diagnose. Attach to a <b>development player on the target device</b>,
+    not the editor: editor snapshots include editor-only allocations, asset import caches, and a domain
+    full of objects that never exist in a build, which is why editor-only memory investigations produce
+    conclusions that do not survive contact with the phone.</p>
+    <p>The workflow: capture snapshot A, act, capture snapshot B, then open the two together and use
+    the diff view. Sort by the count delta, not the size delta &mdash; a leak of many small objects is
+    a stronger signal than one big allocation, which is usually a legitimate asset. When a suspicious
+    type appears, select an instance and read its <b>reference path</b> back to a root. That chain is
+    your answer: it will terminate in a static field, an event's invocation list, a
+    <code>DontDestroyOnLoad</code> object, or a <code>ScriptableObject</code> asset, which maps
+    directly onto the four mechanisms in section 3.</p>
+    <div class="codeblock"><div class="hd"><span class="dot"></span>MemoryProbe.cs &mdash; make the protocol repeatable</div><pre><span class="c">// Bind to a debug key. A protocol you can run identically in build N+1</span>
+<span class="c">// is worth more than a cleverer one you run once.</span>
+<span class="k">public static void</span> <span class="f">Settle</span>() {
+    <span class="t">GC</span>.<span class="f">Collect</span>();                                <span class="c">// drop unreachable managed objects</span>
+    <span class="t">GC</span>.<span class="f">WaitForPendingFinalizers</span>();
+    <span class="t">GC</span>.<span class="f">Collect</span>();                                <span class="c">// finalizers can resurrect; collect twice</span>
+    <span class="t">Resources</span>.<span class="f">UnloadUnusedAssets</span>();               <span class="c">// native side: textures, meshes, audio</span>
+    <span class="t">Debug</span>.<span class="f">Log</span>($<span class="s">"mono={</span><span class="t">Profiler</span>.<span class="f">GetMonoUsedSizeLong</span>()<span class="s">} " +</span>
+              $<span class="s">"total={</span><span class="t">Profiler</span>.<span class="f">GetTotalAllocatedMemoryLong</span>()<span class="s">}"</span>);
+}</pre></div>
+    <p>Log those two numbers at fixed checkpoints &mdash; main menu, level load complete, level unload
+    complete &mdash; in every automated run. A CSV of checkpoint memory across builds turns "it feels
+    like memory is growing" into a regression you can bisect, which is the same discipline Topic 3
+    applied to tests.</p>
+  </div>
+  <div class="tabpane" data-pane="e">
+    <p>Unreal's equivalents are console commands, which makes them trivially scriptable into an
+    automation run. <code>memreport -full</code> writes a report with per-category totals, the largest
+    objects, and texture/audio breakdowns; run it at your two checkpoints and diff the files with any
+    text diff tool. <code>obj list -class=Texture2D</code> and <code>obj list class=StaticMesh</code>
+    give per-class counts and sizes; <code>obj refs name=SomeAsset</code> prints the reference chain
+    that keeps an object alive &mdash; the direct analogue of Unity's reference path, and the fastest
+    route from "this should have been unloaded" to "this is who is holding it."</p>
+    <p><b>Low Level Memory Tracker</b> is the attribution tool: launch with <code>-LLM</code> and
+    <code>stat LLM</code> (or the LLM track in Unreal Insights) breaks the process total into
+    engine-defined tags &mdash; Textures, Meshes, Audio, Physics, UObject, RHI misc. Without it you can
+    see that native memory grew; with it you can say <em>which subsystem</em> grew, which is the
+    difference between a finding and a guess. For the true C++ leaks that no reachability scan will
+    catch, use Visual Studio's Diagnostic Tools snapshots on Windows or Valgrind/Massif on Linux
+    builds.</p>
+    <div class="codeblock"><div class="hd"><span class="dot"></span>Console protocol &mdash; run these in order, in a packaged development build</div><pre><span class="c">// A: settle and capture</span>
+obj gc
+memreport -full
+obj list class=Texture2D
+
+<span class="c">// Act: open/close, load/unload, spawn/destroy — N times</span>
+
+<span class="c">// B: settle and capture again, same state as A</span>
+obj gc
+memreport -full
+obj list class=Texture2D
+
+<span class="c">// Then: who is holding the thing that should be gone?</span>
+obj refs name=T_Boss_Albedo</pre></div>
+  </div></div></div>
+
+  <div class="check">
+    <p class="q">You take snapshot A in the hub, play the dungeon for five minutes, return to the hub,
+    and take snapshot B without forcing a collection. The diff shows 4,300 new
+    <code>System.String</code> objects. What have you actually learned?</p>
+    <button class="opt" data-correct="0">A string leak &mdash; something is holding references to strings created in the dungeon.</button>
+    <button class="opt" data-correct="1">Almost nothing: without a forced collection those strings may simply be uncollected garbage, so the diff cannot distinguish retention from churn.</button>
+    <button class="opt" data-correct="0">That string concatenation in the dungeon's UI is the top memory consumer and should be fixed first.</button>
+    <div class="exp"><b>Why B:</b> A snapshot captures what is <em>resident</em>, not what is
+      <em>reachable</em>. Unreferenced garbage sits in the heap until the next collection, so any diff
+      taken without settling first is measuring "garbage not yet collected" mixed with real retention,
+      with no way to separate them. Force the collect, re-take it, and the 4,300 usually becomes 0 or
+      becomes a real, much smaller number worth chasing.
+      <div class="ex"><span class="who">Why A is tempting</span><br>It is the right shape of conclusion
+      from the wrong measurement. Strings genuinely are a common retention target &mdash; caches keyed
+      by name are a classic &mdash; but you have not yet done the one step that would make the evidence
+      admissible.</div>
+      <div class="ex"><span class="who">Why C is tempting</span><br>It smuggles in two errors: a count
+      is not a size (4,300 short strings might be 200&nbsp;KB), and churn is not consumption. Even if
+      the strings are real garbage, the fix belongs in the allocation-rate conversation from section 5,
+      not in a leak report. Fix what you measured, and measure what you are about to claim.</div>
+    </div>
+  </div>
+  <h2><span class="num">7</span>Cross-platform prevention, and the trade you have to defend</h2>
+
+  <p>Prevention beats detection here more than anywhere else in the course, because memory defects
+  are discovered on the platform you test last. The strategies below are ordered by how much they buy
+  you per hour of work, and all of them are things you do <em>before</em> the bug exists.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Strategy</th><th>What it prevents</th><th>How you know it is working</th></tr></thead>
+    <tbody>
+      <tr><td><b>A written per-platform budget</b>, broken down by category (textures, meshes, audio, managed, native, streaming)</td><td>The "we use 2.1&nbsp;GB, is that bad?" conversation, which has no answer without a target</td><td>Every memory report has a target column and a pass/fail per row</td></tr>
+      <tr><td><b>Automated memory checkpoints in CI</b> &mdash; log totals at main menu, post-load, post-unload on every build</td><td>Slow regressions that nobody notices until cert</td><td>A graph over build numbers; a threshold that fails the job</td></tr>
+      <tr><td><b>Allocate large and long-lived at load time</b>; never allocate a big buffer mid-gameplay</td><td>Fragmentation failures and load hitches</td><td>Zero large allocations in the profiler between loading screens</td></tr>
+      <tr><td><b>Pool everything that spawns</b> &mdash; projectiles, enemies, VFX, UI rows, audio sources</td><td>Both churn (GC frequency) and fragmentation (block shredding) at once</td><td><code>GC.Alloc</code> near zero during combat; steady block count in the heap view</td></tr>
+      <tr><td><b>Group assets by lifetime</b> in Addressables groups or Unreal asset bundles/levels</td><td>Things released together were allocated together, so releases leave large holes rather than slivers</td><td>Largest-contiguous-free recovers after an unload instead of decaying</td></tr>
+      <tr><td><b>Symmetric teardown</b> &mdash; every subscribe, root, register, and cache-insert has its removal written in the same sitting</td><td>All four retention mechanisms in section 3</td><td>Code review has a teardown checklist; the round-trip diff is zero</td></tr>
+      <tr><td><b>Per-tier asset variants</b> &mdash; texture size caps, mip bias, LOD floors, audio compression per platform</td><td>The desktop build that "just needs a rebuild" for mobile</td><td>Budget compliance per tier is a build-time check, not a play-test discovery</td></tr>
+      <tr><td><b>Soak tests</b> &mdash; an automated run that plays for two hours and loads levels 40 times</td><td>Everything that is linear in session length or level loads</td><td>A memory-versus-time chart from an unattended overnight job</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The cross-platform part deserves its own warning, because the same build behaves differently for
+  reasons that are not in your code. On a unified-memory device your textures come out of the same
+  pool as your game logic, so a texture budget decision is a gameplay budget decision. Mobile
+  operating systems complicate the accounting further: what the OS reports for your process includes
+  shared pages, file-backed pages, and cached data, and it may reclaim some of that under pressure
+  without telling you. Chen et al. (2018) study exactly this layer &mdash; the interaction between an
+  app's memory and the system page cache on mobile &mdash; and the practical takeaway for you is
+  narrow but important: <em>the number the OS shows and the number your profiler shows are measuring
+  different things, and the one that gets you killed is the OS's.</em> Always report both, and always
+  name which one you used.</p>
+
+  <div class="box why"><div class="lbl">Why the balance conversation goes badly, and how to win it</div>
+  <p>Your objective list ends with "balance memory optimization against gameplay and visual quality,"
+  which in practice means a meeting where you propose halving a texture budget and an artist says no.
+  Two things make that meeting go well. First, bring the cliff: "at 1.9&nbsp;GB peak we are 180&nbsp;MB
+  over the jetsam limit on the oldest supported iPhone, which is a crash on level transition, which is
+  a cert failure &mdash; not a quality trade, a ship/no-ship." Second, bring an ordered menu of options
+  with measured costs, not a single demand: a 2048&rarr;1024 cap on hero textures saves 128&nbsp;MB and
+  is visible at close range; dropping one shadow cascade saves 24&nbsp;MB and is visible at distance;
+  streaming the third audio bank saves 60&nbsp;MB and costs 200&nbsp;ms on a rare transition. Artists
+  and designers make excellent decisions when handed a priced menu and terrible ones when handed an
+  ultimatum. That is a professional skill, not a technical one, and it is what the assignment's
+  "prevention strategies" section is really asking you to demonstrate.</p></div>
+
+  <p>One more source of cross-platform surprise worth naming for anyone doing a networked project.
+  Deng &amp; Lau (2012) look at load balancing in distributed virtual environments &mdash; how you
+  redistribute load across servers and how the delay in doing so affects the result. The memory
+  parallel is exact and often overlooked: server-side, a region's resident state is a memory cost per
+  machine, and migrating players to rebalance CPU also migrates their resident state. If your project
+  has a dedicated server, its memory budget per instance is as real as the client's, and it is
+  measured under peak concurrency rather than in your two-player test.</p>
+
+  <h2><span class="num">8</span>Memory is climbing &mdash; where do you look?</h2>
+
+  <p>Use this when you have a symptom and no hypothesis. It encodes the order that costs you the least
+  time: read the <em>shape</em> of the graph before you open any tool, because the shape eliminates
+  two of the three candidate causes for free.</p>
+
+  <div class="tree" id="treeMem"><p class="path"></p><div class="body"></div></div>
+
+  <h2><span class="num">9</span>The reading, and what to take from each</h2>
+
+  <ul class="readlist">
+    <li><b>Hizon, Fernandez &amp; others (2002), "Play by Play: Effective Memory Management."</b> Old
+    hardware, current argument. Read it for the mindset that a fixed budget makes memory a
+    <em>design</em> constraint handled by controlling allocation shape &mdash; pools, arenas, load-time
+    reservation &mdash; rather than a runtime problem solved by cleverness. Everything in section 4
+    descends from this position.</li>
+    <li><b>Chen et al. (2018), "Enabling Union Page Cache&hellip;"</b> Read it for the systems layer
+    underneath your profiler: what the OS counts as your memory, what it shares, and what it can
+    reclaim. The takeaway to carry into your report is that process-level and engine-level numbers
+    disagree for legitimate reasons, and you must say which you measured.</li>
+    <li><b>Wingqvist, Wickstrom &amp; Memeti (2022), "Evaluating the Performance of Object-Oriented and
+    Data-Oriented Design with Multi-Threading in Game Development."</b> The memory-layout argument with
+    measurements attached. Data-oriented design is usually sold as a cache-locality win; note that it is
+    also an allocation-count win, because a thousand entities in one array is one allocation and one GC
+    edge rather than a thousand of each.</li>
+    <li><b>Deng &amp; Lau (2012), "On Delay Adjustment for Dynamic Load Balancing in Distributed
+    Virtual Environments."</b> Server-side resource management under change. Relevant if your project
+    is networked: resident state is a per-instance memory cost, and rebalancing moves it.</li>
+  </ul>
+
+  <div class="deliver">
+    <h3>Bring to the assignment</h3>
+    <p><b>Memory Optimization</b> &middot; 100 points &middot; due Nov 22 &middot; document at least two
+    memory issues found by profiling, fix each, measure before and after, and develop cross-platform
+    prevention strategies. Slides, a 5&ndash;7 minute video, or a report.</p>
+    <p>What a strong submission contains, in the order a grader looks for it:</p>
+    <ul>
+      <li><b>A stated budget before any measurement.</b> Target platform, total memory budget in MB, and
+      a category breakdown. Without it your numbers have no verdict. One table, five lines.</li>
+      <li><b>Two issues of <em>different kinds</em>.</b> Two retention leaks is a weaker submission than
+      one retention leak plus one of: allocation-rate churn causing GC spikes, a fragmentation or
+      large-allocation failure, an unnecessary texture/audio residency, or a native leak. Section 2's
+      four heaps is the menu &mdash; pick from two different rows.</li>
+      <li><b>Evidence that names the mechanism.</b> For a retention bug, the reference path or
+      <code>obj refs</code> chain terminating in the root, plus the line of code that created it. "It was
+      a leak" is not a diagnosis; "a static event's invocation list held 37 dead spawners" is.</li>
+      <li><b>The three-snapshot protocol, stated and repeated.</b> Snapshot A, N iterations, snapshot B
+      at the same state, forced collection before both, N written down. Run it identically before and
+      after the fix &mdash; the same protocol on both sides is what makes the comparison admissible.</li>
+      <li><b>Before/after numbers with units and percentiles.</b> Managed heap MB, native MB, texture MB,
+      per-iteration retained bytes, and &mdash; if the issue was GC churn &mdash; average frame time
+      <em>and</em> 1% low, because the average will not move and you need to explain why that is the
+      point.</li>
+      <li><b>Prevention, written as rules, not intentions.</b> Take section 7's table and fill in your
+      project's version: the budget document, the CI checkpoint, the pooling rule, the teardown checklist
+      line. A rule someone else could follow beats a paragraph about being careful.</li>
+      <li><b>The cross-platform delta.</b> State how the same fix behaves on a second target &mdash;
+      desktop versus mobile, or editor versus device. If you can only test one, say what you predict and
+      why, in terms of unified memory, the OS limit, and the texture format difference.</li>
+      <li><b>One honest trade.</b> Something you chose <em>not</em> to optimize because the visual or
+      gameplay cost was too high, with the number you would have saved. Graders and studios both read
+      that as the sign of an engineer rather than a tuner.</li>
+    </ul>
+    <p class="small subtle">Sessions 21 and 22 are lab sessions: bring a build that can be profiled on a
+    device, and a suspicion. If you have neither, bring any project with a level you can load and unload
+    &mdash; the three-snapshot protocol will find you something within twenty minutes.</p>
+  </div>
+
+  <footer class="lf"><a href="../index.html">&larr; Course hub</a><span>Advanced Game Testing and Debugging</span></footer>
+</div>
+<script id="lesson-kit-js">
+/* ---------- reading progress ---------- */
+(function(){
+  var b=document.createElement('div'); b.className='progressbar';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(b);});
+  addEventListener('scroll',function(){
+    var h=document.documentElement, m=h.scrollHeight-h.clientHeight;
+    b.style.width=(m>0?(h.scrollTop/m*100):0)+'%';
+  },{passive:true});
+})();
+
+/* ---------- engine tabs ---------- */
+function GDTtabs(root){
+  root.querySelectorAll('.tabhd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      root.querySelectorAll('.tabhd button').forEach(function(b){b.classList.remove('on')});
+      root.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('on')});
+      btn.classList.add('on');
+      var pane=root.querySelector('.tabpane[data-pane="'+btn.dataset.tab+'"]');
+      if(pane) pane.classList.add('on');
+    });
+  });
+}
+
+/* ---------- annotated code ---------- */
+function GDTannot(root){
+  root.querySelectorAll('.arow.hasnote').forEach(function(row){
+    row.addEventListener('click',function(){
+      var note=row.nextElementSibling;
+      var open=row.classList.contains('open');
+      row.classList.toggle('open',!open);
+      if(note&&note.classList.contains('note')) note.classList.toggle('open',!open);
+    });
+  });
+}
+
+/* ---------- knowledge check ---------- */
+function GDTcheck(root){
+  var done=false;
+  root.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      if(done) return; done=true;
+      var correct = opt.dataset.correct==='1';
+      root.querySelectorAll('.opt').forEach(function(o){
+        if(o.dataset.correct==='1'){o.classList.add('right');
+          o.insertAdjacentHTML('beforeend','<span class="tag">CORRECT</span>');}
+        else if(o===opt){o.classList.add('wrong');
+          o.insertAdjacentHTML('beforeend','<span class="tag">NOT QUITE</span>');}
+        o.style.cursor='default';
+      });
+      var exp=root.querySelector('.exp'); if(exp) exp.classList.add('on');
+    });
+  });
+}
+
+/* ---------- decision tree ----------
+   Usage: new GDTTree(document.getElementById('t1'), NODES, 'start')
+   NODES = { start:{q:'', hint:'', choices:[{t:'',sub:'',go:'nodeId'}]},
+             leafId:{leaf:true, title:'', body:'<p>…</p>'} }              */
+function GDTTree(root,nodes,startId){
+  var pathEl=root.querySelector('.path'), body=root.querySelector('.body');
+  var trail=[];
+  function render(id){
+    var n=nodes[id]; if(!n) return;
+    pathEl.innerHTML = trail.length? trail.map(function(t){return '<span>'+t+'</span>'}).join(' &rsaquo; ') : '&nbsp;';
+    if(n.leaf){
+      body.innerHTML='<div class="leaf"><h5>'+n.title+'</h5>'+n.body+'</div>'+
+        '<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>';
+    }else{
+      body.innerHTML='<p class="qq">'+n.q+'</p>'+(n.hint?'<p class="qh">'+n.hint+'</p>':'')+
+        '<div class="choices">'+n.choices.map(function(c,i){
+          return '<button data-go="'+c.go+'" data-lbl="'+(c.lbl||c.t).replace(/"/g,'&quot;')+'">'+c.t+
+                 (c.sub?'<span class="sub">'+c.sub+'</span>':'')+'</button>';}).join('')+'</div>'+
+        (trail.length?'<div class="btnrow"><button class="btn ghost" data-restart>Start over</button></div>':'');
+    }
+    body.querySelectorAll('[data-go]').forEach(function(b){
+      b.addEventListener('click',function(){trail.push(b.dataset.lbl); render(b.dataset.go);});
+    });
+    var rs=body.querySelector('[data-restart]');
+    if(rs) rs.addEventListener('click',function(){trail=[]; render(startId);});
+  }
+  render(startId);
+}
+
+/* ---------- auto-wire everything ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.tabs').forEach(GDTtabs);
+  document.querySelectorAll('.annot').forEach(GDTannot);
+  document.querySelectorAll('.check').forEach(GDTcheck);
+});
+
+/* ---------- small helpers for simulators ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(n,d){return Number(n).toFixed(d===undefined?1:d)}
+function lerp(a,b,t){return a+(b-a)*t}
+/* deterministic pseudo-random so demos are reproducible for a class */
+function rng(seed){var s=seed||1;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296;}}
+</script>
+<script>
+/* ==========================================================
+   Advanced Game Testing and Debugging Topic 6 — lesson widgets
+   ========================================================== */
+(function(){
+
+function segment(root, cb){
+  if(!root) return;
+  root.querySelectorAll('button').forEach(function(b){
+    b.addEventListener('click', function(){
+      root.querySelectorAll('button').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      cb(parseInt(b.dataset.v,10), b);
+    });
+  });
+}
+
+/* ============================================================
+   WIDGET 1 — Fragmentation sandbox (real free-list simulation)
+   Units: MB, integer-free floats. Heap 128 MB.
+   ============================================================ */
+var FCFG = {
+  heap:128, pool:48, slot:1, reserve:40,      /* mode 2 region layout */
+  bootScratch:36, bootLarge:3, bootLMin:11, bootLSpan:4,
+  bootSmall:26, bootFreeLarge:2, bootKeepSmall:0.60,
+  cycScratch:20, cycLarge:2, cycLMin:5, cycLSpan:4,
+  cycPin:1, smallMin:0.25, smallSpan:0.75,
+  pinLifeMin:8, pinLifeSpan:12, smallLifeSpan:3,
+  req:40
+};
+
+function FragSim(mode, seed, churn){
+  this.mode = mode; this.rand = rng(seed); this.churn = churn;
+  this.blocks = []; this.nextId = 1; this.cycle = 0; this.refused = 0;
+  this.tmp = []; this.pins = []; this.levels = {}; this.hw = 0; this.lastReq = null;
+  var C = FCFG;
+  if(mode === 2){
+    for(var o=0; o<C.pool; o+=C.slot)
+      this.blocks.push({off:o, size:C.slot, free:true, used:0, region:'pool', id:0, cls:0});
+    this.blocks.push({off:C.pool, size:C.reserve, free:true, used:0, region:'res', id:0, cls:0});
+    this.blocks.push({off:C.pool+C.reserve, size:C.heap-C.pool-C.reserve, free:true, used:0,
+                      region:'arena', id:0, cls:0});
+  } else {
+    this.blocks.push({off:0, size:C.heap, free:true, used:0, region:'gp', id:0, cls:0});
+  }
+  this.boot();
+}
+/* class 0 = transient small, 1 = long-lived small, 2 = level asset (large),
+   3 = transient large scratch / streaming request                              */
+FragSim.prototype.regionFor = function(cls){
+  if(this.mode !== 2) return 'gp';
+  if(cls === 0 || cls === 1) return 'pool';
+  if(cls === 3) return 'res';
+  return 'arena';
+};
+FragSim.prototype.find = function(size, region){
+  var best = -1, bs = Infinity;
+  for(var i=0; i<this.blocks.length; i++){
+    var b = this.blocks[i];
+    if(!b.free || b.region !== region || b.size < size - 1e-9) continue;
+    if(this.mode === 1){ if(b.size < bs){ bs = b.size; best = i; } }
+    else return i;                                  /* first fit: take the first hole that fits */
+  }
+  return best;
+};
+FragSim.prototype.alloc = function(size, cls){
+  var reg = this.regionFor(cls);
+  var need = (reg === 'pool') ? FCFG.slot : size;
+  var i = this.find(need, reg);
+  if(i < 0){ this.refused++; return -1; }
+  var b = this.blocks[i];
+  if(reg !== 'pool' && b.size > need + 1e-9){
+    this.blocks.splice(i+1, 0, {off:b.off+need, size:b.size-need, free:true, used:0,
+                                region:b.region, id:0, cls:0});
+    b.size = need;
+  }
+  b.free = false; b.used = size; b.id = this.nextId++; b.cls = cls;
+  return b.id;
+};
+FragSim.prototype.release = function(id){
+  for(var i=0; i<this.blocks.length; i++){
+    var b = this.blocks[i];
+    if(b.id === id && !b.free){
+      b.free = true; b.used = 0; b.id = 0; b.cls = 0;
+      if(b.region !== 'pool'){                       /* coalesce with free neighbours */
+        var n = this.blocks[i+1];
+        if(n && n.free && n.region === b.region){ b.size += n.size; this.blocks.splice(i+1,1); }
+        var p = this.blocks[i-1];
+        if(p && p.free && p.region === b.region){ p.size += b.size; this.blocks.splice(i,1); }
+      }
+      return true;
+    }
+  }
+  return false;
+};
+FragSim.prototype.smallSize = function(){
+  return FCFG.smallMin + this.rand()*FCFG.smallSpan;
+};
+FragSim.prototype.mark = function(){
+  var o = 0;
+  for(var i=0;i<this.blocks.length;i++) if(!this.blocks[i].free) o += this.blocks[i].size;
+  if(o > this.hw) this.hw = o;
+};
+FragSim.prototype.boot = function(){
+  var C = FCFG, i, id, bl = [], bs = [];
+  var scratch = this.alloc(C.bootScratch, 3);
+  for(i=0;i<C.bootLarge;i++){
+    id = this.alloc(C.bootLMin + this.rand()*C.bootLSpan, 2);
+    if(id > 0) bl.push(id);
+  }
+  for(i=0;i<C.bootSmall;i++){
+    id = this.alloc(this.smallSize(), 1);
+    if(id > 0) bs.push(id);
+  }
+  this.mark();
+  if(scratch > 0) this.release(scratch);
+  for(i=0;i<C.bootFreeLarge && i<bl.length;i++) this.release(bl[i]);
+  this.levels[0] = bl.slice(C.bootFreeLarge);
+  for(i=0;i<bs.length;i++){
+    if(this.rand() < C.bootKeepSmall) this.pins.push({id:bs[i], die:1e9});
+    else this.release(bs[i]);
+  }
+};
+FragSim.prototype.runCycle = function(){
+  var C = FCFG, i, id;
+  this.cycle++;
+  var c = this.cycle, set = [];
+  set.push({s:C.cycScratch, cls:3});
+  for(i=0;i<C.cycLarge;i++) set.push({s:C.cycLMin + this.rand()*C.cycLSpan, cls:2});
+  for(i=0;i<this.churn;i++)  set.push({s:this.smallSize(), cls:0});
+  for(i=0;i<C.cycPin;i++)   set.push({s:this.smallSize(), cls:1});
+  for(i=set.length-1;i>0;i--){                        /* order within a load is not controlled */
+    var j = 1 + Math.floor(this.rand()*i);
+    var t = set[i]; set[i] = set[j]; set[j] = t;
+  }
+  this.levels[c] = [];
+  var scratch = -1;
+  for(i=0;i<set.length;i++){
+    id = this.alloc(set[i].s, set[i].cls);
+    if(id < 0) continue;
+    if(set[i].cls === 2) this.levels[c].push(id);
+    else if(set[i].cls === 3) scratch = id;
+    else if(set[i].cls === 0) this.tmp.push({id:id, die:c+1+Math.floor(this.rand()*C.smallLifeSpan)});
+    else this.pins.push({id:id, die:c+C.pinLifeMin+Math.floor(this.rand()*C.pinLifeSpan)});
+  }
+  this.mark();
+  if(scratch > 0) this.release(scratch);
+  var keep = [];
+  for(i=0;i<this.tmp.length;i++){
+    if(this.tmp[i].die <= c) this.release(this.tmp[i].id); else keep.push(this.tmp[i]);
+  }
+  this.tmp = keep;
+  keep = [];
+  for(i=0;i<this.pins.length;i++){
+    if(this.pins[i].die <= c) this.release(this.pins[i].id); else keep.push(this.pins[i]);
+  }
+  this.pins = keep;
+  var old = c-1;
+  if(this.levels[old]){
+    for(i=0;i<this.levels[old].length;i++) this.release(this.levels[old][i]);
+    delete this.levels[old];
+  }
+};
+FragSim.prototype.stats = function(){
+  var used=0, occ=0, free=0, lg=0, nf=0, waste=0, slivers=0;
+  for(var i=0;i<this.blocks.length;i++){
+    var b = this.blocks[i];
+    if(b.free){ free += b.size; nf++; if(b.size > lg) lg = b.size; if(b.size < 2) slivers++; }
+    else { occ += b.size; used += b.used; waste += b.size - b.used; }
+  }
+  return {used:used, occ:occ, free:free, largest:lg, nfree:nf, waste:waste, slivers:slivers,
+          frag: free > 0 ? (1 - lg/free) : 0, hw:this.hw};
+};
+FragSim.prototype.largestIn = function(reg){
+  var lg = 0;
+  for(var i=0;i<this.blocks.length;i++){
+    var b = this.blocks[i];
+    if(b.free && b.region === reg && b.size > lg) lg = b.size;
+  }
+  return lg;
+};
+FragSim.prototype.request = function(size){
+  var reg = (this.mode === 2) ? 'res' : 'gp';
+  var i = this.find(size, reg);
+  var s = this.stats();
+  this.lastReq = {ok:i>=0, size:size, free:s.free,
+                  largest:(this.mode===2 ? this.largestIn('res') : s.largest),
+                  at:(i>=0 ? this.blocks[i].off : -1)};
+  return this.lastReq;
+};
+
+function initFrag(){
+  var root = document.getElementById('w-frag');
+  if(!root) return;
+  var cv = document.getElementById('fr-canvas'), ctx = cv.getContext('2d');
+  var W = 900, H = 300, DPR = 1;
+  var mode = 0, churn = 3, seed = 20261117, sim = new FragSim(0, seed, 3);
+  var auto = 0, timer = 0, flash = null;
+
+  function fit(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(320, cv.clientWidth || cv.parentNode.clientWidth || 900);
+    H = 300;
+    cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+    cv.style.height = H + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+
+  var COLOR = {0:'#4da3ff', 1:'#39c5bb', 2:'#a371f7', 3:'#f0a44a'};
+
+  function draw(){
+    var C = FCFG, ROWS = 8, perRow = C.heap/ROWS;
+    var padL = 46, padR = 8, padT = 14, gap = 6;
+    var innerW = W - padL - padR;
+    var rowH = (H - padT - 10 - gap*(ROWS-1)) / ROWS;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#0a0d12'; ctx.fillRect(0,0,W,H);
+    var st = sim.stats();
+    var largestOff = -1;
+    for(var i=0;i<sim.blocks.length;i++){
+      var b = sim.blocks[i];
+      if(b.free && Math.abs(b.size - st.largest) < 1e-9){ largestOff = b.off; break; }
+    }
+    function rect(from, to, fill){
+      while(from < to - 1e-9){
+        var row = Math.floor(from/perRow + 1e-9);
+        if(row >= ROWS) return;
+        var rowEnd = (row+1)*perRow;
+        var seg = Math.min(to, rowEnd);
+        var x0 = padL + ((from - row*perRow)/perRow)*innerW;
+        var x1 = padL + ((seg  - row*perRow)/perRow)*innerW;
+        var y = padT + row*(rowH+gap);
+        ctx.fillStyle = fill;
+        ctx.fillRect(x0, y, Math.max(0.8, x1-x0), rowH);
+        from = seg;
+      }
+    }
+    /* row backgrounds + address labels */
+    ctx.font = '10px ui-monospace,monospace';
+    for(var r=0;r<ROWS;r++){
+      var y = padT + r*(rowH+gap);
+      ctx.fillStyle = '#141a22'; ctx.fillRect(padL, y, innerW, rowH);
+      ctx.fillStyle = '#5b6b7d'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText((r*perRow) + ' MB', padL-6, y+rowH/2);
+    }
+    /* blocks */
+    for(i=0;i<sim.blocks.length;i++){
+      var bl = sim.blocks[i];
+      if(bl.free){
+        if(largestOff === bl.off && bl.size > 0.5) rect(bl.off, bl.off+bl.size, 'rgba(63,185,80,.30)');
+      } else {
+        rect(bl.off, bl.off+bl.used, COLOR[bl.cls] || '#4da3ff');
+        if(bl.size > bl.used + 1e-9) rect(bl.off+bl.used, bl.off+bl.size, 'rgba(210,153,34,.55)');
+      }
+    }
+    /* region dividers in segregated mode */
+    if(mode === 2){
+      ctx.strokeStyle = 'rgba(230,237,243,.45)'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+      [FCFG.pool, FCFG.pool+FCFG.reserve].forEach(function(off){
+        var row = Math.floor(off/perRow);
+        var x = padL + ((off - row*perRow)/perRow)*innerW;
+        var y = padT + row*(rowH+gap);
+        ctx.beginPath(); ctx.moveTo(x, y-2); ctx.lineTo(x, y+rowH+2); ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#9fb0c3'; ctx.textAlign = 'left'; ctx.font = '10px ui-monospace,monospace';
+      ctx.fillText('POOL 0-48', padL+3, padT+rowH*0.5);
+      var rw = Math.floor(FCFG.pool/perRow);
+      ctx.fillText('RESERVE 48-88', padL + ((FCFG.pool-rw*perRow)/perRow)*innerW + 3,
+                   padT + rw*(rowH+gap) + rowH*0.5);
+      var ra = Math.floor((FCFG.pool+FCFG.reserve)/perRow);
+      ctx.fillText('ARENA 88-128',
+                   padL + (((FCFG.pool+FCFG.reserve)-ra*perRow)/perRow)*innerW + 3,
+                   padT + ra*(rowH+gap) + rowH*0.5);
+    }
+    /* high-water marker */
+    if(st.hw > 0 && mode !== 2){
+      var hrow = Math.floor(st.hw/perRow);
+      if(hrow < ROWS){
+        var hx = padL + ((st.hw - hrow*perRow)/perRow)*innerW;
+        var hy = padT + hrow*(rowH+gap);
+        ctx.strokeStyle = '#d29922'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(hx, hy-3); ctx.lineTo(hx, hy+rowH+3); ctx.stroke();
+      }
+    }
+    /* flash the failed / satisfied request */
+    if(flash && flash.t > 0){
+      ctx.strokeStyle = flash.ok ? '#3fb950' : '#f85149';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(padL-2, padT-4, innerW+4, H-padT-6);
+    }
+  }
+
+  function verdict(){
+    var st = sim.stats(), v = document.getElementById('fr-verdict');
+    document.getElementById('fr-used').textContent  = fmt(st.occ,1) + ' MB';
+    document.getElementById('fr-free').textContent  = fmt(st.free,1) + ' MB';
+    document.getElementById('fr-larg').textContent  = fmt(st.largest,1) + ' MB';
+    document.getElementById('fr-nfree').textContent = st.nfree;
+    document.getElementById('fr-frag').textContent  = Math.round(st.frag*100) + '%';
+    document.getElementById('fr-waste').textContent = fmt(st.waste,1) + ' MB';
+    var lc = document.getElementById('fr-larg');
+    lc.className = 'v ' + (st.largest >= FCFG.req ? 'ok' : 'crit');
+    var fc = document.getElementById('fr-frag');
+    fc.className = 'v ' + (st.frag > 0.6 ? 'crit' : st.frag > 0.3 ? 'warn' : 'ok');
+
+    var head = 'Cycle ' + sim.cycle + ' &middot; high-water ' + fmt(st.hw,0) + ' MB of ' +
+               FCFG.heap + ' MB. ';
+    var msg, cls;
+    if(sim.lastReq){
+      if(sim.lastReq.ok){
+        cls = 'ok';
+        msg = '<b>40 MB request satisfied</b> from a ' + fmt(sim.lastReq.largest,1) +
+              ' MB free run' + (mode===2 ? ' in the reserved streaming region' : '') + '. ' +
+              (mode===2
+                ? 'The pool absorbed every short-lived allocation, so nothing small ever landed in the region large requests come from. The price is the ' +
+                  fmt(st.waste,1) + ' MB of slot padding in the "wasted" cell &mdash; bounded, predictable, and paid up front.'
+                : 'Keep churning: with mixed lifetimes this run erodes. Fragmentation failures are intermittent, which is why they ship.');
+      } else {
+        cls = 'crit';
+        msg = '<b>40 MB request FAILED</b> with ' + fmt(sim.lastReq.free,1) +
+              ' MB free &mdash; ' + fmt(sim.lastReq.free/FCFG.req,1) +
+              '&times; the amount asked for. The largest single free run is ' +
+              fmt(sim.lastReq.largest,1) + ' MB, spread across ' + st.nfree + ' holes (' +
+              st.slivers + ' of them under 2 MB). Nothing leaked and nothing is over budget; the ' +
+              'allocator walked the whole free list and no run was long enough.';
+      }
+    } else {
+      cls = ''; msg = 'Run some level cycles, then ask for 40 MB contiguous.';
+    }
+    if(sim.refused > 0) msg += ' <span class="subtle">(' + sim.refused +
+      ' ordinary allocation' + (sim.refused>1?'s were':' was') + ' also refused during the run.)</span>';
+    v.className = 'verdict ' + cls;
+    v.innerHTML = head + msg;
+  }
+
+  function refresh(){ draw(); verdict(); }
+
+  function reset(){
+    stopAuto();
+    sim = new FragSim(mode, seed, churn);
+    flash = null;
+    refresh();
+  }
+
+  function stopAuto(){
+    if(timer){ clearInterval(timer); timer = 0; }
+    auto = 0;
+    var b = document.getElementById('fr-auto');
+    if(b) b.textContent = 'Auto-churn: start';
+  }
+
+  document.getElementById('fr-cycle').addEventListener('click', function(){
+    sim.runCycle(); sim.request(FCFG.req); refresh();
+  });
+  document.getElementById('fr-cycle10').addEventListener('click', function(){
+    for(var i=0;i<10;i++) sim.runCycle();
+    sim.request(FCFG.req); refresh();
+  });
+  document.getElementById('fr-auto').addEventListener('click', function(){
+    if(auto){ stopAuto(); return; }
+    auto = 1; this.textContent = 'Auto-churn: stop';
+    timer = setInterval(function(){
+      sim.runCycle(); sim.request(FCFG.req); refresh();
+      if(sim.cycle > 400) stopAuto();
+    }, 550);
+  });
+  document.getElementById('fr-req40').addEventListener('click', function(){
+    var r = sim.request(FCFG.req);
+    flash = {ok:r.ok, t:1};
+    refresh();
+    setTimeout(function(){ flash = null; draw(); }, 900);
+  });
+  document.getElementById('fr-reset').addEventListener('click', reset);
+
+  segment(document.getElementById('fr-mode'), function(v){
+    mode = v;
+    document.getElementById('fr-modeo').textContent =
+      v === 0 ? 'first-fit' : v === 1 ? 'best-fit' : 'segregated';
+    reset();
+  });
+  var ch = document.getElementById('fr-churn');
+  ch.addEventListener('input', function(){
+    churn = parseInt(ch.value,10);
+    document.getElementById('fr-churno').textContent = churn + ' / cycle';
+    sim.churn = churn;
+  });
+
+  var rt = 0;
+  addEventListener('resize', function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){ fit(); draw(); }, 150);
+  });
+
+  fit(); refresh();
+}
+
+/* ============================================================
+   WIDGET 2 — GC spike simulator
+   ============================================================ */
+function initGC(){
+  var root = document.getElementById('w-gc');
+  if(!root) return;
+  var cv = document.getElementById('gc-canvas'), ctx = cv.getContext('2d');
+  var W = 900, H = 320, DPR = 1;
+  var st = {rate:150, heap:180, base:14.0, mode:0, target:60};
+  var WINDOW = 20, SLICE = 3.0, BARRIER = 0.03;   /* a fixed 20-second observation window */
+
+  function fit(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(320, cv.clientWidth || cv.parentNode.clientWidth || 900);
+    H = 320;
+    cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+    cv.style.height = H + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+
+  function simulate(){
+    var triggerKB = st.heap * 1024 * 0.10;               /* collect after 10% of heap allocated */
+    var interval  = st.rate > 0 ? Math.max(1, Math.ceil(triggerKB / st.rate)) : Infinity;
+    var pause     = 0.6 + 0.35 * st.heap;                /* mark cost dominated by live set   */
+    var base      = st.base * (st.mode === 1 ? (1+BARRIER) : 1);
+    var FRAMES = Math.round(WINDOW * st.target);
+    var r = rng(60606);
+    var frames = new Array(FRAMES), marks = new Array(FRAMES), acc = 0, i;
+    var sliceLeft = 0;
+    for(i=0;i<FRAMES;i++){
+      var t = base * (0.97 + r()*0.06);
+      marks[i] = 0;
+      if(interval !== Infinity){
+        acc++;
+        if(acc >= interval){
+          acc = 0;
+          if(st.mode === 0){ t += pause; marks[i] = 1; }
+          else sliceLeft += pause;
+        }
+      }
+      if(st.mode === 1 && sliceLeft > 0){
+        var s = Math.min(SLICE, sliceLeft);
+        t += s; sliceLeft -= s; marks[i] = 1;
+      }
+      frames[i] = t;
+    }
+    var sorted = frames.slice().sort(function(a,b){ return b-a; });
+    var n1 = Math.max(1, Math.round(FRAMES*0.01));
+    var n01 = Math.max(1, Math.round(FRAMES*0.001));
+    var sum = 0, s1 = 0, s01 = 0, over = 0;
+    var budget = 1000/st.target;
+    for(i=0;i<FRAMES;i++){ sum += frames[i]; if(frames[i] > budget) over++; }
+    for(i=0;i<n1;i++) s1 += sorted[i];
+    for(i=0;i<n01;i++) s01 += sorted[i];
+    return {frames:frames, marks:marks, avg:sum/FRAMES, low1:s1/n1, low01:s01/n01,
+            over:over, overPct:over/FRAMES*100, budget:budget, interval:interval, pause:pause,
+            n:FRAMES, collections: interval===Infinity ? 0 : Math.floor(FRAMES/interval)};
+  }
+
+  function draw(d){
+    var padL = 46, padR = 10, padT = 12, padB = 22;
+    var iw = W - padL - padR, ih = H - padT - padB;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#0a0d12'; ctx.fillRect(0,0,W,H);
+    var maxY = Math.max(d.budget*2.2, Math.min(d.low01*1.12, d.budget*8));
+    function Y(v){ return padT + ih - Math.min(v, maxY)/maxY*ih; }
+    ctx.strokeStyle = '#1c232d'; ctx.lineWidth = 1;
+    ctx.font = '10px ui-monospace,monospace'; ctx.fillStyle = '#5b6b7d';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for(var g=0; g<=4; g++){
+      var v = maxY*g/4, y = Y(v);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W-padR, y); ctx.stroke();
+      ctx.fillText(v.toFixed(0)+' ms', padL-6, y);
+    }
+    /* frame bars */
+    var bw = iw/d.frames.length;
+    for(var i=0;i<d.frames.length;i++){
+      var x = padL + i*bw, y = Y(d.frames[i]);
+      ctx.fillStyle = d.marks[i] ? '#f85149' : '#4da3ff';
+      ctx.fillRect(x, y, Math.max(0.8, bw*0.9), padT+ih-y);
+    }
+    /* budget + average */
+    ctx.setLineDash([5,4]); ctx.strokeStyle = '#d29922'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(padL, Y(d.budget)); ctx.lineTo(W-padR, Y(d.budget)); ctx.stroke();
+    ctx.strokeStyle = '#3fb950';
+    ctx.beginPath(); ctx.moveTo(padL, Y(d.avg)); ctx.lineTo(W-padR, Y(d.avg)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#6e7f92'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(d.n + ' frames (' + WINDOW + ' s at a ' + st.target + ' fps target)',
+                 padL+4, padT+ih+6);
+  }
+
+  function fps(ms){ return 1000/ms; }
+
+  function update(){
+    var d = simulate();
+    document.getElementById('gc-int').textContent = d.interval === Infinity ? 'never' :
+      d.interval + ' fr (' + (d.interval/st.target).toFixed(1) + ' s)';
+    document.getElementById('gc-pause').textContent = fmt(d.pause,1) + ' ms';
+    document.getElementById('gc-avg').textContent = fmt(fps(d.avg),1);
+    document.getElementById('gc-low1').textContent = fmt(fps(d.low1),1);
+    document.getElementById('gc-low01').textContent = fmt(fps(d.low01),1);
+    document.getElementById('gc-over').textContent = fmt(d.overPct,1) + '%';
+    document.getElementById('gc-avg').className = 'v ' + (d.avg <= d.budget ? 'ok' : 'crit');
+    document.getElementById('gc-low1').className = 'v ' +
+      (d.low1 <= d.budget ? 'ok' : d.low1 <= d.budget*2 ? 'warn' : 'crit');
+    document.getElementById('gc-low01').className = 'v ' +
+      (d.low01 <= d.budget*2 ? 'warn' : 'crit');
+    var v = document.getElementById('gc-verdict'), cls, msg;
+    var gap = fps(d.avg) - fps(d.low1);
+    if(d.interval === Infinity){
+      cls = 'ok';
+      msg = '<b>No allocation, no collection.</b> This is the state pooling and allocation-free ' +
+            'hot paths are trying to reach. Frame time is whatever your other work costs.';
+    } else if(d.collections === 0){
+      cls = 'warn';
+      msg = '<b>No collection inside this ' + WINDOW + '-second window.</b> At ' + st.rate +
+            ' KB/frame against a ' + st.heap + ' MB live heap you trigger one every ' +
+            fmt(d.interval/st.target,1) + ' s &mdash; about ' +
+            Math.round(600/(d.interval/st.target)) + ' per ten minutes of play, each costing ' +
+            fmt(d.pause,1) + ' ms. Rare is not free: that is still ' +
+            Math.max(1, Math.round(d.pause/d.budget)) + ' dropped frame' +
+            (d.pause/d.budget >= 2 ? 's' : '') + ' every time, and a 20-second capture will keep ' +
+            'telling you the build is clean. Widen the window before you sign off.';
+    } else if(d.low1 <= d.budget){
+      cls = 'ok';
+      msg = '<b>Collections are invisible.</b> Every frame &mdash; including the ' + d.collections +
+            ' collection frame' + (d.collections === 1 ? '' : 's') + ' &mdash; fits inside ' +
+            fmt(d.budget,1) + ' ms. ' +
+            (st.mode===1 ? 'Incremental slicing is doing the work here, and you are paying about ' +
+             fmt(st.base*BARRIER,2) + ' ms per frame in write barriers for it.' :
+             'A ' + fmt(d.pause,1) + ' ms pause is small enough to hide because the live heap is small.');
+    } else {
+      cls = d.low1 > d.budget*2 ? 'crit' : 'warn';
+      var lost = Math.max(1, Math.round(d.pause/d.budget));
+      msg = '<b>Average says ' + fmt(fps(d.avg),1) + ' fps; the 1% low says ' + fmt(fps(d.low1),1) +
+            ' fps &mdash; a gap of ' + fmt(gap,1) + ' fps.</b> ' + d.collections +
+            (d.collections === 1 ? ' collection' : ' collections') +
+            ' across these ' + WINDOW + ' seconds, each costing ' +
+            fmt(d.pause,1) + ' ms of marking against a ' + fmt(d.budget,1) + ' ms budget. ' +
+            (st.mode === 0
+              ? 'Stop-the-world means that arrives in one frame: ' + lost + ' frame' +
+                (lost > 1 ? 's' : '') + ' worth of budget burned at once, ' + d.collections +
+                ' times, while the average barely notices.'
+              : 'Sliced at ' + fmt(SLICE,0) + ' ms it lands on ' + Math.ceil(d.pause/SLICE) +
+                ' consecutive frames instead of one, so no single frame is catastrophic &mdash; but ' +
+                'each of those frames is still over budget, and you are paying about ' +
+                fmt(st.base*BARRIER,2) + ' ms per frame in write barriers for the privilege.') +
+            ' This is why a frame-rate counter will not find this bug and a player will.';
+    }
+    v.className = 'verdict ' + cls;
+    v.innerHTML = msg;
+    draw(d);
+  }
+
+    var rateEl = document.getElementById('gc-rate');
+  rateEl.addEventListener('input', function(){
+    st.rate = parseFloat(rateEl.value);
+    document.getElementById('gc-rateo').textContent = st.rate + ' KB/frame';
+    update();
+  });
+  var heapEl = document.getElementById('gc-heap');
+  heapEl.addEventListener('input', function(){
+    st.heap = parseFloat(heapEl.value);
+    document.getElementById('gc-heapo').textContent = st.heap + ' MB';
+    update();
+  });
+  var baseEl = document.getElementById('gc-base');
+  baseEl.addEventListener('input', function(){
+    st.base = parseFloat(baseEl.value)/10;
+    document.getElementById('gc-baseo').textContent = fmt(st.base,1) + ' ms';
+    update();
+  });
+  segment(document.getElementById('gc-mode'), function(v){
+    st.mode = v;
+    document.getElementById('gc-modeo').textContent = v === 0 ? 'STW' : 'incremental';
+    update();
+  });
+  segment(document.getElementById('gc-target'), function(v){
+    st.target = v;
+    document.getElementById('gc-targeto').textContent = fmt(1000/v,1) + ' ms';
+    update();
+  });
+
+  var PRE = {
+    clean:{rate:8,  heap:90,  base:140, mode:0, target:60},
+    linq: {rate:150,heap:180, base:140, mode:0, target:60},
+    fat:  {rate:60, heap:380, base:130, mode:0, target:60},
+    mobile:{rate:90,heap:120, base:250, mode:0, target:30}
+  };
+  root.querySelectorAll('[data-gcpreset]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var p = PRE[b.dataset.gcpreset];
+      st.rate = p.rate; st.heap = p.heap; st.base = p.base/10; st.mode = p.mode; st.target = p.target;
+      rateEl.value = p.rate; heapEl.value = p.heap; baseEl.value = p.base;
+      document.getElementById('gc-rateo').textContent = p.rate + ' KB/frame';
+      document.getElementById('gc-heapo').textContent = p.heap + ' MB';
+      document.getElementById('gc-baseo').textContent = fmt(p.base/10,1) + ' ms';
+      document.getElementById('gc-modeo').textContent = 'STW';
+      document.getElementById('gc-targeto').textContent = fmt(1000/p.target,1) + ' ms';
+      $$('#gc-mode button').forEach(function(x){ x.classList.toggle('on', +x.dataset.v === p.mode); });
+      $$('#gc-target button').forEach(function(x){ x.classList.toggle('on', +x.dataset.v === p.target); });
+      update();
+    });
+  });
+
+  var rt = 0;
+  addEventListener('resize', function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){ fit(); update(); }, 150);
+  });
+  fit(); update();
+}
+
+/* ============================================================
+   WIDGET 3 — Snapshot diff reader
+   ============================================================ */
+var SCEN = [
+  { name:'Open / close the inventory', unit:'open+close', defN:20,
+    fix:'unsubscribe from InventoryEvents in OnDisable',
+    types:[
+      {t:'InventorySlotView (MonoBehaviour)', size:352,     base:0,    per:48,  ret:48},
+      {t:'UnityEngine.UI.Text',               size:264,     base:26,   per:48,  ret:24},
+      {t:'System.Action (delegate)',          size:88,      base:14,   per:48,  ret:48},
+      {t:'RenderTexture (item preview)',      size:1048576, base:1,    per:1,   ret:1},
+      {t:'System.String',                     size:56,      base:9412, per:640, ret:0}
+    ]},
+  { name:'Load / unload the sub-level', unit:'load+unload', defN:3,
+    fix:'clear the static spawner list and RemoveAll on the subsystem delegate',
+    types:[
+      {t:'WaveSpawner (MonoBehaviour)', size:184,     base:1,    per:1,   ret:1},
+      {t:'GameObject',                  size:232,     base:1840, per:640, ret:96},
+      {t:'Texture2D',                   size:2796202, base:64,   per:22,  ret:6},
+      {t:'Mesh',                        size:851968,  base:120,  per:40,  ret:4},
+      {t:'AudioClip',                   size:1310720, base:18,   per:9,   ret:0}
+    ]},
+  { name:'Spawn / destroy 200 enemies', unit:'spawn+destroy', defN:40,
+    fix:'pool the enemies and remove destroyed entries from the static list',
+    types:[
+      {t:'GameObject (destroyed wrapper)', size:232,  base:120,  per:5, ret:5},
+      {t:'EnemyController',                size:296,  base:120,  per:5, ret:5},
+      {t:'ParticleSystem',                 size:1024, base:40,   per:5, ret:5},
+      {t:'System.Collections.Generic.List<GameObject> array', size:8192, base:3, per:1, ret:1},
+      {t:'System.String',                  size:56,   base:9412, per:96, ret:0}
+    ]}
+];
+
+function initSnap(){
+  var root = document.getElementById('w-snap');
+  if(!root) return;
+  var s = {scen:0, n:20, gc:1, fix:0};
+
+  function bytes(x){
+    var a = Math.abs(x);
+    if(a >= 1048576) return (x/1048576).toFixed(2) + ' MB';
+    if(a >= 1024)    return (x/1024).toFixed(1) + ' KB';
+    return x + ' B';
+  }
+
+  function compute(){
+    var sc = SCEN[s.scen], rows = [], dC = 0, dB = 0, retB = 0, flagged = 0, fake = 0;
+    for(var i=0;i<sc.types.length;i++){
+      var ty = sc.types[i];
+      var ret = s.fix ? 0 : ty.ret;
+      var a = ty.base;
+      var b = ty.base + ret*s.n;
+      /* garbage that a forced collection would have removed */
+      var ghost = s.gc ? 0 : Math.round(ty.per*s.n*0.55);
+      b += ghost;
+      var dc = b - a;
+      rows.push({t:ty.t, a:a, b:b, dc:dc, db:dc*ty.size, real:ret*s.n, ghost:ghost, size:ty.size});
+      dC += dc; dB += dc*ty.size; retB += ret*s.n*ty.size;
+      if(dc > 0){ flagged++; if(ret === 0) fake++; }
+    }
+    return {rows:rows, dC:dC, dB:dB, retB:retB, flagged:flagged, fake:fake, sc:sc};
+  }
+
+  function render(){
+    var d = compute();
+    var totA = 0, totB = 0;
+    d.rows.forEach(function(r){ totA += r.a*r.size; totB += r.b*r.size; });
+    document.getElementById('sn-a').textContent   = bytes(totA);
+    document.getElementById('sn-b').textContent   = bytes(totB);
+    document.getElementById('sn-d').textContent   = (d.dB>=0?'+':'') + bytes(d.dB);
+    document.getElementById('sn-per').textContent = bytes(Math.round(d.retB/s.n));
+    document.getElementById('sn-flag').textContent = d.flagged + (d.fake ? ' (' + d.fake + ' fake)' : '');
+    document.getElementById('sn-d').className = 'v ' + (d.dB > 0 ? 'crit' : 'ok');
+    document.getElementById('sn-per').className = 'v ' + (d.retB > 0 ? 'crit' : 'ok');
+
+    var h = '<thead><tr><th>Type</th><th>Snapshot A</th><th>Snapshot B</th>' +
+            '<th>&Delta; count</th><th>&Delta; bytes</th><th>Reading</th></tr></thead><tbody>';
+    d.rows.forEach(function(r){
+      var verdict, cls;
+      if(r.dc === 0){ verdict = 'net zero &mdash; churn only'; cls = 'okrow'; }
+      else if(!s.gc){ verdict = 'ambiguous: no forced collect'; cls = ''; }
+      else if(r.real > 0){ verdict = 'RETAINED &mdash; ' + (r.real/s.n) + ' per iteration'; cls = 'leak'; }
+      else { verdict = 'grew'; cls = ''; }
+      h += '<tr class="' + cls + '"><td>' + r.t + '</td><td class="n">' + r.a +
+           '</td><td class="n">' + r.b + '</td><td class="n ' + (r.dc>0?'grow':'flat') + '">' +
+           (r.dc>0?'+':'') + r.dc + '</td><td class="n">' + (r.dc>0?'+':'') + bytes(r.db) +
+           '</td><td>' + verdict + '</td></tr>';
+    });
+    h += '</tbody>';
+    document.getElementById('sn-table').innerHTML = h;
+
+    var v = document.getElementById('sn-verdict'), cls, msg;
+    var per = d.retB/s.n;
+    if(!s.gc){
+      cls = 'warn';
+      msg = '<b>Unusable diff.</b> Without a forced collection before each snapshot you are looking ' +
+            'at retention and not-yet-collected garbage mixed together: ' + d.flagged +
+            ' types are flagged and ' + d.fake + ' of them are pure churn that the next GC would ' +
+            'have taken. Turn the forced collect back on before you write a word of the report.';
+    } else if(d.retB === 0){
+      cls = 'ok';
+      msg = '<b>Clean round trip.</b> Every type returns to its snapshot-A count, so the action ' +
+            'is net-zero: whatever it allocates, it releases. This is what "after the fix" is ' +
+            'supposed to look like, and it is the evidence your assignment needs on the ' +
+            '<em>after</em> side &mdash; same protocol, same N, same state.';
+    } else {
+      cls = 'crit';
+      var forty = per*40;
+      msg = '<b>' + bytes(Math.round(per)) + ' retained per ' + d.sc.unit + '.</b> After ' + s.n +
+            ' iterations that is ' + bytes(d.retB) + '. Extrapolate honestly: 40 of these in a ' +
+            'two-hour session is ' + bytes(Math.round(forty)) + ', and the retention is linear, so ' +
+            'the only thing that bounds it is how long someone plays. Fix: ' + d.sc.fix + '.';
+    }
+    v.className = 'verdict ' + cls;
+    v.innerHTML = msg;
+  }
+
+  segment(document.getElementById('sn-scen'), function(v){
+    s.scen = v; s.n = SCEN[v].defN;
+    document.getElementById('sn-n').value = s.n;
+    document.getElementById('sn-no').textContent = s.n;
+    document.getElementById('sn-sceno').textContent =
+      v === 0 ? 'inventory' : v === 1 ? 'sub-level' : 'enemies';
+    render();
+  });
+  var nEl = document.getElementById('sn-n');
+  nEl.addEventListener('input', function(){
+    s.n = parseInt(nEl.value,10);
+    document.getElementById('sn-no').textContent = s.n;
+    render();
+  });
+  segment(document.getElementById('sn-gc'), function(v){
+    s.gc = v;
+    document.getElementById('sn-gco').textContent = v ? 'clean' : 'noisy';
+    render();
+  });
+  segment(document.getElementById('sn-fix'), function(v){
+    s.fix = v;
+    document.getElementById('sn-fixo').textContent = v ? 'after' : 'before';
+    render();
+  });
+  render();
+}
+
+/* ============================================================
+   DECISION TREE — memory is climbing
+   ============================================================ */
+var TREE_NODES = {
+  start:{
+    q:'Memory is climbing. Before you open a tool: what shape is the growth?',
+    hint:'Log total memory at fixed checkpoints for twenty minutes and look at the curve. The shape eliminates two of the three causes for free.',
+    choices:[
+      {t:'A staircase &mdash; it steps up on every level load and never comes back down',
+       sub:'Same hub, same total, higher each time', go:'q_round', lbl:'staircase'},
+      {t:'A sawtooth &mdash; it rises and drops repeatedly, average flat',
+       sub:'Regular spikes in frame time too', go:'leaf_churn', lbl:'sawtooth'},
+      {t:'One big step when the level loaded, then flat',
+       sub:'High but stable', go:'leaf_big', lbl:'one step'},
+      {t:'Total is flat, but an allocation failed or a texture would not stream in',
+       sub:'The crash says out of memory with memory free', go:'q_frag', lbl:'allocation failed'}
+    ]},
+  q_round:{
+    q:'Run the three-snapshot protocol: settle, act N times, return to the same state, settle, diff. What survived?',
+    hint:'Force a collection before both snapshots or the diff is noise.',
+    choices:[
+      {t:'Duplicate manager or actor instances, reference path ending in a static field or an event',
+       sub:'N copies of something that should be unique', go:'leaf_retain', lbl:'duplicates + root'},
+      {t:'Textures, meshes or audio retained; no managed objects held',
+       sub:'Assets that should have unloaded', go:'leaf_assets', lbl:'assets retained'},
+      {t:'Nothing retained on the managed side, but the process total still grew',
+       sub:'The managed heap is innocent', go:'q_native', lbl:'native growth'}
+    ]},
+  q_native:{
+    q:'Can you attribute the native growth to a subsystem?',
+    hint:'Unreal: launch with -LLM and read stat LLM. Unity: compare total allocated against mono used, then check plugins and audio. Both: Visual Studio Diagnostic Tools or Valgrind/Massif on a desktop build.',
+    choices:[
+      {t:'Yes &mdash; one tag or module climbs while everything else is flat',
+       sub:'Audio, physics, RHI, a plugin', go:'leaf_native', lbl:'attributed'},
+      {t:'No &mdash; reserved memory is growing but used memory is flat',
+       sub:'The gap between reserved and used is widening', go:'leaf_hw', lbl:'reserved vs used'}
+    ]},
+  q_frag:{
+    q:'Compare total free against the largest contiguous free block at the moment of failure.',
+    hint:'Unity: Memory Profiler heap view. Unreal: memreport -full and the allocator stats. Console SDKs report both directly.',
+    choices:[
+      {t:'Total free is several times the request; largest contiguous is smaller than it',
+       sub:'300 MB free, 22 MB largest run', go:'leaf_frag', lbl:'fragmented'},
+      {t:'Total free is genuinely small &mdash; you are simply at the ceiling',
+       sub:'Under 10% headroom', go:'leaf_budget', lbl:'at the ceiling'}
+    ]},
+  leaf_retain:{leaf:true, title:'Retention bug &mdash; you forgot to forget',
+    body:'<p>The collector is working correctly and something you wrote is still pointing at the '+
+      'objects. Follow the reference path to its root: it will terminate in a static collection, an '+
+      'event invocation list, a closure stored in a long-lived object, or a persistent/rooted object '+
+      'that should have been destroyed.</p>'+
+      '<p>Fix the mechanism, then re-run the identical protocol and show the diff going to zero. '+
+      'That before/after pair is the strongest evidence you can put in the assignment.</p>'+
+      '<p class="tool">Unity: Memory Profiler diff + reference path &middot; Unreal: obj refs name=&lt;object&gt;</p>'},
+  leaf_assets:{leaf:true, title:'Asset residency &mdash; references, not objects',
+    body:'<p>Something holds a handle to the asset: a <code>ScriptableObject</code> caching a sprite, '+
+      'an Addressables handle never released, a UPROPERTY on a surviving object, or a soft reference '+
+      'that got resolved and then kept. Assets are the expensive kind of retention because one '+
+      '400-byte reference can pin 3 MB of texture.</p>'+
+      '<p>Check the unload path explicitly: in Unity, <code>Addressables.Release</code> or '+
+      '<code>Resources.UnloadUnusedAssets</code> after the scene unload; in Unreal, confirm the '+
+      'package actually unloaded rather than staying referenced by a still-live object.</p>'+
+      '<p class="tool">obj list class=Texture2D &middot; Memory Profiler, group by asset type</p>'},
+  leaf_native:{leaf:true, title:'Native growth in a named subsystem',
+    body:'<p>Now you have a real search space. The usual suspects, in order of how often they are '+
+      'the answer: audio (voices or banks never released), a middleware plugin, physics scratch that '+
+      'scales with actor count, and render targets recreated rather than reused on resolution '+
+      'changes.</p>'+
+      '<p>If the tag is one you own, this may be a genuine C++ leak &mdash; <code>new</code> without '+
+      '<code>delete</code>, or a <code>TSharedPtr</code> cycle that keeps a refcount above zero '+
+      'forever. Those are the leaks a reachability scan can never find, so reach for an allocation '+
+      'profiler instead.</p>'+
+      '<p class="tool">stat LLM &middot; VS Diagnostic Tools snapshots &middot; Valgrind/Massif &middot; Instruments Allocations</p>'},
+  leaf_hw:{leaf:true, title:'High-water mark, not a leak',
+    body:'<p>Reserved grew because a transient peak forced the heap to expand, and the allocator does '+
+      'not hand pages back. Used is flat, so nothing is being retained &mdash; you are looking at the '+
+      'scar left by a spike.</p>'+
+      '<p>The fix is upstream of the allocator: find the peak. It is almost always a level transition '+
+      'with both levels resident, a load-time decompression buffer, or a burst of temporary objects '+
+      'during initialisation. Removing the peak lowers the floor for the rest of the session.</p>'+
+      '<p class="tool">Log memory at load-start, load-complete and unload-complete on every CI build</p>'},
+  leaf_churn:{leaf:true, title:'Allocation churn &mdash; a frame-time bug wearing a memory costume',
+    body:'<p>A sawtooth with a flat average is the collector doing its job. Your problem is not the '+
+      'total, it is the <em>rate</em>: every collection is a pause, and the pause length scales with '+
+      'your live heap.</p>'+
+      '<p>Sort the profiler by GC.Alloc, take the top five call sites, and remove the allocation '+
+      'rather than tuning the collector. Then verify with 1% lows, not average fps &mdash; the '+
+      'average will barely move either way, which is exactly the trap in section 5.</p>'+
+      '<p class="tool">Unity Profiler hierarchy sorted by GC.Alloc &middot; Unreal: stat gc, gc.CollectGarbageEveryFrame 1</p>'},
+  leaf_big:{leaf:true, title:'It is just a big level &mdash; now check it against the budget',
+    body:'<p>Stable growth on load is content, not a defect. The only question left is whether the '+
+      'plateau fits under your per-platform budget with enough headroom for the transient peak of the '+
+      'next load, which is typically the real ceiling.</p>'+
+      '<p>If it does not fit, this becomes an asset and streaming problem: texture size caps per tier, '+
+      'mip bias, audio streaming, LOD floors, and grouping assets by lifetime so a transition never '+
+      'holds two levels at once. Bring a priced menu of options to the artist, not an ultimatum.</p>'+
+      '<p class="tool">memreport -full &middot; Memory Profiler grouped by asset type</p>'},
+  leaf_frag:{leaf:true, title:'Fragmentation &mdash; the free memory is real and unusable',
+    body:'<p>You are not out of memory, you are out of <em>contiguous</em> memory. Do not go hunting '+
+      'for a leak; the totals are fine and chasing them wastes a day.</p>'+
+      '<p>Two fixes, in this order. Reserve the large buffer once at load time and reuse it forever, '+
+      'so the request can never be refused later. Then stop small short-lived allocations from landing '+
+      'in the region large requests come from: pool them, or give them their own allocator. Group '+
+      'assets by lifetime so things released together were allocated together.</p>'+
+      '<p class="tool">Run the fragmentation sandbox in section 4 with the segregated setting to see the failure stop</p>'},
+  leaf_budget:{leaf:true, title:'You are simply over budget',
+    body:'<p>No trick will help: the content does not fit the platform. This is the moment to turn a '+
+      'technical fact into a decision document &mdash; current usage by category, the target, the gap, '+
+      'and an ordered menu of reductions with the measured saving and the visible cost of each.</p>'+
+      '<p>Cheapest first, usually: texture size caps and mip bias per tier, audio compression and '+
+      'streaming, mesh LOD floors, then shadow and render-target settings. Reserve gameplay-visible '+
+      'cuts for last, and make somebody with authority choose them explicitly.</p>'+
+      '<p class="tool">Per-platform budget table with a pass/fail column per category</p>'}
+};
+
+/* ---------- boot ---------- */
+document.addEventListener('DOMContentLoaded', function(){
+  initFrag();
+  initGC();
+  initSnap();
+  var t = document.getElementById('treeMem');
+  if(t) new GDTTree(t, TREE_NODES, 'start');
+});
+
+})();
+</script>
+</body></html>
