@@ -3,6 +3,8 @@
 A collection of teaching resources for game development courses. Each course folder groups
 the lecture notes, in-class activities, and tutorials for one subject area.
 
+📖 **Read the lecture notes online:** <https://isac-artzi.github.io/Resources-for-Game-Development-Courses/>
+
 | | What it is |
 |---|---|
 | 🥽 **[Introduction to VR](#introduction-to-vr)** | Seven **interactive HTML lecture-note topics**, **30 Unity project skeletons** (one per class meeting), and a **Git/GitHub tutorial** for student VR teams. |
@@ -41,8 +43,10 @@ Pages, or from any static host, online or offline.
 | [6 · VR Audio and Sound Design](./Introduction%20to%20VR/Lecture%20Notes/topic-6.html) | 11–12 | 4 |
 | [7 · VR Game Development Project](./Introduction%20to%20VR/Lecture%20Notes/topic-7.html) | 13–15 | 6 |
 
-> HTML files render as source on github.com. Clone or download the folder and open `index.html`
-> locally, or serve the folder from any static host.
+> **[→ Read these online](https://isac-artzi.github.io/Resources-for-Game-Development-Courses/introduction-to-vr/)** — published from this folder by the
+> [Pages workflow](./.github/workflows/pages.yml). HTML files render as source on github.com,
+> so to read them from the repository instead, clone or download the folder and open
+> `index.html` locally.
 
 ### 🎮 [Activities](./Introduction%20to%20VR/Activities)
 
